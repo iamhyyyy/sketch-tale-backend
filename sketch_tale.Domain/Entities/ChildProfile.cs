@@ -1,4 +1,4 @@
-﻿
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
 
@@ -17,9 +17,15 @@ public class ChildProfile : BaseEntity
     public string? AllowedCategoryIdsJson { get; set; }
 
     // Navigation Properties
+    [ForeignKey(nameof(UserId))]
     public AppUser User { get; set; } = null!;
+
+    [ForeignKey(nameof(ParentIdM))]
     public AppUser? ParentM { get; set; }
+
+    [ForeignKey(nameof(ParentIdS))]
     public AppUser? ParentS { get; set; }
+
     public ICollection<Drawing> Drawings { get; set; } = new List<Drawing>();
     public ICollection<Character> Characters { get; set; } = new List<Character>();
     public ICollection<GeneratedStory> GeneratedStories { get; set; } = new List<GeneratedStory>();

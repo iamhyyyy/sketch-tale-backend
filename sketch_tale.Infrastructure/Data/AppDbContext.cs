@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Services;
+using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Entities;
 
 namespace sketch_tale.Infrastructure.Data;
@@ -68,26 +69,35 @@ public class AppDbContext : AuditIdentityDbContext<AppUser, IdentityRole<Guid>, 
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         var currentTime = DateTime.UtcNow.AddHours(7);
-        var currentUser = _currentUserService.UserId; // Lấy ID người dùng hiện tại
+        var currentUserId = Guid.TryParse(_currentUserService.UserId, out var parsedUserId)
+            ? parsedUserId
+            : Guid.Empty;
 
         foreach (var entry in entries)
         {
             if (entry.State == EntityState.Added)
             {
-                entry.Property("CreatedAt").CurrentValue = currentTime;
-                entry.Property("CreatedBy").CurrentValue = currentUser;
+                if (entry.Metadata.FindProperty(nameof(BaseEntity.CreatedAt)) is not null)
+                    entry.Property(nameof(BaseEntity.CreatedAt)).CurrentValue = currentTime;
+
+                if (entry.Metadata.FindProperty(nameof(BaseEntity.CreateBy)) is not null)
+                {
+                    var createBy = entry.Property(nameof(BaseEntity.CreateBy));
+                    if (createBy.CurrentValue is Guid existing && existing == Guid.Empty)
+                        createBy.CurrentValue = currentUserId;
+                }
             }
             else if (entry.State == EntityState.Modified)
             {
-                entry.Property("UpdatedAt").CurrentValue = currentTime;
-                entry.Property("UpdatedBy").CurrentValue = currentUser;
+                if (entry.Metadata.FindProperty(nameof(BaseEntity.UpdatedAt)) is not null)
+                    entry.Property(nameof(BaseEntity.UpdatedAt)).CurrentValue = currentTime;
+
+                if (entry.Metadata.FindProperty(nameof(BaseEntity.UpdateBy)) is not null)
+                    entry.Property(nameof(BaseEntity.UpdateBy)).CurrentValue = currentUserId;
             }
         }
 
-
         return base.SaveChangesAsync(cancellationToken);
-
-
     }
 
     
