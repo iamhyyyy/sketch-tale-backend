@@ -1,0 +1,49 @@
+## Thư mục Build đầu ra của dự án (Rác lớn nhất cần bỏ qua)
+[Db]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Thư mục lưu trữ các công cụ test và coverage kết quả
+TestResults/
+*.tlh
+*.tli
+
+## Thư mục cấu hình riêng của các IDE (Visual Studio, Rider, VS Code)
+.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.userossc
+*.sln.docstates
+
+## Thư mục sinh ra bởi các công cụ quản lý thư viện (NuGet, Paket)
+*.nuget.props
+*.nuget.targets
+packages/
+node_modules/
+
+## OS-generated files (File rác tự sinh của hệ điều hành)
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+## Crash dumps
+*.stackdump
+
+## Thư mục Publish đầu ra khi cậu chạy lệnh dotnet publish
+approot/
+publish/
+*.publishproj
+
+## Các file log hoặc cơ sở dữ liệu tạm thời chạy ở máy local
+*.log
+*.sqlite
+*.db-shm
+*.db-wal
+
+## File dữ liệu nhạy cảm liên quan đến User Secrets của .NET
+secrets.json
+appsettings.Development.json
