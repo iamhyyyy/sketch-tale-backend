@@ -18,6 +18,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+
         var builder = WebApplication.CreateBuilder(args);
 
         //dùng để lưu log
@@ -91,6 +92,7 @@ public class Program
         });
 
         builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
 
