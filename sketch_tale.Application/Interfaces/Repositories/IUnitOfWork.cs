@@ -1,4 +1,8 @@
 ﻿
+
+
+using sketch_tale.Domain.Interfaces;
+
 namespace sketch_tale.Application.Interfaces.Repositories;
 
 public interface IUnitOfWork : IDisposable
@@ -8,4 +12,5 @@ public interface IUnitOfWork : IDisposable
 
     //thêm repo interface xún dứi
 
+    ICategoryRepository CategoryRepository {  get; }
 }

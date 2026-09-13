@@ -1,6 +1,7 @@
 ﻿
 
 using sketch_tale.Application.Interfaces.Repositories;
+using sketch_tale.Domain.Interfaces;
 using sketch_tale.Infrastructure.Data;
 using System.Collections;
 
@@ -12,7 +13,7 @@ public class UnitOfWork : IUnitOfWork
     private Hashtable? _repositories;
 
     //Khai báo IRepo
-    //private IVehicleRepository _vehicleRepository = null!;
+    private ICategoryRepository _categoryRepository = null!;
 
     public UnitOfWork(AppDbContext context)
     {
@@ -38,7 +39,7 @@ public class UnitOfWork : IUnitOfWork
     }
 
     //thêm IRepo ở đây
-    //public IVehicleRepository VehicleRepository => _vehicleRepository ??= new VehicleRepository(_context);
+    public ICategoryRepository CategoryRepository => _categoryRepository ??= new CategoryRepository(_context);
 
     public async Task<int> CompleteAsync()
     {

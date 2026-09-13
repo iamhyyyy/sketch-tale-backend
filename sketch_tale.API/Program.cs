@@ -2,15 +2,18 @@ using Audit.Core;
 using Audit.EntityFramework;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Application.Mappings;
 using sketch_tale.Application.Services;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Interfaces;
 using sketch_tale.Infrastructure.Data;
 using sketch_tale.Infrastructure.Repositories;
 using sketch_tale.Infrastructure.Services;
 using sketch_tale.Infrastructure.Settings;
+using SmartCarWash.Application.Services;
 
 namespace sketch_tale.API;
 
@@ -62,10 +65,12 @@ public class Program
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // Đăng ký Repository
+        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+        builder.Services.AddScoped<ICategoryService, CategoryService>();
 
         // Đăng ký Email Service
         builder.Services.AddScoped<IEmailService, EmailService>();

@@ -20,8 +20,4 @@
     <ProjectReference Include="..\sketch_tale.Infrastructure\sketch_tale.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>
