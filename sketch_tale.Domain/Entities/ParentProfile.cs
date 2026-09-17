@@ -4,10 +4,10 @@ using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Domain.Entities;
 
-public class ChildProfile : BaseEntity
+public class ParentProfile : BaseEntity
 {
     public Guid UserId { get; set; }
-    public Guid ParentProfileId { get; set; }
+    public Guid ChildProfileId { get; set; }
     public Guid? ParentIdS { get; set; }
 
     public string NickName { get; set; } = string.Empty;

@@ -84,7 +84,7 @@ public class Program
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         //Add Identity services, chỗ này là đăng ký để ASP.Net tự DI dùm ở chỗ AuthService
-        builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
+        builder.Services.AddIdentity<User, IdentityRole<Guid>>()
                         .AddEntityFrameworkStores<AppDbContext>()
                         .AddDefaultTokenProviders();
 

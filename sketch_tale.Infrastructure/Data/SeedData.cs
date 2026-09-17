@@ -16,7 +16,7 @@ public class SeedData
     {
         var context = serviceProvider.GetRequiredService<AppDbContext>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-        var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<User>>();
 
         try
         {
@@ -55,7 +55,7 @@ public class SeedData
         }
     }
 
-    private static async Task SeedUsersAsync(UserManager<AppUser> userManager)
+    private static async Task SeedUsersAsync(UserManager<User> userManager)
     {
         // Nếu bảng Users đã có data -> Bỏ qua không tạo user
         if (await userManager.Users.AnyAsync()) return;
@@ -67,7 +67,7 @@ public class SeedData
     }
 
     private static async Task CreateUserAsync(
-        UserManager<AppUser> userManager,
+        UserManager<User> userManager,
         string username,
         string email,
         string password,
@@ -77,7 +77,7 @@ public class SeedData
     {
         if (await userManager.FindByNameAsync(username) != null) return;
 
-        var user = new AppUser
+        var user = new User
         {
             UserName = username,
             Email = email,
@@ -617,7 +617,7 @@ public class SeedData
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedChildDemoDataAsync(UserManager<AppUser> userManager, AppDbContext context)
+    private static async Task SeedChildDemoDataAsync(UserManager<User> userManager, AppDbContext context)
     {
         if (await context.ChildProfiles.AnyAsync()) return;
 
@@ -654,11 +654,13 @@ public class SeedData
         {
             Id = childProfileId,
             UserId = childUser.Id,
-            ParentIdM = parent.Id,
+            ParentProfileId = parent.Id,
             NickName = "Mimi",
             TargetAgeGroup = TargetAgeGroup.Age3To5,
             DailyTimeLimit = 30,
+            RemainingTimes = 30,
             DailyCharacterLimit = 5,
+            RemainingCharacters = 5,
             AllowedCategoryIdsJson = $"[\"{animalsCategory.Id}\",\"{friendshipCategory.Id}\"]",
             CreatedAt = now,
             CreateBy = SystemUserId

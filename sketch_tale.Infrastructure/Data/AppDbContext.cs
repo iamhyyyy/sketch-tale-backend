@@ -7,7 +7,7 @@ using sketch_tale.Domain.Entities;
 
 namespace sketch_tale.Infrastructure.Data;
 
-public class AppDbContext : AuditIdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
+public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     private readonly ICurrentUserService _currentUserService;
     public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService)
@@ -17,9 +17,16 @@ public class AppDbContext : AuditIdentityDbContext<AppUser, IdentityRole<Guid>, 
     }
 
     public DbSet<ChildProfile> ChildProfiles => Set<ChildProfile>();
+    public DbSet<ParentProfile> ParentProfiles => Set<ParentProfile>();
+
+    public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
+    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
+
     public DbSet<Drawing> Drawings => Set<Drawing>();
     public DbSet<CharType> CharTypes => Set<CharType>();
     public DbSet<Character> Characters => Set<Character>();
+
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<StoryTemplate> StoryTemplates => Set<StoryTemplate>();
     public DbSet<StoryRoleTemplate> StoryRoleTemplates => Set<StoryRoleTemplate>();
@@ -27,11 +34,13 @@ public class AppDbContext : AuditIdentityDbContext<AppUser, IdentityRole<Guid>, 
     public DbSet<CharacterSlotTemplate> CharacterSlotTemplates => Set<CharacterSlotTemplate>();
     public DbSet<VocabularyTemplate> VocabularyTemplates => Set<VocabularyTemplate>();
     public DbSet<StoryQuizTemplate> StoryQuizTemplates => Set<StoryQuizTemplate>();
+
     public DbSet<GeneratedStory> GeneratedStories => Set<GeneratedStory>();
     public DbSet<UserStoryCharacterMapping> UserStoryCharacterMappings => Set<UserStoryCharacterMapping>();
     public DbSet<ChildVocabularyProgress> ChildVocabularyProgresses => Set<ChildVocabularyProgress>();
     public DbSet<ReadingLog> ReadingLogs => Set<ReadingLog>();
     public DbSet<ChildQuizAnswer> ChildQuizAnswers => Set<ChildQuizAnswer>();
+
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
@@ -39,7 +48,7 @@ public class AppDbContext : AuditIdentityDbContext<AppUser, IdentityRole<Guid>, 
     {
         base.OnModelCreating(modelBuilder);
         // Đổi tên bảng Identity mặc định, không override property
-        modelBuilder.Entity<AppUser>().ToTable("Users");
+        modelBuilder.Entity<User>().ToTable("Users");
         modelBuilder.Entity<IdentityRole<Guid>>().ToTable("Roles");
         modelBuilder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
         modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
