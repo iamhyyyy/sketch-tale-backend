@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
 
@@ -7,22 +8,17 @@ namespace sketch_tale.Domain.Entities;
 public class ParentProfile : BaseEntity
 {
     public Guid UserId { get; set; }
-    public Guid ChildProfileId { get; set; }
-    public Guid? ParentIdS { get; set; }
 
-    public string NickName { get; set; } = string.Empty;
-    public TargetAgeGroup TargetAgeGroup { get; set; }
-    public int DailyTimeLimit { get; set; } = 30;
-    public int RemainingTimes { get; set; }
-    public int DailyCharacterLimit { get; set; } = 5;
-    public int RemainingCharacters { get; set; }
-    public string? AllowedCategoryIdsJson { get; set; }
+    public int ChildProfileLimit { get; set; } = 1;
+    public int RemainingChild { get; set; } = 1;
 
-    // Navigation Properties
-    [ForeignKey(nameof(ParentIdS))]
-    public User? ParentS { get; set; }
+    public int CharacterLimit { get; set; } = 5;
+    public int RemainingCharacters { get; set; } = 5;
 
-    public ICollection<Drawing> Drawings { get; set; } = new List<Drawing>();
-    public ICollection<Character> Characters { get; set; } = new List<Character>();
-    public ICollection<GeneratedStory> GeneratedStories { get; set; } = new List<GeneratedStory>();
+    public int ExportStoryLimit { get; set; } = 0;
+    public bool RemainingExport { get; set; } = false;
+
+    public bool AccessFullStories { get; set; } = false;
+
+    public ParentProfileSub? ParentProfileSub { get; set; }
 }

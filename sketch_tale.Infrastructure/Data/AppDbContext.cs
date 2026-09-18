@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Common;
@@ -18,6 +17,7 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
 
     public DbSet<ChildProfile> ChildProfiles => Set<ChildProfile>();
     public DbSet<ParentProfile> ParentProfiles => Set<ParentProfile>();
+    public DbSet<ParentProfileSub> ParentProfileSubs => Set<ParentProfileSub>();
 
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();

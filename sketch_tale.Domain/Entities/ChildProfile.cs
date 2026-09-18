@@ -8,19 +8,12 @@ public class ChildProfile : BaseEntity
 {
     public Guid UserId { get; set; }
     public Guid ParentProfileId { get; set; }
-    public Guid? ParentIdS { get; set; }
 
     public string NickName { get; set; } = string.Empty;
     public TargetAgeGroup TargetAgeGroup { get; set; }
     public int DailyTimeLimit { get; set; } = 30;
     public int RemainingTimes { get; set; }
-    public int DailyCharacterLimit { get; set; } = 5;
-    public int RemainingCharacters { get; set; }
     public string? AllowedCategoryIdsJson { get; set; }
-
-    // Navigation Properties
-    [ForeignKey(nameof(ParentIdS))]
-    public User? ParentS { get; set; }
 
     public ICollection<Drawing> Drawings { get; set; } = new List<Drawing>();
     public ICollection<Character> Characters { get; set; } = new List<Character>();
