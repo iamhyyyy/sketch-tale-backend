@@ -11,8 +11,13 @@ public class ChildProfile : BaseEntity
 
     public string NickName { get; set; } = string.Empty;
     public TargetAgeGroup TargetAgeGroup { get; set; }
+
     public int DailyTimeLimit { get; set; } = 30;
     public int RemainingTimes { get; set; }
+
+    public int DailyCharacterLimit { get; set; } = 30;
+    public int RemainingCharacters { get; set; }
+
     public string? AllowedCategoryIdsJson { get; set; }
 
     public ICollection<Drawing> Drawings { get; set; } = new List<Drawing>();
