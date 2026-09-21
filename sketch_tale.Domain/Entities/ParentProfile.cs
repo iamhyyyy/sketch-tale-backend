@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-using sketch_tale.Domain.Common;
+﻿using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
 
 namespace sketch_tale.Domain.Entities;
 
@@ -19,6 +20,9 @@ public class ParentProfile : BaseEntity
     public bool RemainingExport { get; set; } = false;
 
     public bool AccessFullStories { get; set; } = false;
+
+    [RegularExpression(@"^\d{6}$", ErrorMessage = "Mã bảo mật phải bao gồm đúng 6 chữ số.")]
+    public string SecurityCode { get; set; } = "000000";
 
     public ParentProfileSub? ParentProfileSub { get; set; }
 }

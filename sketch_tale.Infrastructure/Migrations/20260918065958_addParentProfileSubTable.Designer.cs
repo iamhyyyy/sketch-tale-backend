@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using sketch_tale.Infrastructure.Data;
@@ -11,9 +12,11 @@ using sketch_tale.Infrastructure.Data;
 namespace sketch_tale.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260918065958_addParentProfileSubTable")]
+    partial class addParentProfileSubTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -679,10 +682,6 @@ namespace sketch_tale.Infrastructure.Migrations
 
                     b.Property<bool>("RemainingExport")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("SecurityCode")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<Guid?>("UpdateBy")
                         .HasColumnType("uuid");
