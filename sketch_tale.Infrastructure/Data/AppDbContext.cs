@@ -41,6 +41,8 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
     public DbSet<ReadingLog> ReadingLogs => Set<ReadingLog>();
     public DbSet<ChildQuizAnswer> ChildQuizAnswers => Set<ChildQuizAnswer>();
 
+    public DbSet<RestrictedKeyword> RestrictedKeywords => Set<RestrictedKeyword>();
+    public DbSet<ProhibitedTheme> ProhibitedThemes => Set<ProhibitedTheme>();
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
