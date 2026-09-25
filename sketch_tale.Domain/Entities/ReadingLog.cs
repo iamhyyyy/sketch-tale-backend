@@ -10,7 +10,7 @@ public class ReadingLog : BaseEntity
 
     public bool IsCompleted { get; set; }
     public int ReadDurationSeconds { get; set; } = 0;
-    public DateTime ReadAt { get; set; } = DateTime.UtcNow;
+    public DateTime ReadAt { get; set; } = DateTime.UtcNow.AddHours(7);
 
     // Navigation Properties
     public ChildProfile Child { get; set; } = null!;
