@@ -5,8 +5,8 @@ namespace sketch_tale.Domain.Entities;
 
 public class ChildVocabularyProgress : BaseEntity
 {
-    public Guid ChildId { get; set; }
-    public Guid VocabularyId { get; set; }
+    public Guid ChildProfileId { get; set; }
+    public Guid VocabularyTemplateId { get; set; }
 
     public int TotalListenCount { get; set; } = 0;
     public int TotalQuizAttempts { get; set; } = 0;

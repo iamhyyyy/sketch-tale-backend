@@ -4,7 +4,7 @@ namespace sketch_tale.Domain.Entities;
 
 public class VocabularyTemplate : BaseEntity
 {
-    public Guid StoryPageId { get; set; }
+    public Guid StoryPageTemplateId { get; set; }
 
     public string Word { get; set; } = string.Empty;
     public string Meaning { get; set; } = string.Empty;

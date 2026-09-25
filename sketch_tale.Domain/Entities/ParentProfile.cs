@@ -9,7 +9,7 @@ namespace sketch_tale.Domain.Entities;
 public class ParentProfile : BaseEntity
 {
     public Guid UserId { get; set; }
-
+    
     public int ChildProfileLimit { get; set; } = 1;
     public int RemainingChild { get; set; } = 1;
 
@@ -20,6 +20,8 @@ public class ParentProfile : BaseEntity
     public bool RemainingExport { get; set; } = false;
 
     public bool AccessFullStories { get; set; } = false;
+    public bool SubscriptionTrialPlusPlan { get; set; } = false;
+    public bool SubscriptionTrialProPlan { get; set; } = false;
 
     [RegularExpression(@"^\d{6}$", ErrorMessage = "Mã bảo mật phải bao gồm đúng 6 chữ số.")]
     public string SecurityCode { get; set; } = "000000";

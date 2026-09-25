@@ -5,7 +5,7 @@ namespace sketch_tale.Domain.Entities;
 
 public class Drawing : BaseEntity
 {
-    public Guid ChildId { get; set; }
+    public Guid ChildProfileId { get; set; }
     public string OriginalImageUrl { get; set; } = string.Empty;
     public DrawingType DrawingType { get; set; }
 

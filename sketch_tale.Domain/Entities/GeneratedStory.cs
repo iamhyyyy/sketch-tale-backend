@@ -5,7 +5,7 @@ namespace sketch_tale.Domain.Entities;
 
 public class GeneratedStory : BaseEntity
 {
-    public Guid ChildId { get; set; }
+    public Guid ChildProfileId { get; set; }
     public Guid StoryTemplateId { get; set; }
     public bool IsFavorite { get; set; }
     public CommonStatus Status { get; set; }

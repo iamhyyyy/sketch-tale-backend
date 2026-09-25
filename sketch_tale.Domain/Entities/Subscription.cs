@@ -7,7 +7,7 @@ namespace sketch_tale.Domain.Entities;
 public class Subscription : BaseEntity
 {
     public Guid ParentProfileId { get; set; }
-    public Guid PlanId { get; set; }
+    public Guid SubscriptionPlanId { get; set; }
     public SubscriptionStatus Status { get; set; } = SubscriptionStatus.PendingPayment;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

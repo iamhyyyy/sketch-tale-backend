@@ -6,7 +6,7 @@ namespace sketch_tale.Domain.Entities;
 
 public class Character : BaseEntity
 {
-    public Guid ChildId { get; set; }
+    public Guid ChildProfileId { get; set; }
     public Guid DrawingId { get; set; }
     public Guid CharTypeId { get; set; }
 

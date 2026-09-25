@@ -5,7 +5,7 @@ namespace sketch_tale.Domain.Entities;
 
 public class ChildQuizAnswer : BaseEntity
 {
-    public Guid ChildId { get; set; }
+    public Guid ChildProfileId { get; set; }
     public Guid ReadingLogId { get; set; }
     public Guid StoryQuizTemplateId { get; set; }
 

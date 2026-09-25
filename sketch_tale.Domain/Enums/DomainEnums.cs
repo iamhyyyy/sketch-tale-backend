@@ -25,11 +25,6 @@ public enum DrawingType
     Canvas,
     Uploaded
 }
-public enum BillingCycle
-{
-    Monthly = 0,
-    Yearly = 1
-}
 
 public enum SubscriptionStatus
 {

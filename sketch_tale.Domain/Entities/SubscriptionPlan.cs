@@ -10,9 +10,12 @@ public class SubscriptionPlan : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
     public decimal Price { get; set; }
-    public BillingCycle BillingCycle { get; set; }
-    public int DurationDays { get; set; }
-    public int TrialDays { get; set; } = 0;
+    public int ChildProfileLimit { get; set; }
+    public int CharacterLimit { get; set; }
+    public int ExportStoryLimit { get; set; }
+    public bool AccessFullStories { get; set; }
+    public int? DurationDays { get; set; }
+    public int? FreeTrialDays { get; set; }
     public bool IsActive { get; set; } = true;
 
     // Navigation
