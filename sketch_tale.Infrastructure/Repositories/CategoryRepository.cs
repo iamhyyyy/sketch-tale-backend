@@ -5,9 +5,9 @@ using sketch_tale.Infrastructure.Data;
 
 namespace sketch_tale.Infrastructure.Repositories
 {
-    public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
+    public class EducationThemeRepository : GenericRepository<EducationTheme>, IEducationThemeRepository
     {
-        public CategoryRepository(AppDbContext context) : base(context)
+        public EducationThemeRepository(AppDbContext context) : base(context)
         {
         }
 

@@ -13,12 +13,9 @@ public class ChildProfile : BaseEntity
     public TargetAgeGroup TargetAgeGroup { get; set; }
 
     public int DailyTimeLimit { get; set; } = 30;
-    public int RemainingTimes { get; set; }
+    public int DailyCharacterLimit { get; set; } = 1;
 
-    public int DailyCharacterLimit { get; set; } = 30;
-    public int RemainingCharacters { get; set; }
-
-    public string? AllowedCategoryIdsJson { get; set; }
+    public string? AllowedThemeIdsJson { get; set; }
 
     public ICollection<Drawing> Drawings { get; set; } = new List<Drawing>();
     public ICollection<Character> Characters { get; set; } = new List<Character>();

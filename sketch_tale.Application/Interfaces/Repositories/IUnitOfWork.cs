@@ -12,5 +12,5 @@ public interface IUnitOfWork : IDisposable
 
     //thêm repo interface xún dứi
 
-    ICategoryRepository CategoryRepository {  get; }
+    IEducationThemeRepository EducationThemeRepository {  get; }
 }

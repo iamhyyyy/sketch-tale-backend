@@ -25,9 +25,9 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
 
     public DbSet<Drawing> Drawings => Set<Drawing>();
     public DbSet<CharType> CharTypes => Set<CharType>();
-    public DbSet<Character> Characters => Set<Character>();
+    public DbSet<Character> Characters => Set<Character>(); 
 
-    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<EducationTheme> EducationThemes => Set<EducationTheme>();
     public DbSet<StoryTemplate> StoryTemplates => Set<StoryTemplate>();
     public DbSet<StoryRoleTemplate> StoryRoleTemplates => Set<StoryRoleTemplate>();
     public DbSet<StoryPageTemplate> StoryPageTemplates => Set<StoryPageTemplate>();
@@ -39,11 +39,13 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
     public DbSet<UserStoryCharacterMapping> UserStoryCharacterMappings => Set<UserStoryCharacterMapping>();
     public DbSet<ChildVocabularyProgress> ChildVocabularyProgresses => Set<ChildVocabularyProgress>();
     public DbSet<ReadingLog> ReadingLogs => Set<ReadingLog>();
+    public DbSet<ChildDailyUsageLog> ChildDailyUsageLogs => Set<ChildDailyUsageLog>();
     public DbSet<ChildQuizAnswer> ChildQuizAnswers => Set<ChildQuizAnswer>();
 
     public DbSet<RestrictedKeyword> RestrictedKeywords => Set<RestrictedKeyword>();
     public DbSet<ProhibitedTheme> ProhibitedThemes => Set<ProhibitedTheme>();
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
+    public DbSet<AIUsageLog> AIUsageLogs => Set<AIUsageLog>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

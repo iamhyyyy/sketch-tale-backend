@@ -10,12 +10,13 @@ public enum CommonStatus
 
 public enum TargetAgeGroup
 {
-    Age3To5,
-    Age6To8
+    Ag6to9,
+    Age9to12
 }
 
 public enum ParentApprovalStatus
 {
+    NotRequired,
     Pending,
     Approved,
     Rejected
@@ -76,4 +77,12 @@ public enum ModerationStatus
     Approved = 2,
     Rejected = 3,
     Resolved = 4
+}
+
+public enum AIGenStatus
+{
+    Pending = 1,
+    Processing = 2,
+    Success = 3,
+    Failed = 4
 }

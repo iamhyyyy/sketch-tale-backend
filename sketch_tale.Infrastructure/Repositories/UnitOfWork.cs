@@ -13,7 +13,7 @@ public class UnitOfWork : IUnitOfWork
     private Hashtable? _repositories;
 
     //Khai báo IRepo
-    private ICategoryRepository _categoryRepository = null!;
+    private IEducationThemeRepository _educationThemeRepository = null!;
 
     public UnitOfWork(AppDbContext context)
     {
@@ -39,7 +39,7 @@ public class UnitOfWork : IUnitOfWork
     }
 
     //thêm IRepo ở đây
-    public ICategoryRepository CategoryRepository => _categoryRepository ??= new CategoryRepository(_context);
+    public IEducationThemeRepository EducationThemeRepository => _educationThemeRepository ??= new EducationThemeRepository(_context);
 
     public async Task<int> CompleteAsync()
     {

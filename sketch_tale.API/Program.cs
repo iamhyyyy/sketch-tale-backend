@@ -65,12 +65,12 @@ public class Program
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         // Đăng ký Repository
-        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+        builder.Services.AddScoped<IEducationThemeRepository, EducationThemeRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-        builder.Services.AddScoped<ICategoryService, CategoryService>();
+        builder.Services.AddScoped<IEducationThemeService, EducationThemeService>();
 
         // Đăng ký Email Service
         builder.Services.AddScoped<IEmailService, EmailService>();

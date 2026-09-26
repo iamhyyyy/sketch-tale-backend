@@ -2,21 +2,21 @@
 
 namespace sketch_tale.Application.DTOs;
 
-public class CategoryDto : BaseFieldDto
+public class EducationThemeDto : BaseFieldDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public CommonStatus Status { get; set; }
 }
 
-public class CreateCategoryDto
+public class CreateEducationThemeDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public CommonStatus Status { get; set; }
 }
 
-public class UpdateCategoryDto
+public class UpdateEducationThemeDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }

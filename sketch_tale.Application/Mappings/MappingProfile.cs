@@ -9,10 +9,10 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        //category
-        CreateMap<Category, CategoryDto>().ReverseMap();
-        CreateMap<CreateCategoryDto, Category>();
-        CreateMap<UpdateCategoryDto, Category>();
+        //EducationTheme
+        CreateMap<EducationTheme, EducationThemeDto>().ReverseMap();
+        CreateMap<CreateEducationThemeDto, EducationTheme>();
+        CreateMap<UpdateEducationThemeDto, EducationTheme>();
 
 
 
