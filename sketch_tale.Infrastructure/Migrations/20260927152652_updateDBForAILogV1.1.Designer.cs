@@ -12,8 +12,8 @@ using sketch_tale.Infrastructure.Data;
 namespace sketch_tale.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260926142802_updateDBForAILog")]
-    partial class updateDBForAILog
+    [Migration("20260927152652_updateDBForAILogV1.1")]
+    partial class updateDBForAILogV11
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

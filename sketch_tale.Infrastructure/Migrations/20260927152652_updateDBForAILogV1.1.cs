@@ -9,11 +9,30 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace sketch_tale.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class firstVer : Migration
+    public partial class updateDBForAILogV11 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "AIUsageLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Provider = table.Column<string>(type: "text", nullable: false),
+                    ActionType = table.Column<string>(type: "text", nullable: false),
+                    TokenUsed = table.Column<int>(type: "integer", nullable: false),
+                    CostAmount = table.Column<float>(type: "real", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AIUsageLogs", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "AuditLogs",
                 columns: table => new
@@ -34,24 +53,6 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Categories",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Categories", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "CharTypes",
                 columns: table => new
                 {
@@ -67,6 +68,28 @@ namespace sketch_tale.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CharTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChildProfiles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ParentProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    NickName = table.Column<string>(type: "text", nullable: false),
+                    TargetAgeGroup = table.Column<int>(type: "integer", nullable: false),
+                    DailyTimeLimit = table.Column<int>(type: "integer", nullable: false),
+                    DailyCharacterLimit = table.Column<int>(type: "integer", nullable: false),
+                    AllowedThemeIdsJson = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChildProfiles", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -89,6 +112,89 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "EducationThemes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EducationThemes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ParentProfiles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileLimit = table.Column<int>(type: "integer", nullable: false),
+                    RemainingChild = table.Column<int>(type: "integer", nullable: false),
+                    CharacterLimit = table.Column<int>(type: "integer", nullable: false),
+                    RemainingCharacters = table.Column<int>(type: "integer", nullable: false),
+                    ExportStoryLimit = table.Column<int>(type: "integer", nullable: false),
+                    RemainingExport = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFullStories = table.Column<bool>(type: "boolean", nullable: false),
+                    SubscriptionTrialPlusPlan = table.Column<bool>(type: "boolean", nullable: false),
+                    SubscriptionTrialProPlan = table.Column<bool>(type: "boolean", nullable: false),
+                    SecurityCode = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ParentProfiles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProhibitedThemes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProhibitedThemes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RestrictedKeywords",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Keyword = table.Column<string>(type: "text", nullable: false),
+                    MatchType = table.Column<int>(type: "integer", nullable: false),
+                    SeverityLevel = table.Column<int>(type: "integer", nullable: false),
+                    Action = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RestrictedKeywords", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -100,6 +206,31 @@ namespace sketch_tale.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Roles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SubscriptionPlans",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Code = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    ChildProfileLimit = table.Column<int>(type: "integer", nullable: false),
+                    CharacterLimit = table.Column<int>(type: "integer", nullable: false),
+                    ExportStoryLimit = table.Column<int>(type: "integer", nullable: false),
+                    AccessFullStories = table.Column<bool>(type: "boolean", nullable: false),
+                    DurationDays = table.Column<int>(type: "integer", nullable: true),
+                    FreeTrialDays = table.Column<int>(type: "integer", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SubscriptionPlans", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -137,11 +268,61 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ChildDailyUsageLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    LogDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    DurationSecond = table.Column<int>(type: "integer", nullable: false),
+                    CharacterCreatedCount = table.Column<int>(type: "integer", nullable: false),
+                    StoryReadCount = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChildDailyUsageLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChildDailyUsageLogs_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
+                        principalTable: "ChildProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Drawings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OriginalImageUrl = table.Column<string>(type: "text", nullable: false),
+                    DrawingType = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Drawings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Drawings_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
+                        principalTable: "ChildProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StoryTemplates",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EducationThemeId = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     AgeGroup = table.Column<int>(type: "integer", nullable: false),
@@ -157,9 +338,31 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_StoryTemplates", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StoryTemplates_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
+                        name: "FK_StoryTemplates_EducationThemes_EducationThemeId",
+                        column: x => x.EducationThemeId,
+                        principalTable: "EducationThemes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ParentProfileSubs",
+                columns: table => new
+                {
+                    ParentProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ParentProfileSubs", x => x.ParentProfileId);
+                    table.ForeignKey(
+                        name: "FK_ParentProfileSubs_ParentProfiles_ParentProfileId",
+                        column: x => x.ParentProfileId,
+                        principalTable: "ParentProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -186,18 +389,15 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ChildProfiles",
+                name: "Subscriptions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ParentIdM = table.Column<Guid>(type: "uuid", nullable: false),
-                    ParentIdS = table.Column<Guid>(type: "uuid", nullable: true),
-                    NickName = table.Column<string>(type: "text", nullable: false),
-                    TargetAgeGroup = table.Column<int>(type: "integer", nullable: false),
-                    DailyTimeLimit = table.Column<int>(type: "integer", nullable: false),
-                    DailyCharacterLimit = table.Column<int>(type: "integer", nullable: false),
-                    AllowedCategoryIdsJson = table.Column<string>(type: "text", nullable: true),
+                    ParentProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SubscriptionPlanId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -205,22 +405,11 @@ namespace sketch_tale.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChildProfiles", x => x.Id);
+                    table.PrimaryKey("PK_Subscriptions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ChildProfiles_Users_ParentIdM",
-                        column: x => x.ParentIdM,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChildProfiles_Users_ParentIdS",
-                        column: x => x.ParentIdS,
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_ChildProfiles_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
+                        name: "FK_Subscriptions_SubscriptionPlans_SubscriptionPlanId",
+                        column: x => x.SubscriptionPlanId,
+                        principalTable: "SubscriptionPlans",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -311,6 +500,80 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AICharacterGenerate",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DrawingId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CharTypeId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RawImageUrl = table.Column<string>(type: "text", nullable: false),
+                    AIPromptUsed = table.Column<string>(type: "text", nullable: false),
+                    GenerateImageUrl = table.Column<string>(type: "text", nullable: true),
+                    AIDetectedTagsJson = table.Column<string>(type: "text", nullable: true),
+                    AIGenStatus = table.Column<int>(type: "integer", nullable: false),
+                    ErrorMessage = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AICharacterGenerate", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AICharacterGenerate_CharTypes_CharTypeId",
+                        column: x => x.CharTypeId,
+                        principalTable: "CharTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AICharacterGenerate_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
+                        principalTable: "ChildProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AICharacterGenerate_Drawings_DrawingId",
+                        column: x => x.DrawingId,
+                        principalTable: "Drawings",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "GeneratedStories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StoryTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    LastPageRead = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GeneratedStories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GeneratedStories_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
+                        principalTable: "ChildProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GeneratedStories_StoryTemplates_StoryTemplateId",
+                        column: x => x.StoryTemplateId,
+                        principalTable: "StoryTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "StoryPageTemplates",
                 columns: table => new
                 {
@@ -394,13 +657,21 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Drawings",
+                name: "PaymentTransactions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ChildId = table.Column<Guid>(type: "uuid", nullable: false),
-                    OriginalImageUrl = table.Column<string>(type: "text", nullable: false),
-                    DrawingType = table.Column<int>(type: "integer", nullable: false),
+                    SubscriptionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    PaymentProvider = table.Column<string>(type: "text", nullable: false),
+                    TxnRef = table.Column<string>(type: "text", nullable: false),
+                    TransactionNo = table.Column<string>(type: "text", nullable: true),
+                    BankCode = table.Column<string>(type: "text", nullable: true),
+                    ResponseCode = table.Column<string>(type: "text", nullable: true),
+                    PayDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    RawIpnResponse = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -408,25 +679,31 @@ namespace sketch_tale.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Drawings", x => x.Id);
+                    table.PrimaryKey("PK_PaymentTransactions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Drawings_ChildProfiles_ChildId",
-                        column: x => x.ChildId,
-                        principalTable: "ChildProfiles",
+                        name: "FK_PaymentTransactions_Subscriptions_SubscriptionId",
+                        column: x => x.SubscriptionId,
+                        principalTable: "Subscriptions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "GeneratedStories",
+                name: "Characters",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ChildId = table.Column<Guid>(type: "uuid", nullable: false),
-                    StoryTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AICharacterGenerateId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    DefaultPronoun = table.Column<string>(type: "text", nullable: false),
+                    FinalImageUrl = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    LastPageRead = table.Column<int>(type: "integer", nullable: false),
+                    ParentApprovalStatus = table.Column<int>(type: "integer", nullable: false),
+                    IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
+                    IsHidden = table.Column<bool>(type: "boolean", nullable: false),
+                    CharTypeId = table.Column<Guid>(type: "uuid", nullable: true),
+                    DrawingId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -434,17 +711,58 @@ namespace sketch_tale.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GeneratedStories", x => x.Id);
+                    table.PrimaryKey("PK_Characters", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_GeneratedStories_ChildProfiles_ChildId",
-                        column: x => x.ChildId,
+                        name: "FK_Characters_AICharacterGenerate_AICharacterGenerateId",
+                        column: x => x.AICharacterGenerateId,
+                        principalTable: "AICharacterGenerate",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Characters_CharTypes_CharTypeId",
+                        column: x => x.CharTypeId,
+                        principalTable: "CharTypes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Characters_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
                         principalTable: "ChildProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GeneratedStories_StoryTemplates_StoryTemplateId",
-                        column: x => x.StoryTemplateId,
-                        principalTable: "StoryTemplates",
+                        name: "FK_Characters_Drawings_DrawingId",
+                        column: x => x.DrawingId,
+                        principalTable: "Drawings",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReadingLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    GeneratedStoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
+                    ReadDurationSeconds = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReadingLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReadingLogs_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
+                        principalTable: "ChildProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ReadingLogs_GeneratedStories_GeneratedStoryId",
+                        column: x => x.GeneratedStoryId,
+                        principalTable: "GeneratedStories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -454,7 +772,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    StoryPageId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StoryPageTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
                     Word = table.Column<string>(type: "text", nullable: false),
                     Meaning = table.Column<string>(type: "text", nullable: false),
                     AudioUrl = table.Column<string>(type: "text", nullable: true),
@@ -467,8 +785,8 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_VocabularyTemplates", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_VocabularyTemplates_StoryPageTemplates_StoryPageId",
-                        column: x => x.StoryPageId,
+                        name: "FK_VocabularyTemplates_StoryPageTemplates_StoryPageTemplateId",
+                        column: x => x.StoryPageTemplateId,
                         principalTable: "StoryPageTemplates",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -509,113 +827,6 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Characters",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ChildId = table.Column<Guid>(type: "uuid", nullable: false),
-                    DrawingId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CharTypeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    DefaultPronoun = table.Column<string>(type: "text", nullable: false),
-                    ProcessedSpriteUrl = table.Column<string>(type: "text", nullable: true),
-                    AIDetectedTagsJson = table.Column<string>(type: "text", nullable: true),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    ParentApprovalStatus = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Characters", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Characters_CharTypes_CharTypeId",
-                        column: x => x.CharTypeId,
-                        principalTable: "CharTypes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Characters_ChildProfiles_ChildId",
-                        column: x => x.ChildId,
-                        principalTable: "ChildProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Characters_Drawings_DrawingId",
-                        column: x => x.DrawingId,
-                        principalTable: "Drawings",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ReadingLogs",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ChildId = table.Column<Guid>(type: "uuid", nullable: false),
-                    GeneratedStoryId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
-                    ReadDurationSeconds = table.Column<int>(type: "integer", nullable: false),
-                    ReadAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ReadingLogs", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ReadingLogs_ChildProfiles_ChildId",
-                        column: x => x.ChildId,
-                        principalTable: "ChildProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ReadingLogs_GeneratedStories_GeneratedStoryId",
-                        column: x => x.GeneratedStoryId,
-                        principalTable: "GeneratedStories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ChildVocabularyProgresses",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ChildId = table.Column<Guid>(type: "uuid", nullable: false),
-                    VocabularyId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TotalListenCount = table.Column<int>(type: "integer", nullable: false),
-                    TotalQuizAttempts = table.Column<int>(type: "integer", nullable: false),
-                    CorrectAnswersCount = table.Column<int>(type: "integer", nullable: false),
-                    WrongAnswersCount = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChildVocabularyProgresses", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ChildVocabularyProgresses_ChildProfiles_ChildId",
-                        column: x => x.ChildId,
-                        principalTable: "ChildProfiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChildVocabularyProgresses_VocabularyTemplates_VocabularyId",
-                        column: x => x.VocabularyId,
-                        principalTable: "VocabularyTemplates",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserStoryCharacterMappings",
                 columns: table => new
                 {
@@ -623,6 +834,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     GeneratedStoryId = table.Column<Guid>(type: "uuid", nullable: false),
                     StoryRoleTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
                     CharacterId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ParentApprovalStatus = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -656,7 +868,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ChildId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
                     ReadingLogId = table.Column<Guid>(type: "uuid", nullable: false),
                     StoryQuizTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
                     QuizScore = table.Column<int>(type: "integer", nullable: false),
@@ -672,8 +884,8 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_ChildQuizAnswers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ChildQuizAnswers_ChildProfiles_ChildId",
-                        column: x => x.ChildId,
+                        name: "FK_ChildQuizAnswers_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
                         principalTable: "ChildProfiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -691,6 +903,39 @@ namespace sketch_tale.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ChildVocabularyProgresses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ChildProfileId = table.Column<Guid>(type: "uuid", nullable: false),
+                    VocabularyTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TotalListenCount = table.Column<int>(type: "integer", nullable: false),
+                    TotalQuizAttempts = table.Column<int>(type: "integer", nullable: false),
+                    CorrectAnswersCount = table.Column<int>(type: "integer", nullable: false),
+                    WrongAnswersCount = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdateBy = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChildVocabularyProgresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ChildVocabularyProgresses_ChildProfiles_ChildProfileId",
+                        column: x => x.ChildProfileId,
+                        principalTable: "ChildProfiles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChildVocabularyProgresses_VocabularyTemplates_VocabularyTem~",
+                        column: x => x.VocabularyTemplateId,
+                        principalTable: "VocabularyTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Roles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
@@ -703,14 +948,34 @@ namespace sketch_tale.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AICharacterGenerate_CharTypeId",
+                table: "AICharacterGenerate",
+                column: "CharTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AICharacterGenerate_ChildProfileId",
+                table: "AICharacterGenerate",
+                column: "ChildProfileId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AICharacterGenerate_DrawingId",
+                table: "AICharacterGenerate",
+                column: "DrawingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Characters_AICharacterGenerateId",
+                table: "Characters",
+                column: "AICharacterGenerateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Characters_CharTypeId",
                 table: "Characters",
                 column: "CharTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Characters_ChildId",
+                name: "IX_Characters_ChildProfileId",
                 table: "Characters",
-                column: "ChildId");
+                column: "ChildProfileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Characters_DrawingId",
@@ -728,24 +993,14 @@ namespace sketch_tale.Infrastructure.Migrations
                 column: "StoryRoleTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChildProfiles_ParentIdM",
-                table: "ChildProfiles",
-                column: "ParentIdM");
+                name: "IX_ChildDailyUsageLogs_ChildProfileId",
+                table: "ChildDailyUsageLogs",
+                column: "ChildProfileId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChildProfiles_ParentIdS",
-                table: "ChildProfiles",
-                column: "ParentIdS");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChildProfiles_UserId",
-                table: "ChildProfiles",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ChildQuizAnswers_ChildId",
+                name: "IX_ChildQuizAnswers_ChildProfileId",
                 table: "ChildQuizAnswers",
-                column: "ChildId");
+                column: "ChildProfileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ChildQuizAnswers_ReadingLogId",
@@ -758,24 +1013,24 @@ namespace sketch_tale.Infrastructure.Migrations
                 column: "StoryQuizTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChildVocabularyProgresses_ChildId",
+                name: "IX_ChildVocabularyProgresses_ChildProfileId",
                 table: "ChildVocabularyProgresses",
-                column: "ChildId");
+                column: "ChildProfileId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChildVocabularyProgresses_VocabularyId",
+                name: "IX_ChildVocabularyProgresses_VocabularyTemplateId",
                 table: "ChildVocabularyProgresses",
-                column: "VocabularyId");
+                column: "VocabularyTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Drawings_ChildId",
+                name: "IX_Drawings_ChildProfileId",
                 table: "Drawings",
-                column: "ChildId");
+                column: "ChildProfileId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GeneratedStories_ChildId",
+                name: "IX_GeneratedStories_ChildProfileId",
                 table: "GeneratedStories",
-                column: "ChildId");
+                column: "ChildProfileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_GeneratedStories_StoryTemplateId",
@@ -783,9 +1038,14 @@ namespace sketch_tale.Infrastructure.Migrations
                 column: "StoryTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ReadingLogs_ChildId",
+                name: "IX_PaymentTransactions_SubscriptionId",
+                table: "PaymentTransactions",
+                column: "SubscriptionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ReadingLogs_ChildProfileId",
                 table: "ReadingLogs",
-                column: "ChildId");
+                column: "ChildProfileId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReadingLogs_GeneratedStoryId",
@@ -819,9 +1079,14 @@ namespace sketch_tale.Infrastructure.Migrations
                 column: "StoryTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StoryTemplates_CategoryId",
+                name: "IX_StoryTemplates_EducationThemeId",
                 table: "StoryTemplates",
-                column: "CategoryId");
+                column: "EducationThemeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Subscriptions_SubscriptionPlanId",
+                table: "Subscriptions",
+                column: "SubscriptionPlanId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",
@@ -865,19 +1130,25 @@ namespace sketch_tale.Infrastructure.Migrations
                 column: "StoryRoleTemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_VocabularyTemplates_StoryPageId",
+                name: "IX_VocabularyTemplates_StoryPageTemplateId",
                 table: "VocabularyTemplates",
-                column: "StoryPageId");
+                column: "StoryPageTemplateId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AIUsageLogs");
+
+            migrationBuilder.DropTable(
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
                 name: "CharacterSlotTemplates");
+
+            migrationBuilder.DropTable(
+                name: "ChildDailyUsageLogs");
 
             migrationBuilder.DropTable(
                 name: "ChildQuizAnswers");
@@ -887,6 +1158,18 @@ namespace sketch_tale.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "ContentReports");
+
+            migrationBuilder.DropTable(
+                name: "ParentProfileSubs");
+
+            migrationBuilder.DropTable(
+                name: "PaymentTransactions");
+
+            migrationBuilder.DropTable(
+                name: "ProhibitedThemes");
+
+            migrationBuilder.DropTable(
+                name: "RestrictedKeywords");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims");
@@ -916,6 +1199,12 @@ namespace sketch_tale.Infrastructure.Migrations
                 name: "VocabularyTemplates");
 
             migrationBuilder.DropTable(
+                name: "ParentProfiles");
+
+            migrationBuilder.DropTable(
+                name: "Subscriptions");
+
+            migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
@@ -925,10 +1214,22 @@ namespace sketch_tale.Infrastructure.Migrations
                 name: "StoryRoleTemplates");
 
             migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
                 name: "GeneratedStories");
 
             migrationBuilder.DropTable(
                 name: "StoryPageTemplates");
+
+            migrationBuilder.DropTable(
+                name: "SubscriptionPlans");
+
+            migrationBuilder.DropTable(
+                name: "AICharacterGenerate");
+
+            migrationBuilder.DropTable(
+                name: "StoryTemplates");
 
             migrationBuilder.DropTable(
                 name: "CharTypes");
@@ -937,16 +1238,10 @@ namespace sketch_tale.Infrastructure.Migrations
                 name: "Drawings");
 
             migrationBuilder.DropTable(
-                name: "StoryTemplates");
+                name: "EducationThemes");
 
             migrationBuilder.DropTable(
                 name: "ChildProfiles");
-
-            migrationBuilder.DropTable(
-                name: "Categories");
-
-            migrationBuilder.DropTable(
-                name: "Users");
         }
     }
 }

@@ -110,7 +110,7 @@ public class SeedData
                 Price = 0,
 
                 ChildProfileLimit = 1,
-                CharacterLimit = 5,
+                CharacterLimit = 3,
                 ExportStoryLimit = 0,
                 AccessFullStories = false,
 
@@ -125,7 +125,7 @@ public class SeedData
                 Price = 49,
 
                 ChildProfileLimit = 3,
-                CharacterLimit = 30,
+                CharacterLimit = 25,
                 ExportStoryLimit = 5,
                 AccessFullStories = true,
 
@@ -141,7 +141,7 @@ public class SeedData
                 Price = 99,
 
                 ChildProfileLimit = 5,
-                CharacterLimit = 100,
+                CharacterLimit = 55,
                 ExportStoryLimit = 20,
                 AccessFullStories = true,
 
