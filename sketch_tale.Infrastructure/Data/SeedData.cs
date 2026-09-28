@@ -57,10 +57,10 @@ public class SeedData
         // Nếu bảng Users đã có data -> Bỏ qua không tạo user
         if (await userManager.Users.AnyAsync()) return;
 
-        await CreateUserAsync(userManager, "admin", "admin@sketch.tale.com", "admin123", "Admin", "User", "admin");
-        await CreateUserAsync(userManager, "cmanager", "cmanager@sketch.tale.com", "cmanager123", "Content", "Manager", "content manager");
-        await CreateUserAsync(userManager, "parent", "parent@sketch.tale.com", "parent123", "Parent", "User", "parent");
-        await CreateUserAsync(userManager, "child", "child@sketch.tale.com", "child123", "Little", "Artist", "child");
+        await CreateUserAsync(userManager, "admin", "admin@sketch.tale.com", "Admin@123", "Admin", "User", "admin");
+        await CreateUserAsync(userManager, "cmanager", "cmanager@sketch.tale.com", "Manager@123", "Content", "Manager", "content manager");
+        await CreateUserAsync(userManager, "parent", "parent@sketch.tale.com", "Parent@123", "Parent", "User", "parent");
+        await CreateUserAsync(userManager, "child", "child@sketch.tale.com", "Child@123", "Little", "Artist", "child");
     }
 
     private static async Task CreateUserAsync(
