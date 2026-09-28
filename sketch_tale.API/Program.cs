@@ -46,6 +46,7 @@ public class Program
                     auditLog.EntityName = entry.EntityType.Name; // Tên bảng/Entity (VD: ChildProfile)
 
                     // Lấy Primary Key của bản ghi bị tác động
+                    // Lấy Primary Key của bản ghi bị tác động
                     var pk = entry.PrimaryKey.Values.FirstOrDefault();
                     auditLog.PrimaryKey = pk != null && Guid.TryParse(pk.ToString(), out var parsedPk)
                         ? parsedPk
