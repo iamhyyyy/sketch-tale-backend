@@ -1,4 +1,4 @@
-﻿using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,6 @@ namespace sketch_tale.Application.Interfaces.Services
 {
     public interface IJwtService
     {
-        string GenerateToken(User user);
+        string GenerateToken(User user, string? role = null);
     }
 }

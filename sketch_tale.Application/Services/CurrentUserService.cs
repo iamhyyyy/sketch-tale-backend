@@ -1,4 +1,4 @@
-﻿
+
 using sketch_tale.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -15,5 +15,8 @@ public class CurrentUserService : ICurrentUserService
     }
 
     // Lấy Id của user đang đăng nhập từ Claim
-    public string? UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+    public string? UserId => 
+        _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)
+        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("sub")
+        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("nameid");
 }
