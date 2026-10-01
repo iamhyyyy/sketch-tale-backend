@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace sketch_tale.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
