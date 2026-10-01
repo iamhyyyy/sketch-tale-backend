@@ -147,11 +147,11 @@ public class Program
         });
 
         //environment variable for port, default to 8080 if not set
-        //var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        //app.Run($"http://0.0.0.0:{port}");
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        app.Run();
+        //app.Run();
 
     }
 }
