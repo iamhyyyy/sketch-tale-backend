@@ -1,7 +1,10 @@
 using Audit.Core;
 using Audit.EntityFramework;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
@@ -14,6 +17,8 @@ using sketch_tale.Infrastructure.Repositories;
 using sketch_tale.Infrastructure.Services;
 using sketch_tale.Infrastructure.Settings;
 using SmartCarWash.Application.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace sketch_tale.API;
 
@@ -75,7 +80,10 @@ public class Program
         // Đăng ký Email Service
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGridSettings"));
-
+        // Đăng ký Auth Service
+        // Đăng ký AuthService và JwtService vào DI container
+        builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<IJwtService, JwtService>();
         // Add services to the container.
         builder.Services.AddControllers();
 
@@ -91,14 +99,68 @@ public class Program
         //Add AutoMapper
         builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-        builder.Services.AddRouting(options =>
+        builder.Services.AddCors(options =>
         {
-            options.LowercaseUrls = true;
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyHeader()
+                      .AllowAnyMethod();
+            });
         });
 
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "SketchTale API", Version = "v1" });
 
+            // Cấu hình nút Authorize (Ổ khóa) trên Swagger
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "Chỉ cần dán trực tiếp JWT Token của bạn vào ô dưới đây (Không cần gõ chữ Bearer)",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
+        });
+        // 2. Cấu hình JWT Authentication (Sửa lại cho khớp với JwtSettings và Secret trong appsettings.json)
+        var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+        var secretKey = jwtSettings["Secret"];
+
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.MapInboundClaims = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = false, // Vì JwtSettings của bạn không cấu hình Issuer/Audience riêng
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? string.Empty)),
+                NameClaimType = JwtRegisteredClaimNames.Sub,
+                RoleClaimType = "role",
+                ClockSkew = TimeSpan.Zero
+            };
+
+        });
         var app = builder.Build();
 
         //seed data
@@ -136,8 +198,8 @@ public class Program
         //app.UseCors("AllowAll");
         app.UseHttpsRedirection();
 
-        //app.UseAuthentication();
-        //app.UseAuthorization();
+        app.UseAuthentication();
+        app.UseAuthorization();
         app.MapControllers();
 
         app.MapGet("/", context =>

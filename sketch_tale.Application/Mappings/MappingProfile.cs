@@ -14,7 +14,9 @@ public class MappingProfile : Profile
         CreateMap<CreateEducationThemeDto, EducationTheme>();
         CreateMap<UpdateEducationThemeDto, EducationTheme>();
 
-
+        CreateMap<RegisterParentDto, User>();
+    //.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
+    //    // Thêm các trường khác nếu DTO và Entity có tên thuộc tính lệch nhau (ví dụ Email, v.v.)
 
     }
 }
