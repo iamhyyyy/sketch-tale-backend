@@ -195,7 +195,7 @@ public class Program
         //}
         app.UseSwagger();
         app.UseSwaggerUI();
-        //app.UseCors("AllowAll");
+        app.UseCors("AllowAll");
         app.UseHttpsRedirection();
 
         app.UseAuthentication();
