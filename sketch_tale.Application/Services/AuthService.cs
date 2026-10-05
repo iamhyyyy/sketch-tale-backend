@@ -44,13 +44,13 @@ namespace sketch_tale.Application.Services
         }
 
         // 1. PHỤ HUYNH TỰ ĐĂNG KÝ
-        public async Task<bool> RegisterParentAsync(RegisterParentDto model)
+        public async Task<bool> RegisterParentAsync(RegisterParentDto dto)
         {
             // Check trùng Email an toàn bằng LINQ (tránh lỗi trùng lặp dữ liệu trong DB)
-            if (!string.IsNullOrEmpty(model.Email))
+            if (!string.IsNullOrEmpty(dto.Email))
             {
                 var existingEmail = await _userManager.Users
-                    .FirstOrDefaultAsync(u => u.Email == model.Email);
+                    .FirstOrDefaultAsync(u => u.Email == dto.Email);
 
                 if (existingEmail != null)
                 {
@@ -60,7 +60,7 @@ namespace sketch_tale.Application.Services
 
             // Check trùng Username
             var existingUsername = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.UserName == model.Username);
+                .FirstOrDefaultAsync(u => u.UserName == dto.Username);
 
             if (existingUsername != null)
             {
@@ -68,12 +68,12 @@ namespace sketch_tale.Application.Services
             }
 
             // Dùng AutoMapper để chuyển DTO thành User Entity
-            var user = _mapper.Map<User>(model);
+            var user = _mapper.Map<User>(dto);
             user.CreatedAt = DateTime.UtcNow;
             user.EmailConfirmed = false; // Phụ huynh bắt buộc phải xác thực email qua link gửi tới hộp thư
 
             // Tạo user và băm mật khẩu tự động bằng Identity
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
@@ -112,18 +112,18 @@ namespace sketch_tale.Application.Services
         }
 
         // 2. ĐĂNG NHẬP CHO 3 ROLE: ADMIN, CONTENT MANAGER, PARENT (Bằng Email hoặc Username)
-        public async Task<AuthResponseDto?> LoginAsync(LoginDto model)
+        public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
         {
             // Cho phép nhập Email hoặc Username đều được
-            var user = await _userManager.FindByEmailAsync(model.Identifier)
-                       ?? await _userManager.FindByNameAsync(model.Identifier);
+            var user = await _userManager.FindByEmailAsync(dto.Identifier)
+                       ?? await _userManager.FindByNameAsync(dto.Identifier);
 
             if (user == null)
             {
                 return null;
             }
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: false);
             if (!result.Succeeded)
             {
                 return null;
@@ -182,13 +182,13 @@ namespace sketch_tale.Application.Services
         }
 
         // 3. TRẺ EM ĐĂNG NHẬP (Chỉ dùng Username, không có email)
-        public async Task<AuthResponseDto?> LoginChildAsync(LoginChildDto model)
+        public async Task<AuthResponseDto?> LoginChildAsync(LoginChildDto dto)
         {
             // Trẻ em bắt buộc tìm theo Username
-            var user = await _userManager.FindByNameAsync(model.Username);
+            var user = await _userManager.FindByNameAsync(dto.Username);
             if (user == null) return null;
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: false);
+            var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: false);
             if (!result.Succeeded) return null;
 
             // Kiểm tra xem user này có đúng là Child không
@@ -211,7 +211,7 @@ namespace sketch_tale.Application.Services
         }
 
         // 4. PHỤ HUYNH TẠO TÀI KHOẢN CHO CON (CHILD)
-        public async Task<bool> CreateChildAccountAsync(Guid parentUserId, RegisterChildDto model)
+        public async Task<bool> CreateChildAccountAsync(Guid parentUserId, RegisterChildDto dto)
         {
             // Lấy danh sách ParentProfile và tìm theo UserId của phụ huynh đang thao tác
             var allParentProfiles = await _unitOfWork.Repository<ParentProfile>().GetAllAsync();
@@ -238,22 +238,19 @@ namespace sketch_tale.Application.Services
             }
 
             // Kiểm tra username của bé đã tồn tại chưa
-            var existingUser = await _userManager.FindByNameAsync(model.Username);
+            var existingUser = await _userManager.FindByNameAsync(dto.Username);
             if (existingUser != null)
             {
                 throw new InvalidOperationException("Username của bé đã tồn tại trong hệ thống. Vui lòng chọn username khác!");
             }
 
-            // Tạo User cho con với Email để bằng NULL
-            var childUser = new User
-            {
-                UserName = model.Username,
-                Email = null,
-                CreatedAt = DateTime.UtcNow,
-                CreateBy = parentUserId
-            };
+            // Dùng AutoMapper để tạo User cho con với Email để bằng NULL
+            var childUser = _mapper.Map<User>(dto);
+            childUser.Email = null;
+            childUser.CreatedAt = DateTime.UtcNow;
+            childUser.CreateBy = parentUserId;
 
-            var identityResult = await _userManager.CreateAsync(childUser, model.Password);
+            var identityResult = await _userManager.CreateAsync(childUser, dto.Password);
             if (!identityResult.Succeeded)
             {
                 var errors = string.Join("; ", identityResult.Errors.Select(e => e.Description));
@@ -263,15 +260,12 @@ namespace sketch_tale.Application.Services
             // Gán mặc định Role là "Child"
             await _userManager.AddToRoleAsync(childUser, "Child");
 
-            // Tạo bản ghi ChildProfile liên kết ngược lại với ParentProfile của phụ huynh
-            var childProfile = new ChildProfile
-            {
-                UserId = childUser.Id,
-                ParentProfileId = parentProfile.Id,
-                NickName = model.NickName,
-                CreatedAt = DateTime.UtcNow,
-                CreateBy = parentUserId
-            };
+            // Dùng AutoMapper để tạo bản ghi ChildProfile liên kết ngược lại với ParentProfile của phụ huynh
+            var childProfile = _mapper.Map<ChildProfile>(dto);
+            childProfile.UserId = childUser.Id;
+            childProfile.ParentProfileId = parentProfile.Id;
+            childProfile.CreatedAt = DateTime.UtcNow;
+            childProfile.CreateBy = parentUserId;
 
             await _unitOfWork.Repository<ChildProfile>().AddAsync(childProfile);
 
@@ -287,9 +281,9 @@ namespace sketch_tale.Application.Services
         }
 
         // 5. QUÊN MẬT KHẨU (GỬI EMAIL CHỨA NÚT XÁC NHẬN CHO FRONTEND XỬ LÝ)
-        public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto model)
+        public async Task<bool> ForgotPasswordAsync(ForgotPasswordDto dto)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
                 // Bảo mật: Không tiết lộ sự tồn tại của email
@@ -400,9 +394,9 @@ namespace sketch_tale.Application.Services
         }
 
         // 6. ĐẶT LẠI MẬT KHẨU (BẰNG TOKEN)
-        public async Task<bool> ResetPasswordAsync(ResetPasswordDto model)
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
         {
-            var email = model.Email?.Trim();
+            var email = dto.Email?.Trim();
             if (!string.IsNullOrWhiteSpace(email) && email.Contains('%'))
             {
                 email = System.Net.WebUtility.UrlDecode(email);
@@ -414,14 +408,14 @@ namespace sketch_tale.Application.Services
                 throw new InvalidOperationException("Không tìm thấy người dùng với email được cung cấp.");
             }
 
-            var token = model.Token?.Trim() ?? string.Empty;
+            var token = dto.Token?.Trim() ?? string.Empty;
             // Nếu token được copy trực tiếp từ URL query string (chứa %2B, %2F, v.v.), giải mã URL để lấy raw token
             if (token.Contains('%'))
             {
                 token = System.Net.WebUtility.UrlDecode(token);
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, token, model.NewPassword);
+            var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
             if (!result.Succeeded)
             {
                 var errors = string.Join("; ", result.Errors.Select(e => e.Description));
@@ -432,7 +426,7 @@ namespace sketch_tale.Application.Services
         }
 
         // 7. ĐỔI MẬT KHẨU (KHI ĐÃ ĐĂNG NHẬP)
-        public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordDto model)
+        public async Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordDto dto)
         {
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null)
@@ -440,7 +434,7 @@ namespace sketch_tale.Application.Services
                 throw new InvalidOperationException("Không tìm thấy thông tin tài khoản người dùng.");
             }
 
-            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
             if (!result.Succeeded)
             {
                 var errors = string.Join("; ", result.Errors.Select(e => e.Description));
@@ -485,18 +479,9 @@ namespace sketch_tale.Application.Services
                 }
             }
 
-            var profileDto = new UserProfileDto
-            {
-                Id = user.Id,
-                Username = user.UserName ?? string.Empty,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                DOB = user.DOB,
-                Gender = user.Gender,
-                Role = primaryRole,
-                CreatedAt = user.CreatedAt
-            };
+            // Dùng AutoMapper để chuyển User Entity thành UserProfileDto
+            var profileDto = _mapper.Map<UserProfileDto>(user);
+            profileDto.Role = primaryRole;
 
             if (primaryRole == "Parent")
             {
@@ -504,17 +489,7 @@ namespace sketch_tale.Application.Services
                 var parentProfile = parentProfiles.FirstOrDefault(p => p.UserId == user.Id);
                 if (parentProfile != null)
                 {
-                    profileDto.ParentProfile = new ParentProfileDto
-                    {
-                        Id = parentProfile.Id,
-                        ChildProfileLimit = parentProfile.ChildProfileLimit,
-                        RemainingChild = parentProfile.RemainingChild,
-                        CharacterLimit = parentProfile.CharacterLimit,
-                        RemainingCharacters = parentProfile.RemainingCharacters,
-                        ExportStoryLimit = parentProfile.ExportStoryLimit,
-                        RemainingExport = parentProfile.RemainingExport,
-                        AccessFullStories = parentProfile.AccessFullStories
-                    };
+                    profileDto.ParentProfile = _mapper.Map<ParentProfileDto>(parentProfile);
                 }
             }
             else if (primaryRole == "Child")
@@ -523,15 +498,7 @@ namespace sketch_tale.Application.Services
                 var childProfile = childProfiles.FirstOrDefault(c => c.UserId == user.Id);
                 if (childProfile != null)
                 {
-                    profileDto.ChildProfile = new ChildProfileDto
-                    {
-                        Id = childProfile.Id,
-                        ParentProfileId = childProfile.ParentProfileId,
-                        NickName = childProfile.NickName,
-                        TargetAgeGroup = childProfile.TargetAgeGroup.ToString(),
-                        DailyTimeLimit = childProfile.DailyTimeLimit,
-                        DailyCharacterLimit = childProfile.DailyCharacterLimit
-                    };
+                    profileDto.ChildProfile = _mapper.Map<ChildProfileDto>(childProfile);
                 }
             }
 
@@ -539,9 +506,9 @@ namespace sketch_tale.Application.Services
         }
 
         // 9. XÁC THỰC EMAIL (BẰNG TOKEN)
-        public async Task<bool> ConfirmEmailAsync(ConfirmEmailDto model)
+        public async Task<bool> ConfirmEmailAsync(ConfirmEmailDto dto)
         {
-            var email = model.Email?.Trim();
+            var email = dto.Email?.Trim();
             if (!string.IsNullOrWhiteSpace(email) && email.Contains('%'))
             {
                 email = System.Net.WebUtility.UrlDecode(email);
@@ -558,7 +525,7 @@ namespace sketch_tale.Application.Services
                 return true; // Đã xác thực trước đó
             }
 
-            var token = model.Token?.Trim() ?? string.Empty;
+            var token = dto.Token?.Trim() ?? string.Empty;
             // Tự động giải mã nếu token được copy từ URL query string
             if (token.Contains('%'))
             {
@@ -576,9 +543,9 @@ namespace sketch_tale.Application.Services
         }
 
         // 10. GỬI LẠI EMAIL XÁC THỰC
-        public async Task<bool> ResendConfirmationEmailAsync(ResendConfirmationEmailDto model)
+        public async Task<bool> ResendConfirmationEmailAsync(ResendConfirmationEmailDto dto)
         {
-            var email = model.Email?.Trim();
+            var email = dto.Email?.Trim();
             var user = await _userManager.FindByEmailAsync(email ?? string.Empty);
             if (user == null)
             {
