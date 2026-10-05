@@ -5,8 +5,8 @@ namespace sketch_tale.Domain.Entities;
 
 public class ContentReport : BaseEntity
 {
-    public string TargetType { get; set; } = string.Empty; // 'Character', 'Story', 'Comment'
+    public ReportTargetType TargetType { get; set; }
     public Guid TargetId { get; set; }
     public string Reason { get; set; } = string.Empty;
-    public CommonStatus Status { get; set; }
+    public ContentReportStatus Status { get; set; }
 }

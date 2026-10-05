@@ -1,7 +1,4 @@
 ﻿using sketch_tale.Domain.Common;
-using sketch_tale.Domain.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sketch_tale.Domain.Entities;
 
@@ -11,9 +8,9 @@ public class SubscriptionPlan : BaseEntity
     public string Code { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public int ChildProfileLimit { get; set; }
-    public int CharacterLimit { get; set; }
-    public int ExportStoryLimit { get; set; }
+    public int MonthlyCreditLimit { get; set; }
     public bool AccessFullStories { get; set; }
+    public bool CanExportStory { get; set; }
     public int? DurationDays { get; set; }
     public int? FreeTrialDays { get; set; }
     public bool IsActive { get; set; } = true;

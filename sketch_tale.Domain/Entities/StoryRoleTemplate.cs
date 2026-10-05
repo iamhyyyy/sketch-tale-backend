@@ -7,6 +7,7 @@ public class StoryRoleTemplate : BaseEntity
 {
     public Guid StoryTemplateId { get; set; }
 
+    public StoryRoleType StoryRoleType { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool AllowCustomCharacter { get; set; } = true;

@@ -1,4 +1,4 @@
-﻿using sketch_tale.Domain.Common;
+﻿ using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Domain.Entities;

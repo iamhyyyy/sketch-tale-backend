@@ -110,11 +110,11 @@ public class SeedData
                 Price = 0,
 
                 ChildProfileLimit = 1,
-                CharacterLimit = 3,
-                ExportStoryLimit = 0,
+                MonthlyCreditLimit = 500,
                 AccessFullStories = false,
+                CanExportStory = false,
 
-                DurationDays = 30,
+                DurationDays = 9999,
                 CreatedAt = now,
                 CreateBy = SystemUserId
             },
@@ -125,9 +125,10 @@ public class SeedData
                 Price = 49,
 
                 ChildProfileLimit = 3,
-                CharacterLimit = 25,
-                ExportStoryLimit = 5,
+                MonthlyCreditLimit = 4000,
                 AccessFullStories = true,
+                CanExportStory = true,
+
 
                 DurationDays = 30,
                 FreeTrialDays = 7,
@@ -141,12 +142,12 @@ public class SeedData
                 Price = 99,
 
                 ChildProfileLimit = 5,
-                CharacterLimit = 55,
-                ExportStoryLimit = 20,
+                MonthlyCreditLimit = 10000,
                 AccessFullStories = true,
+                CanExportStory = true,
 
                 DurationDays = 30,
-                FreeTrialDays = 7,
+                FreeTrialDays = 0,
                 CreatedAt = now,
                 CreateBy = SystemUserId
             }

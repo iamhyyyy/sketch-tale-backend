@@ -104,11 +104,10 @@ namespace sketch_tale.Application.DTOs
     {
         public Guid Id { get; set; }
         public int ChildProfileLimit { get; set; }
-        public int RemainingChild { get; set; }
-        public int CharacterLimit { get; set; }
-        public int RemainingCharacters { get; set; }
-        public int ExportStoryLimit { get; set; }
-        public bool RemainingExport { get; set; }
+        public int RemainingChildProfileLimit { get; set; }
+        public int MonthlyCreditLimit { get; set; }
+        public int RemainingMonthlyCreditLimit { get; set; }
+        public bool CanExportStory { get; set; }
         public bool AccessFullStories { get; set; }
     }
 

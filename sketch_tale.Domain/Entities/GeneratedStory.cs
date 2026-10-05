@@ -8,7 +8,7 @@ public class GeneratedStory : BaseEntity
     public Guid ChildProfileId { get; set; }
     public Guid StoryTemplateId { get; set; }
     public bool IsFavorite { get; set; }
-    public CommonStatus Status { get; set; }
+    public GeneratedStoryStatus Status { get; set; }
     public int LastPageRead { get; set; }
 
     // Navigation Properties
