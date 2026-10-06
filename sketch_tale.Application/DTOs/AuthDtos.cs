@@ -109,6 +109,8 @@ namespace sketch_tale.Application.DTOs
         public int RemainingMonthlyCreditLimit { get; set; }
         public bool CanExportStory { get; set; }
         public bool AccessFullStories { get; set; }
+        public bool SubscriptionTrialPlusPlan { get; set; }
+        public string CurrentPlan { get; set; } = "Free";
     }
 
     public class ChildProfileDto

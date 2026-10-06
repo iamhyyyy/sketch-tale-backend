@@ -83,13 +83,8 @@ namespace sketch_tale.Application.Services
             // Mặc định gán Role là "Parent"
             await _userManager.AddToRoleAsync(user, "Parent");
 
-            // Khởi tạo sẵn một ParentProfile đi kèm cho phụ huynh này
-            var parentProfile = new ParentProfile
-            {
-                UserId = user.Id,
-                CreatedAt = DateTime.UtcNow,
-                CreateBy = user.Id
-            };
+            // Khởi tạo sẵn một ParentProfile đi kèm cho phụ huynh này (Mặc định GÓI 1: FREE - 0k/tháng)
+            var parentProfile = CreateDefaultParentProfile(user.Id);
 
             await _unitOfWork.Repository<ParentProfile>().AddAsync(parentProfile);
             await _unitOfWork.CompleteAsync();
@@ -217,9 +212,10 @@ namespace sketch_tale.Application.Services
             var allParentProfiles = await _unitOfWork.Repository<ParentProfile>().GetAllAsync();
             var parentProfile = allParentProfiles.FirstOrDefault(p => p.UserId == parentUserId);
 
-            // Nếu tài khoản phụ huynh chưa có ParentProfile (ví dụ: tài khoản seed 'parent'), tự khởi tạo
+            // Nếu tài khoản phụ huynh chưa có ParentProfile (ví dụ: tài khoản seed 'parent'), tự khởi tạo (mặc định Gói 1: Free)
             if (parentProfile == null)
             {
+
                 parentProfile = new ParentProfile
                 {
                     UserId = parentUserId,
@@ -228,13 +224,15 @@ namespace sketch_tale.Application.Services
                     CreatedAt = DateTime.UtcNow,
                     CreateBy = parentUserId
                 };
+
+                parentProfile = CreateDefaultParentProfile(parentUserId);
                 await _unitOfWork.Repository<ParentProfile>().AddAsync(parentProfile);
                 await _unitOfWork.CompleteAsync();
             }
 
             if (parentProfile.RemainingChildProfileLimit <= 0)
             {
-                throw new InvalidOperationException("Phụ huynh đã hết lượt tạo tài khoản cho bé! Vui lòng nâng cấp gói dịch vụ.");
+                throw new InvalidOperationException($"Phụ huynh đã đạt giới hạn tối đa {parentProfile.ChildProfileLimit} hồ sơ trẻ em của gói hiện tại ({parentProfile.ChildProfileLimit} bé)! Vui lòng nâng cấp lên gói PLUS (tối đa 3 bé) hoặc PRO (tối đa 5 bé) để tiếp tục tạo tài khoản cho con.");
             }
 
             // Kiểm tra username của bé đã tồn tại chưa
@@ -489,7 +487,22 @@ namespace sketch_tale.Application.Services
                 var parentProfile = parentProfiles.FirstOrDefault(p => p.UserId == user.Id);
                 if (parentProfile != null)
                 {
-                    profileDto.ParentProfile = _mapper.Map<ParentProfileDto>(parentProfile);
+                    var parentDto = _mapper.Map<ParentProfileDto>(parentProfile);
+                    // Xác định gói dịch vụ hiện tại: Free (1 con, 500 credit), Plus (3 con, 4000 credit), Pro (5 con, 10000 credit)
+                    if (parentProfile.ChildProfileLimit >= 5 || parentProfile.MonthlyCreditLimit >= 10000)
+                    {
+                        parentDto.CurrentPlan = "Pro";
+                    }
+                    else if (parentProfile.ChildProfileLimit >= 3 || parentProfile.MonthlyCreditLimit >= 4000)
+                    {
+                        parentDto.CurrentPlan = "Plus";
+                    }
+                    else
+                    {
+                        parentDto.CurrentPlan = "Free";
+                    }
+
+                    profileDto.ParentProfile = parentDto;
                 }
             }
             else if (primaryRole == "Child")
@@ -663,6 +676,25 @@ namespace sketch_tale.Application.Services
 </html>";
 
             await _emailService.SendEmailAsync(user.Email!, subject, body);
+        }
+
+        // HÀM TIỆN ÍCH: KHỞI TẠO HỒ SƠ PHỤ HUYNH VỚI ĐỊNH MỨC GÓI 1: FREE (0K/THÁNG)
+        private ParentProfile CreateDefaultParentProfile(Guid userId)
+        {
+            return new ParentProfile
+            {
+                UserId = userId,
+                ChildProfileLimit = 1,
+                RemainingChildProfileLimit = 1,
+                MonthlyCreditLimit = 500,
+                RemainingMonthlyCreditLimit = 500,
+                CanExportStory = false,
+                AccessFullStories = false,
+                SubscriptionTrialPlusPlan = false,
+                SecurityCode = "000000",
+                CreatedAt = DateTime.UtcNow,
+                CreateBy = userId
+            };
         }
     }
 }

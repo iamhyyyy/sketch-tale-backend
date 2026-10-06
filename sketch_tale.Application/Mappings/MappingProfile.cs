@@ -30,7 +30,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ChildProfile, opt => opt.Ignore());
 
         // ParentProfile & ChildProfile
-        CreateMap<ParentProfile, ParentProfileDto>().ReverseMap();
+        CreateMap<ParentProfile, ParentProfileDto>()
+            .ForMember(dest => dest.CurrentPlan, opt => opt.Ignore())
+            .ReverseMap();
 
         CreateMap<ChildProfile, ChildProfileDto>()
             .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()));
