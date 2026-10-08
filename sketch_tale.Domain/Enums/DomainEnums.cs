@@ -2,6 +2,7 @@
 
 public enum CommonStatus
 {
+    Draft,
     Inactive,
     Active,
     Pending,
