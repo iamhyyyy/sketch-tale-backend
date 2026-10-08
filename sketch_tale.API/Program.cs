@@ -39,7 +39,7 @@ public class Program
                     //auditLog.Id = Guid.NewGuid();
 
                     // Lấy UserId từ environment hoặc gán Guid.Empty nếu chưa có
-                    auditLog.UserId = Guid.TryParse(evt.Environment?.UserName, out var parsedUser)
+                    auditLog.CreateBy = Guid.TryParse(evt.Environment?.UserName, out var parsedUser)
                         ? parsedUser
                         : Guid.Empty;
 
@@ -58,8 +58,6 @@ public class Program
                     auditLog.ChangedColumns = entry.Changes != null
                         ? string.Join(", ", entry.Changes.Select(c => c.ColumnName))
                         : null;
-
-                    //auditLog.Timestamp = DateTime.UtcNow.AddHours(7);
                 }
 
                 return Task.FromResult(true);
@@ -209,11 +207,11 @@ public class Program
         });
 
         //environment variable for port, default to 8080 if not set
-        //var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        //app.Run($"http://0.0.0.0:{port}");
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        app.Run();
+        //app.Run();
 
     }
 }
