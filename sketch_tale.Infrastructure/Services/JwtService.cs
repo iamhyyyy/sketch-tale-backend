@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Entities;
@@ -21,9 +21,8 @@ namespace sketch_tale.Infrastructure.Services
             _configuration = configuration;
         }
 
-        public string GenerateToken(User user)
+        public string GenerateToken(User user, string? role = null)
         {
-            // ĐOẠN MỚI ĐÃ SỬA CHO KHỚP VỚI appsettings.json
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JwtSettings:Secret is missing.");
             int expiryMinutes = int.TryParse(jwtSettings["ExpiryMinutes"], out var minutes) ? minutes : 60;
@@ -31,12 +30,24 @@ namespace sketch_tale.Infrastructure.Services
             var key = Encoding.UTF8.GetBytes(secretKey);
 
             var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim("role", "User")
-        };
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty)
+            };
+
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+                claims.Add(new Claim(ClaimTypes.Email, user.Email));
+            }
+
+            if (!string.IsNullOrEmpty(role))
+            {
+                claims.Add(new Claim("role", role));
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

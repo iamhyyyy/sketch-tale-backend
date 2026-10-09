@@ -12,10 +12,8 @@ public class Character : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string DefaultPronoun { get; set; } = string.Empty;
     public string FinalImageUrl { get; set; } = null!;
-    public CommonStatus Status { get; set; }
-    public ParentApprovalStatus ParentApprovalStatus { get; set; }
+    public CharacterStatus Status { get; set; }
     public bool IsFavorite { get; set; } = false;
-    public bool IsHidden { get; set; } = false;
 
     // Navigation Properties
     public ChildProfile Child { get; set; } = null!;

@@ -12,8 +12,8 @@ using sketch_tale.Infrastructure.Data;
 namespace sketch_tale.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260927152652_updateDBForAILogV1.1")]
-    partial class updateDBForAILogV11
+    [Migration("20261005061112_updateDBForParentSuggestStory")]
+    partial class updateDBForParentSuggestStory
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -245,9 +245,8 @@ namespace sketch_tale.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ActionType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ActionType")
+                        .HasColumnType("integer");
 
                     b.Property<float>("CostAmount")
                         .HasColumnType("real");
@@ -381,15 +380,9 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<bool>("IsFavorite")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsHidden")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("ParentApprovalStatus")
-                        .HasColumnType("integer");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -529,6 +522,12 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<Guid>("ParentProfileId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("ReadingLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RemainingCharacterLimit")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TargetAgeGroup")
                         .HasColumnType("integer");
 
@@ -663,9 +662,8 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<Guid>("TargetId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("TargetType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("TargetType")
+                        .HasColumnType("integer");
 
                     b.Property<Guid?>("UpdateBy")
                         .HasColumnType("uuid");
@@ -797,8 +795,8 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<bool>("AccessFullStories")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("CharacterLimit")
-                        .HasColumnType("integer");
+                    b.Property<bool>("CanExportStory")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("ChildProfileLimit")
                         .HasColumnType("integer");
@@ -809,26 +807,20 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("ExportStoryLimit")
+                    b.Property<int>("MonthlyCreditLimit")
                         .HasColumnType("integer");
 
-                    b.Property<int>("RemainingCharacters")
+                    b.Property<int>("RemainingChildProfileLimit")
                         .HasColumnType("integer");
 
-                    b.Property<int>("RemainingChild")
+                    b.Property<int>("RemainingMonthlyCreditLimit")
                         .HasColumnType("integer");
-
-                    b.Property<bool>("RemainingExport")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("SecurityCode")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<bool>("SubscriptionTrialPlusPlan")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("SubscriptionTrialProPlan")
                         .HasColumnType("boolean");
 
                     b.Property<Guid?>("UpdateBy")
@@ -936,9 +928,8 @@ namespace sketch_tale.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Action")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("CreateBy")
                         .HasColumnType("uuid");
@@ -949,12 +940,18 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                    b.Property<int>("MatchType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("SeverityLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<Guid?>("UpdateBy")
                         .HasColumnType("uuid");
@@ -1021,8 +1018,8 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
                     b.Property<string>("Keyword")
                         .IsRequired()
@@ -1032,6 +1029,9 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("SeverityLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.Property<Guid?>("UpdateBy")
@@ -1169,6 +1169,9 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<int>("StoryRoleType")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("StoryTemplateId")
                         .HasColumnType("uuid");
 
@@ -1282,8 +1285,8 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<bool>("AccessFullStories")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("CharacterLimit")
-                        .HasColumnType("integer");
+                    b.Property<bool>("CanExportStory")
+                        .HasColumnType("boolean");
 
                     b.Property<int>("ChildProfileLimit")
                         .HasColumnType("integer");
@@ -1301,14 +1304,14 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<int?>("DurationDays")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ExportStoryLimit")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("FreeTrialDays")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("MonthlyCreditLimit")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()

@@ -8,7 +8,7 @@ namespace sketch_tale.Infrastructure.Data;
 
 public class SeedData
 {
-    private static readonly Guid SystemUserId = Guid.Parse("00000000-0000-0000-0000-000000000000");
+    private static readonly Guid SystemUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
     private static DateTime SeedTime => DateTime.UtcNow.AddHours(7);
 
@@ -28,6 +28,7 @@ public class SeedData
             await SeedRolesAsync(roleManager);
             await SeedUsersAsync(userManager);
             await SeedSubscriptionPlanAsync(context);
+            await SeedCreditCostAsync(context);
 
             Console.WriteLine("All Seed Completed successfully!");
         }
@@ -42,7 +43,7 @@ public class SeedData
     {
         if (await roleManager.Roles.AnyAsync()) return;
 
-        foreach (var role in new[] { "admin", "content manager", "parent", "child" })
+        foreach (var role in new[] { "system", "admin", "content manager", "parent", "child" })
         {
             await roleManager.CreateAsync(new IdentityRole<Guid>
             {
@@ -81,7 +82,6 @@ public class SeedData
             FirstName = firstName,
             LastName = lastName,
             EmailConfirmed = true,
-            CreatedAt = SeedTime,
             CreateBy = SystemUserId
         };
 
@@ -101,53 +101,51 @@ public class SeedData
     {
         if (await context.SubscriptionPlans.AnyAsync()) return;
 
-        var now = SeedTime;
+        //var now = SeedTime;
         context.SubscriptionPlans.AddRange(
             new SubscriptionPlan
             {
-                Id = Guid.NewGuid(),
                 Name = "Free",
                 Price = 0,
+                Code = "FreePlan",
 
                 ChildProfileLimit = 1,
-                CharacterLimit = 3,
-                ExportStoryLimit = 0,
+                MonthlyCreditLimit = 500,
                 AccessFullStories = false,
+                CanExportStory = false,
 
-                DurationDays = 30,
-                CreatedAt = now,
+                DurationDays = 9999,
                 CreateBy = SystemUserId
             },
             new SubscriptionPlan
             {
-                Id = Guid.NewGuid(),
                 Name = "Plus",
                 Price = 49,
+                Code = "PlusPlan",
 
                 ChildProfileLimit = 3,
-                CharacterLimit = 25,
-                ExportStoryLimit = 5,
+                MonthlyCreditLimit = 4000,
                 AccessFullStories = true,
+                CanExportStory = true,
+
 
                 DurationDays = 30,
                 FreeTrialDays = 7,
-                CreatedAt = now,
                 CreateBy = SystemUserId
             },
             new SubscriptionPlan
             {
-                Id = Guid.NewGuid(),
                 Name = "Pro",
                 Price = 99,
+                Code = "ProPlan",
 
                 ChildProfileLimit = 5,
-                CharacterLimit = 55,
-                ExportStoryLimit = 20,
+                MonthlyCreditLimit = 10000,
                 AccessFullStories = true,
+                CanExportStory = true,
 
                 DurationDays = 30,
-                FreeTrialDays = 7,
-                CreatedAt = now,
+                FreeTrialDays = 0,
                 CreateBy = SystemUserId
             }
         );
@@ -155,6 +153,55 @@ public class SeedData
         await context.SaveChangesAsync();
     }
 
-    
-  
+
+    private static async Task SeedCreditCostAsync(AppDbContext context)
+    {
+        if (await context.CreditCosts.AnyAsync()) return;
+
+        //var now = SeedTime;
+        context.CreditCosts.AddRange(
+            new CreditCost
+            {
+                FeatureKey = "ImageClassification",
+                Cost = 30,
+                FeatureNameVi = "Phân loại hình ảnh",
+                FeatureNameEn = "Image Classification",
+
+                IsActive = true,
+                CreateBy = SystemUserId
+            },
+            new CreditCost
+            {
+                FeatureKey = "CharacterGeneration",
+                Cost = 150,
+                FeatureNameVi = "Tạo nhân vật",
+                FeatureNameEn = "Character Generation",
+
+                IsActive = true,
+                CreateBy = SystemUserId
+            },
+            new CreditCost
+            {
+                FeatureKey = "CharacterRegeneration",
+                Cost = 50,
+                FeatureNameVi = "Tạo lại nhân vật",
+                FeatureNameEn = "Character Regeneration",
+
+                IsActive = true,
+                CreateBy = SystemUserId
+            },
+            new CreditCost
+            {
+                FeatureKey = "CharacterRegeneration",
+                Cost = 50,
+                FeatureNameVi = "Tạo lại nhân vật",
+                FeatureNameEn = "Character Regeneration",
+
+                IsActive = true,
+                CreateBy = SystemUserId
+            }
+        );
+
+        await context.SaveChangesAsync();
+    }
 }

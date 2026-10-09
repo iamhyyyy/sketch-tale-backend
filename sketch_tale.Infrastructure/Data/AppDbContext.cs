@@ -23,9 +23,14 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
+    public DbSet<CreditCost> CreditCosts => Set<CreditCost>();
+    public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
+
     public DbSet<Drawing> Drawings => Set<Drawing>();
     public DbSet<CharType> CharTypes => Set<CharType>();
-    public DbSet<Character> Characters => Set<Character>(); 
+    public DbSet<AICharacterGenerate> AICharacterGenerates => Set<AICharacterGenerate>();
+    public DbSet<Character> Characters => Set<Character>();
+    
 
     public DbSet<EducationTheme> EducationThemes => Set<EducationTheme>();
     public DbSet<StoryTemplate> StoryTemplates => Set<StoryTemplate>();
@@ -35,6 +40,7 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
     public DbSet<VocabularyTemplate> VocabularyTemplates => Set<VocabularyTemplate>();
     public DbSet<StoryQuizTemplate> StoryQuizTemplates => Set<StoryQuizTemplate>();
 
+    public DbSet<ParentStoryRecommendation> ParentStoryRecommendations => Set<ParentStoryRecommendation>();
     public DbSet<GeneratedStory> GeneratedStories => Set<GeneratedStory>();
     public DbSet<UserStoryCharacterMapping> UserStoryCharacterMappings => Set<UserStoryCharacterMapping>();
     public DbSet<ChildVocabularyProgress> ChildVocabularyProgresses => Set<ChildVocabularyProgress>();
@@ -61,17 +67,19 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
         modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
 
         // Seed roles với GUID cố định
-        var adminRoleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var contentManagerRoleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        var parentRoleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
-        var childRoleId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var system = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var admin = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var contentM = Guid.Parse("33333333-3333-3333-3333-333333333333");
+        var parent = Guid.Parse("44444444-4444-4444-4444-444444444444");
+        var child = Guid.Parse("55555555-5555-5555-5555-555555555555");
 
 
         modelBuilder.Entity<IdentityRole<Guid>>().HasData(
-            new IdentityRole<Guid> { Id = adminRoleId, Name = "admin", NormalizedName = "ADMIN" },
-            new IdentityRole<Guid> { Id = contentManagerRoleId, Name = "content manager", NormalizedName = "CONTENT MANAGER" },
-            new IdentityRole<Guid> { Id = parentRoleId, Name = "parent", NormalizedName = "PARENT" },
-            new IdentityRole<Guid> { Id = childRoleId, Name = "child", NormalizedName = "CHILD" }
+            new IdentityRole<Guid> { Id = system, Name = "system", NormalizedName = "SYSTEM" },
+            new IdentityRole<Guid> { Id = admin, Name = "admin", NormalizedName = "ADMIN" },
+            new IdentityRole<Guid> { Id = contentM, Name = "content manager", NormalizedName = "CONTENT MANAGER" },
+            new IdentityRole<Guid> { Id = parent, Name = "parent", NormalizedName = "PARENT" },
+            new IdentityRole<Guid> { Id = child, Name = "child", NormalizedName = "CHILD" }
         );
 
     }

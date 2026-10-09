@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using sketch_tale.Infrastructure.Data;
@@ -12,9 +13,11 @@ using sketch_tale.Infrastructure.Data;
 namespace sketch_tale.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261008070749_updateDBForCreditCost")]
+    partial class updateDBForCreditCost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -292,12 +295,6 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<string>("ChangedColumns")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("CreateBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("EntityName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -311,11 +308,11 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<Guid>("PrimaryKey")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("UpdateBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
+                    b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -1001,9 +998,6 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ParentProfileId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("PayDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -1036,9 +1030,10 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("ParentProfileId");
+                    b.HasKey("Id");
 
                     b.HasIndex("SubscriptionId");
 
@@ -1872,19 +1867,11 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.PaymentTransaction", b =>
                 {
-                    b.HasOne("sketch_tale.Domain.Entities.ParentProfile", "ParentProfile")
-                        .WithMany()
-                        .HasForeignKey("ParentProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("sketch_tale.Domain.Entities.Subscription", "Subscription")
                         .WithMany("PaymentTransactions")
                         .HasForeignKey("SubscriptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("ParentProfile");
 
                     b.Navigation("Subscription");
                 });

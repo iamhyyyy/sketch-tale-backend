@@ -6,7 +6,9 @@ namespace sketch_tale.Domain.Entities;
 public class ProhibitedTheme : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public bool IsActive { get; set; } = true;
+    public Enums.MatchType MatchType { get; set; } = Enums.MatchType.Contains;
+    public SeverityLevel SeverityLevel { get; set; } = SeverityLevel.Medium;
+    public ModerationAction Action { get; set; } = ModerationAction.Reject;
+    public ModerationStatus Status { get; set; } = ModerationStatus.Pending;
 }

@@ -2,6 +2,7 @@
 
 public enum CommonStatus
 {
+    Draft,
     Inactive,
     Active,
     Pending,
@@ -10,8 +11,16 @@ public enum CommonStatus
 
 public enum TargetAgeGroup
 {
-    Ag6to9,
-    Age9to12
+    Ag6to7,
+    Age8to10,
+    Age11to12
+}
+
+public enum ReadingLevel
+{
+    Beginner,
+    Intermediate,
+    Advanced
 }
 
 public enum ParentApprovalStatus
@@ -26,63 +35,107 @@ public enum DrawingType
     Canvas,
     Uploaded
 }
+public enum AIGenStatus
+{
+    Pending,
+    Processing,
+    Success,
+    Failed
+}
+public enum CharacterStatus
+{
+    Preview,
+    Pending,
+    Approved,
+    Rejected,
+    Hidden
+}
+public enum GeneratedStoryStatus
+{
+    InProgress,
+    Completed,
+    Hidden
+}
+
+public enum StoryRoleType
+{
+    MainCharacter = 0,
+    Companion = 1,
+    Supporting = 2,
+    Other = 3
+}
 
 public enum SubscriptionStatus
 {
-    PendingPayment = 0,
-    Active = 1,
-    Expired = 2,
-    Cancelled = 3
+    PendingPayment,
+    Active,
+    Expired,
+    Cancelled
 }
 
 public enum PaymentStatus
 {
-    Pending = 0,
-    Success = 1,
-    Failed = 2
+    Pending,
+    Success,
+    Failed
 }
 
 public enum MatchType
 {
-    Exact = 1,
-    Contains = 2,
-    Regex = 3
+    Exact,
+    Contains,
+    Regex
 }
 
 public enum SeverityLevel
 {
-    Low = 1,
-    Medium = 2,
-    High = 3,
-    BlockImmediately = 4
+    Low,
+    Medium,
+    High,
+    BlockImmediately
 }
 
 public enum ModerationAction
 {
-    Reject = 1,
-    FlagForReview = 2,
-    Mask = 3
-}
-
-public enum FlaggedBy
-{
-    SystemFilter = 1,
-    ParentReport = 2,
-    AdminCheck = 3
+    Reject,
+    FlagForReview,
+    Mask
 }
 
 public enum ModerationStatus
 {
-    Pending = 1,
-    Approved = 2,
-    Rejected = 3,
-    Resolved = 4
+    Pending,
+    Approved,
+    Rejected,
+    Resolved
 }
 
-public enum AIGenStatus
+
+public enum ContentReportStatus
 {
-    Pending = 1,
-    Processing = 2,
-    Success = 3,
-    Failed = 4
+    Pending,
+    Processing,
+    Resolve,
+    Dismissed
+}
+
+public enum ReportTargetType
+{
+    Character,
+    Story,
+    Content
+}
+
+public enum AIActionType
+{
+    ClassifyImage,
+    CharacterGenerate
+}
+
+public enum CreditActionType
+{
+    ImageClassification = 1,  // 30 credits (Phân loại tranh)
+    CharacterGeneration = 2,  // 150 credits (Tạo nhân vật)
+    CharacterRegeneration = 3,// 50 credits (Tạo lại nhân vật)
+    StoryExport = 4           // 200 credits (Xuất video/file truyện)
 }

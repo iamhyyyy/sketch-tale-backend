@@ -8,7 +8,7 @@ namespace sketch_tale.Domain.Entities;
 public class PaymentTransaction : BaseEntity
 {
     public Guid SubscriptionId { get; set; }
-    public Guid UserId { get; set; }
+    public Guid ParentProfileId { get; set; }
     public decimal Amount { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
     public string PaymentProvider { get; set; } = "VNPAY";
@@ -23,4 +23,5 @@ public class PaymentTransaction : BaseEntity
 
     // Navigation
     public Subscription Subscription { get; set; } = null!;
+    public ParentProfile ParentProfile { get; set; } = null!;
 }

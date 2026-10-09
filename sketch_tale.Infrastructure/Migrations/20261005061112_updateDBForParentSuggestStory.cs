@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace sketch_tale.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class updateDBForAILogV11 : Migration
+    public partial class updateDBForParentSuggestStory : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Provider = table.Column<string>(type: "text", nullable: false),
-                    ActionType = table.Column<string>(type: "text", nullable: false),
+                    ActionType = table.Column<int>(type: "integer", nullable: false),
                     TokenUsed = table.Column<int>(type: "integer", nullable: false),
                     CostAmount = table.Column<float>(type: "real", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -79,8 +79,10 @@ namespace sketch_tale.Infrastructure.Migrations
                     ParentProfileId = table.Column<Guid>(type: "uuid", nullable: false),
                     NickName = table.Column<string>(type: "text", nullable: false),
                     TargetAgeGroup = table.Column<int>(type: "integer", nullable: false),
+                    ReadingLevel = table.Column<int>(type: "integer", nullable: false),
                     DailyTimeLimit = table.Column<int>(type: "integer", nullable: false),
                     DailyCharacterLimit = table.Column<int>(type: "integer", nullable: false),
+                    RemainingCharacterLimit = table.Column<int>(type: "integer", nullable: false),
                     AllowedThemeIdsJson = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
@@ -97,7 +99,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TargetType = table.Column<string>(type: "text", nullable: false),
+                    TargetType = table.Column<int>(type: "integer", nullable: false),
                     TargetId = table.Column<Guid>(type: "uuid", nullable: false),
                     Reason = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
@@ -136,14 +138,12 @@ namespace sketch_tale.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     ChildProfileLimit = table.Column<int>(type: "integer", nullable: false),
-                    RemainingChild = table.Column<int>(type: "integer", nullable: false),
-                    CharacterLimit = table.Column<int>(type: "integer", nullable: false),
-                    RemainingCharacters = table.Column<int>(type: "integer", nullable: false),
-                    ExportStoryLimit = table.Column<int>(type: "integer", nullable: false),
-                    RemainingExport = table.Column<bool>(type: "boolean", nullable: false),
+                    RemainingChildProfileLimit = table.Column<int>(type: "integer", nullable: false),
+                    MonthlyCreditLimit = table.Column<int>(type: "integer", nullable: false),
+                    RemainingMonthlyCreditLimit = table.Column<int>(type: "integer", nullable: false),
+                    CanExportStory = table.Column<bool>(type: "boolean", nullable: false),
                     AccessFullStories = table.Column<bool>(type: "boolean", nullable: false),
                     SubscriptionTrialPlusPlan = table.Column<bool>(type: "boolean", nullable: false),
-                    SubscriptionTrialProPlan = table.Column<bool>(type: "boolean", nullable: false),
                     SecurityCode = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
@@ -161,9 +161,11 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Code = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    MatchType = table.Column<int>(type: "integer", nullable: false),
+                    SeverityLevel = table.Column<int>(type: "integer", nullable: false),
+                    Action = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -180,10 +182,11 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Keyword = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     MatchType = table.Column<int>(type: "integer", nullable: false),
                     SeverityLevel = table.Column<int>(type: "integer", nullable: false),
                     Action = table.Column<int>(type: "integer", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CreateBy = table.Column<Guid>(type: "uuid", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -217,9 +220,9 @@ namespace sketch_tale.Infrastructure.Migrations
                     Code = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
                     ChildProfileLimit = table.Column<int>(type: "integer", nullable: false),
-                    CharacterLimit = table.Column<int>(type: "integer", nullable: false),
-                    ExportStoryLimit = table.Column<int>(type: "integer", nullable: false),
+                    MonthlyCreditLimit = table.Column<int>(type: "integer", nullable: false),
                     AccessFullStories = table.Column<bool>(type: "boolean", nullable: false),
+                    CanExportStory = table.Column<bool>(type: "boolean", nullable: false),
                     DurationDays = table.Column<int>(type: "integer", nullable: true),
                     FreeTrialDays = table.Column<int>(type: "integer", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
@@ -634,6 +637,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     StoryTemplateId = table.Column<Guid>(type: "uuid", nullable: false),
+                    StoryRoleType = table.Column<int>(type: "integer", nullable: false),
                     RoleName = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     AllowCustomCharacter = table.Column<bool>(type: "boolean", nullable: false),
@@ -699,9 +703,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     DefaultPronoun = table.Column<string>(type: "text", nullable: false),
                     FinalImageUrl = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    ParentApprovalStatus = table.Column<int>(type: "integer", nullable: false),
                     IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
-                    IsHidden = table.Column<bool>(type: "boolean", nullable: false),
                     CharTypeId = table.Column<Guid>(type: "uuid", nullable: true),
                     DrawingId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
