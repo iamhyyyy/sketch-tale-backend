@@ -1,4 +1,4 @@
-﻿
+
 
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Domain.Interfaces;
@@ -14,7 +14,9 @@ public class UnitOfWork : IUnitOfWork
 
     //Khai báo IRepo
     private IEducationThemeRepository _educationThemeRepository = null!;
-
+    private IStoryTemplateRepository _storyTemplateRepository = null!;
+    private IStoryPageTemplateRepository _storyPageTemplateRepository = null!;
+    private IStoryRoleTemplateRepository _storyRoleTemplateRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -40,6 +42,17 @@ public class UnitOfWork : IUnitOfWork
 
     //thêm IRepo ở đây
     public IEducationThemeRepository EducationThemeRepository => _educationThemeRepository ??= new EducationThemeRepository(_context);
+    public IStoryTemplateRepository StoryTemplateRepository => _storyTemplateRepository ??= new StoryTemplateRepository(_context);
+    public IStoryPageTemplateRepository StoryPageTemplateRepository => _storyPageTemplateRepository ??= new StoryPageTemplateRepository(_context);
+
+
+    public IStoryRoleTemplateRepository StoryRoleTemplateRepository => _storyRoleTemplateRepository ??= new StoryRoleTemplateRepository(_context);
+
+    public ICharacterSlotTemplateRepository CharacterSlotTemplateRepository => throw new NotImplementedException();
+
+    public IVocabularyTemplateRepository VocabularyTemplateRepository => throw new NotImplementedException();
+
+    public IStoryQuizTemplateRepository StoryQuizTemplateRepository => throw new NotImplementedException();
 
     public async Task<int> CompleteAsync()
     {

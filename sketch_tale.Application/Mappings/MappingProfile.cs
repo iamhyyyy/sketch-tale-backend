@@ -33,6 +33,18 @@ public class MappingProfile : Profile
         CreateMap<ParentProfile, ParentProfileDto>()
             .ForMember(dest => dest.CurrentPlan, opt => opt.Ignore())
             .ReverseMap();
+        //StoryTemplate
+        CreateMap<StoryTemplate, StoryTemplateDto>();
+        CreateMap<CreateStoryTemplateDto, StoryTemplate>();
+        CreateMap<UpdateStoryTemplateDto, StoryTemplate>();
+        //Story_PAGE_Template
+        CreateMap<CreateStoryPageTemplateDto, StoryPageTemplate>();
+        CreateMap<UpdateStoryPageTemplateDto, StoryPageTemplate>();
+        CreateMap<StoryPageTemplate, StoryPageTemplateDto>();
+        //Story_ROLE_Template
+        CreateMap<CreateStoryRoleTemplateDto, StoryRoleTemplate>();
+        CreateMap<UpdateStoryRoleTemplateDto, StoryRoleTemplate>();
+        CreateMap<StoryRoleTemplate, StoryRoleTemplateDto>();
 
         CreateMap<ChildProfile, ChildProfileDto>()
             .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()));
