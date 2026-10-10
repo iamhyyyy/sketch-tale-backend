@@ -70,12 +70,19 @@ public class Program
 
         // Đăng ký Repository
         builder.Services.AddScoped<IEducationThemeRepository, EducationThemeRepository>();
+        builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
+        builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
+        builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
         builder.Services.AddScoped<IEducationThemeService, EducationThemeService>();
-
+        builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
+        builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
+        builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
+        // Cloudinary image upload service
+        builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
         // Đăng ký Email Service
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGridSettings"));
