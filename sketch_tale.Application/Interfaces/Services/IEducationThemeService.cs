@@ -8,5 +8,6 @@ namespace sketch_tale.Application.Interfaces
         Task<EducationThemeDto?> GetByIdAsync(Guid id);
         Task<EducationThemeDto> AddAsync(CreateEducationThemeDto dto);
         Task<bool> Update(Guid id, UpdateEducationThemeDto dto);
+        Task<bool> Delete(Guid id);
     }
 }

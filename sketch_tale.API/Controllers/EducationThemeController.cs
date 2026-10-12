@@ -48,16 +48,12 @@ namespace sketch_tale.WebApi.Controllers
             return NoContent();
         }
 
-        [HttpGet("test")]
-        public async Task<IActionResult> SendTest()
+        [HttpDelete("education-theme/{id}")]
+        public async Task<ActionResult> Delete(Guid id)
         {
-            await _emailService.SendEmailAsync(
-                "huyndse184016@fpt.edu.vn",
-                "Test Mail",
-                "Hello from sketch-tale"
-            );
-
-            return Ok("Email sent");
+            var item = await _educationThemeService.Delete(id);
+            if (!item) return NotFound();
+            return NoContent();
         }
     }
 }

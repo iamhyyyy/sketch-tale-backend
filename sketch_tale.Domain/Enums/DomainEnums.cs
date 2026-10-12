@@ -3,9 +3,9 @@
 public enum CommonStatus
 {
     Draft,
-    Inactive,
-    Active,
     Pending,
+    Active,
+    Inactive,
     Archived
 }
 
@@ -59,10 +59,10 @@ public enum GeneratedStoryStatus
 
 public enum StoryRoleType
 {
-    MainCharacter = 0,
-    Companion = 1,
-    Supporting = 2,
-    Other = 3
+    MainCharacter,
+    Companion,
+    Supporting,
+    Other
 }
 
 public enum SubscriptionStatus
@@ -134,8 +134,8 @@ public enum AIActionType
 
 public enum CreditActionType
 {
-    ImageClassification = 1,  // 30 credits (Phân loại tranh)
-    CharacterGeneration = 2,  // 150 credits (Tạo nhân vật)
-    CharacterRegeneration = 3,// 50 credits (Tạo lại nhân vật)
-    StoryExport = 4           // 200 credits (Xuất video/file truyện)
+    ImageClassification,
+    CharacterGeneration, 
+    CharacterRegeneration,
+    StoryExport
 }
