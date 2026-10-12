@@ -192,10 +192,10 @@ public class SeedData
             },
             new CreditCost
             {
-                FeatureKey = "CharacterRegeneration",
-                Cost = 50,
-                FeatureNameVi = "Tạo lại nhân vật",
-                FeatureNameEn = "Character Regeneration",
+                FeatureKey = "ExportStory",
+                Cost = 200,
+                FeatureNameVi = "Xuất câu truyện",
+                FeatureNameEn = "Export Story",
 
                 IsActive = true,
                 CreateBy = SystemUserId
