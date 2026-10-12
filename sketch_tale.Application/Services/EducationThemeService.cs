@@ -3,6 +3,7 @@ using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Enums;
 
 namespace SmartCarWash.Application.Services
 {
@@ -47,6 +48,18 @@ namespace SmartCarWash.Application.Services
             if (item == null) return false;
 
             _mapper.Map(dto, item);
+
+            _unitOfWork.EducationThemeRepository.Update(item);
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+
+        public async Task<bool> Delete(Guid id)
+        {
+            var item = await _unitOfWork.EducationThemeRepository.GetByIdAsync(id);
+            if (item == null) return false;
+
+            item.Status = CommonStatus.Inactive;
 
             _unitOfWork.EducationThemeRepository.Update(item);
             await _unitOfWork.CompleteAsync();

@@ -70,6 +70,7 @@ public class Program
 
         // Đăng ký Repository
         builder.Services.AddScoped<IEducationThemeRepository, EducationThemeRepository>();
+        builder.Services.AddScoped<ICreditCostRepository, CreditCostRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
@@ -78,18 +79,23 @@ public class Program
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
         builder.Services.AddScoped<IEducationThemeService, EducationThemeService>();
+        builder.Services.AddScoped<ICreditCostService, CreditCostService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
+
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
         // Đăng ký Email Service
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGridSettings"));
+
         // Đăng ký Auth Service
         // Đăng ký AuthService và JwtService vào DI container
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IJwtService, JwtService>();
+
         // Add services to the container.
         builder.Services.AddControllers();
 
@@ -219,7 +225,7 @@ public class Program
         app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        //app.Run();
+        // app.Run();
 
     }
 }

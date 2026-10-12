@@ -14,6 +14,11 @@ public class MappingProfile : Profile
         CreateMap<CreateEducationThemeDto, EducationTheme>();
         CreateMap<UpdateEducationThemeDto, EducationTheme>();
 
+        // CreditCost
+        CreateMap<CreditCost, CreditCostDto>().ReverseMap();
+        CreateMap<CreateCreditCostDto, CreditCost>();
+        CreateMap<UpdateCreditCostDto, CreditCost>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
