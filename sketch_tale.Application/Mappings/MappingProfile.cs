@@ -19,6 +19,11 @@ public class MappingProfile : Profile
         CreateMap<CreateCreditCostDto, CreditCost>();
         CreateMap<UpdateCreditCostDto, CreditCost>();
 
+        // SubscriptionPlan
+        CreateMap<SubscriptionPlan, SubscriptionPlanDto>().ReverseMap();
+        CreateMap<CreateSubscriptionPlanDto, SubscriptionPlan>();
+        CreateMap<UpdateSubscriptionPlanDto, SubscriptionPlan>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
