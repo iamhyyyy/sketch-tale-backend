@@ -10,6 +10,7 @@ public interface IUnitOfWork : IDisposable
     //thêm repo interface xún dứi
     IEducationThemeRepository EducationThemeRepository {  get; }
     ICreditCostRepository CreditCostRepository { get; }
+    ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
     IStoryTemplateRepository StoryTemplateRepository { get; }
     IStoryPageTemplateRepository StoryPageTemplateRepository { get; }
     IStoryRoleTemplateRepository StoryRoleTemplateRepository { get; }
