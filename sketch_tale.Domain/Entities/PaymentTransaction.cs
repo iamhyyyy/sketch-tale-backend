@@ -15,11 +15,11 @@ public class PaymentTransaction : BaseEntity
 
     // VNPay Data
     public string TxnRef { get; set; } = string.Empty; // vnp_TxnRef
-    public string? TransactionNo { get; set; }   // vnp_TransactionNo
-    public string? BankCode { get; set; }             // vnp_BankCode
-    public string? ResponseCode { get; set; }         // vnp_ResponseCode
+    public string TransactionNo { get; set; } = string.Empty;   // vnp_TransactionNo
+    public string BankCode { get; set; } = string.Empty;             // vnp_BankCode
+    public string ResponseCode { get; set; } = string.Empty;         // vnp_ResponseCode
     public DateTime? PayDate { get; set; }      // Parsed from vnp_PayDate
-    public string? RawIpnResponse { get; set; }       // Audit trail Log JSON
+    public string RawIpnResponse { get; set; } = string.Empty;       // Audit trail Log JSON
 
     // Navigation
     public Subscription Subscription { get; set; } = null!;
