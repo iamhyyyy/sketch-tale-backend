@@ -9,4 +9,9 @@ public class StoryTemplateRepository : GenericRepository<StoryTemplate>, IStoryT
     public StoryTemplateRepository(AppDbContext context) : base(context)
     {
     }
+
+    public Task<IEnumerable<StoryTemplate>> getByEducationThemeId(Guid storyId)
+    {
+        throw new NotImplementedException();
+    }
 }

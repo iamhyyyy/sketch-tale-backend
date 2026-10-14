@@ -28,16 +28,23 @@ public class StoryPageTemplateController : ControllerBase
     public async Task<ActionResult<StoryPageTemplateDto>> CreatePage(
         Guid storyId, 
         [FromForm] CreateStoryPageTemplateDto dto, 
-        IFormFile? file)
+        IFormFile? file,
+        IFormFile? audioFile)
     {
         try
         {
-            var page = await _storyPageTemplateService.CreatePageAsync(storyId, dto, file);
+            var background = file ?? (Request.HasFormContentType ? Request.Form.Files["imageFile"] : null);
+            var audio = audioFile ?? (Request.HasFormContentType ? Request.Form.Files["audio"] : null);
+            var page = await _storyPageTemplateService.CreatePageAsync(storyId, dto, background, audio);
             return Ok(page);
         }
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -46,13 +53,23 @@ public class StoryPageTemplateController : ControllerBase
     public async Task<IActionResult> Update(
         Guid id, 
         [FromForm] UpdateStoryPageTemplateDto dto, 
-        IFormFile? file)
+        IFormFile? file,
+        IFormFile? audioFile)
     {
-        var success = await _storyPageTemplateService.UpdatePageAsync(id, dto, file);
-        if (!success)
-            return NotFound(new { message = $"Trang với Id {id} không tồn tại." });
+        try
+        {
+            var background = file ?? (Request.HasFormContentType ? Request.Form.Files["imageFile"] : null);
+            var audio = audioFile ?? (Request.HasFormContentType ? Request.Form.Files["audio"] : null);
+            var success = await _storyPageTemplateService.UpdatePageAsync(id, dto, background, audio);
+            if (!success)
+                return NotFound(new { message = $"Trang với Id {id} không tồn tại." });
 
-        return Ok(new { message = "Cập nhật trang thành công." });
+            return Ok(new { message = "Cập nhật trang thành công." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpDelete("story-pages/{id}")]

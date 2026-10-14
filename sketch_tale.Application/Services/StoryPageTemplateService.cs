@@ -27,7 +27,7 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         return _mapper.Map<IEnumerable<StoryPageTemplateDto>>(pages);
     }
 
-    public async Task<StoryPageTemplateDto> CreatePageAsync(Guid storyId, CreateStoryPageTemplateDto dto, IFormFile? file)
+    public async Task<StoryPageTemplateDto> CreatePageAsync(Guid storyId, CreateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
         if (story == null)
@@ -43,9 +43,18 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         story.TotalPageNumbers += 1;
         entity.PageNumber = story.TotalPageNumbers;
 
-        if (file != null)
+        if (imageFile != null)
         {
-            entity.BackgroundUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/background");
+            entity.BackgroundUrl = await _cloudinaryService.UploadImageAsync(imageFile, "SketchTale/background");
+        }
+
+        if (audioFile != null)
+        {
+            entity.AudioNarrationUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/audios");
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.AudioNarrationUrl))
+        {
+            entity.AudioNarrationUrl = dto.AudioNarrationUrl;
         }
 
         entity.Status = Domain.Enums.CommonStatus.Draft;
@@ -57,16 +66,25 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         return _mapper.Map<StoryPageTemplateDto>(entity);
     }
 
-    public async Task<bool> UpdatePageAsync(Guid pageId, UpdateStoryPageTemplateDto dto, IFormFile? file)
+    public async Task<bool> UpdatePageAsync(Guid pageId, UpdateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null)
     {
         var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
         if (page == null) return false;
 
         _mapper.Map(dto, page);
 
-        if (file != null)
+        if (imageFile != null)
         {
-            page.BackgroundUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/background");
+            page.BackgroundUrl = await _cloudinaryService.UploadImageAsync(imageFile, "SketchTale/background");
+        }
+
+        if (audioFile != null)
+        {
+            page.AudioNarrationUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/audios");
+        }
+        else if (dto.AudioNarrationUrl != null)
+        {
+            page.AudioNarrationUrl = dto.AudioNarrationUrl;
         }
 
         _unitOfWork.StoryPageTemplateRepository.Update(page);

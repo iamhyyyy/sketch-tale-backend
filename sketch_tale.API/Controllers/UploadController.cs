@@ -4,10 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace sketch_tale.WebApi.Controllers
 {
-    /// <summary>
-    /// Controller xử lý upload ảnh lên Cloudinary.
-    /// Dùng chung cho Pet, Item, User avatar.
-    /// </summary>
+
     [ApiController]
     [Route("api/upload")]
     [Authorize]

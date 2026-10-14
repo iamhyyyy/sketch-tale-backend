@@ -1,18 +1,12 @@
-﻿using sketch_tale.Application.DTOs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using sketch_tale.Application.DTOs;
 
 namespace sketch_tale.Application.Interfaces.Services;
 
 public interface IVocabularyTemplateService
 {
-
-    //Vocabulary
     Task<IEnumerable<VocabularyTemplateDto>> GetVocabsByPageAsync(Guid pageId);
+    Task<VocabularyTemplateDto?> GetVocabByIdAsync(Guid vocabId);
     Task<VocabularyTemplateDto> CreateVocabAsync(Guid pageId, CreateVocabularyTemplateDto dto);
+    Task<bool> UpdateVocabAsync(Guid vocabId, UpdateVocabularyTemplateDto dto);
     Task<bool> DeleteVocabAsync(Guid vocabId);
-
 }

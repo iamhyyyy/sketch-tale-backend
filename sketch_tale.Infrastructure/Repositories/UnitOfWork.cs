@@ -19,8 +19,11 @@ public class UnitOfWork : IUnitOfWork
     private IStoryTemplateRepository _storyTemplateRepository = null!;
     private IStoryPageTemplateRepository _storyPageTemplateRepository = null!;
     private IStoryRoleTemplateRepository _storyRoleTemplateRepository = null!;
-    private IChildProfileRepository _childProfileRepository = null!;
+    private ICharacterSlotTemplateRepository _characterSlotTemplateRepository = null!;
+    private IStoryQuizTemplateRepository _storyQuizTemplateRepository = null!;
+    private IVocabularyTemplateRepository _vocabularyTemplateRepository = null!;
     private IParentProfileRepository _parentProfileRepository = null!;
+    private IChildProfileRepository _childProfileRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -55,11 +58,11 @@ public class UnitOfWork : IUnitOfWork
 
     public IStoryRoleTemplateRepository StoryRoleTemplateRepository => _storyRoleTemplateRepository ??= new StoryRoleTemplateRepository(_context);
 
-    public ICharacterSlotTemplateRepository CharacterSlotTemplateRepository => throw new NotImplementedException();
+    public ICharacterSlotTemplateRepository CharacterSlotTemplateRepository => _characterSlotTemplateRepository ??= new CharacterSlotTemplateRepository(_context);
 
-    public IVocabularyTemplateRepository VocabularyTemplateRepository => throw new NotImplementedException();
+    public IVocabularyTemplateRepository VocabularyTemplateRepository => _vocabularyTemplateRepository ??= new VocabularyTemplateRepository(_context);
 
-    public IStoryQuizTemplateRepository StoryQuizTemplateRepository => throw new NotImplementedException();
+    public IStoryQuizTemplateRepository StoryQuizTemplateRepository => _storyQuizTemplateRepository ??= new StoryQuizTemplateRepository(_context);
 
     public async Task<int> CompleteAsync()
     {

@@ -105,6 +105,14 @@ namespace sketch_tale.Application.DTOs
         public float Scale { get; set; } = 1.00f;
         public bool FlipHorizontal { get; set; } = false;
     }
+    public class UpdateCharacterSlotTemplateDto : BaseFieldDto
+    {
+        public float PosX { get; set; }
+        public float PosY { get; set; }
+        public float Scale { get; set; } = 1.00f;
+        public bool FlipHorizontal { get; set; } = false;
+        public CommonStatus Status { get; set; }
+    }
     //VOCABULARY TEMPLATE
     public class VocabularyTemplateDto : BaseFieldDto
     {
@@ -119,6 +127,12 @@ namespace sketch_tale.Application.DTOs
         public string Meaning { get; set; } = string.Empty;
         public string? AudioUrl { get; set; }
     }
+    public class UpdateVocabularyTemplateDto : BaseFieldDto
+    {
+        public string Word { get; set; } = string.Empty;
+        public string Meaning { get; set; } = string.Empty;
+        public string? AudioUrl { get; set; }
+    }
     //STORY QUIZ TEMPLATE
     public class StoryQuizTemplateDto : BaseFieldDto
     {
@@ -127,6 +141,7 @@ namespace sketch_tale.Application.DTOs
         public string? QuestionAudioUrl { get; set; }
         public string? QuestionPicUrl { get; set; }
         public string OptionsJson { get; set; } = string.Empty;
+        public List<string> Options { get; set; } = new();
         public int CorrectOptionIndex { get; set; }
         public CommonStatus Status { get; set; }
     }
@@ -137,6 +152,15 @@ namespace sketch_tale.Application.DTOs
         public string? QuestionPicUrl { get; set; }
         public List<string> Options { get; set; } = new(); // FE gửi list, BE convert sang JSON
         public int CorrectOptionIndex { get; set; }
+    }
+    public class UpdateStoryQuizTemplateDto : BaseFieldDto
+    {
+        public string QuestionText { get; set; } = string.Empty;
+        public string? QuestionAudioUrl { get; set; }
+        public string? QuestionPicUrl { get; set; }
+        public List<string> Options { get; set; } = new();
+        public int CorrectOptionIndex { get; set; }
+        public CommonStatus Status { get; set; }
     }
     //PUBLISH
     public class PublishStoryResultDto : BaseFieldDto

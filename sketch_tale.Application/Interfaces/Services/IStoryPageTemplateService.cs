@@ -7,7 +7,7 @@ public interface IStoryPageTemplateService
 {
     //Story Page
     Task<IEnumerable<StoryPageTemplateDto>> GetPagesByStoryAsync(Guid storyId);
-    Task<StoryPageTemplateDto> CreatePageAsync(Guid storyId, CreateStoryPageTemplateDto dto, IFormFile? file);
-    Task<bool> UpdatePageAsync(Guid pageId, UpdateStoryPageTemplateDto dto, IFormFile? file);
+    Task<StoryPageTemplateDto> CreatePageAsync(Guid storyId, CreateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null);
+    Task<bool> UpdatePageAsync(Guid pageId, UpdateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null);
     Task<bool> DeletePageAsync(Guid pageId);
 }
