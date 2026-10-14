@@ -14,6 +14,7 @@ public class ChildProfile : BaseEntity
     public ReadingLevel ReadingLevel { get; set; }
 
     public int DailyTimeLimit { get; set; } = 30;
+    public int RemainingTimeLimit { get; set; } = 30;
     public int DailyCharacterLimit { get; set; } = 1;
     public int RemainingCharacterLimit { get; set; } = 1;
 
