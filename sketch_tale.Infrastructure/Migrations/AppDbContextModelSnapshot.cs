@@ -555,6 +555,8 @@ namespace sketch_tale.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentProfileId");
+
                     b.ToTable("ChildProfiles");
                 });
 
@@ -1430,7 +1432,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<int>("DurationDays")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("FreeTrialDays")
+                    b.Property<int>("FreeTrialDays")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsActive")
@@ -1764,6 +1766,15 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Navigation("Child");
                 });
 
+            modelBuilder.Entity("sketch_tale.Domain.Entities.ChildProfile", b =>
+                {
+                    b.HasOne("sketch_tale.Domain.Entities.ParentProfile", null)
+                        .WithMany("ChildProfiles")
+                        .HasForeignKey("ParentProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("sketch_tale.Domain.Entities.ChildQuizAnswer", b =>
                 {
                     b.HasOne("sketch_tale.Domain.Entities.ChildProfile", "Child")
@@ -2035,6 +2046,8 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfile", b =>
                 {
+                    b.Navigation("ChildProfiles");
+
                     b.Navigation("ParentProfileSub");
                 });
 
