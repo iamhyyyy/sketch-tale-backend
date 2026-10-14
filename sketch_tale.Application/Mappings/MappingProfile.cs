@@ -2,6 +2,7 @@
 using AutoMapper;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Application.Mappings;
 
@@ -60,5 +61,20 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()));
 
         CreateMap<RegisterChildDto, ChildProfile>();
+        //ChildProfile
+        CreateMap<ChildProfile, ChildProfileDto>()
+            .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()))
+            .ForMember(dest => dest.ReadingLevel, opt => opt.MapFrom(src => src.ReadingLevel.ToString()))       
+            .ReverseMap()
+            .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => Enum.Parse<TargetAgeGroup>(src.TargetAgeGroup)))
+            .ForMember(dest => dest.ReadingLevel, opt => opt.MapFrom(src => Enum.Parse<ReadingLevel>(src.ReadingLevel)));
+        CreateMap<UpdateChildProfileDto, ChildProfile>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        //ParentProfile
+        CreateMap<ParentProfile, ParentProfileDto>()
+            .ForMember(dest => dest.CurrentPlan, opt => opt.Ignore())
+            .ReverseMap();
+        CreateMap<UpdateParentProfileDto, ParentProfile>()
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
     }
 }

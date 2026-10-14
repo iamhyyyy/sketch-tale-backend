@@ -19,6 +19,8 @@ public class UnitOfWork : IUnitOfWork
     private IStoryTemplateRepository _storyTemplateRepository = null!;
     private IStoryPageTemplateRepository _storyPageTemplateRepository = null!;
     private IStoryRoleTemplateRepository _storyRoleTemplateRepository = null!;
+    private IChildProfileRepository _childProfileRepository = null!;
+    private IParentProfileRepository _parentProfileRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -48,7 +50,8 @@ public class UnitOfWork : IUnitOfWork
     public ISubscriptionPlanRepository SubscriptionPlanRepository => _subscriptionPlanRepository ??= new SubscriptionPlanRepository(_context);
     public IStoryTemplateRepository StoryTemplateRepository => _storyTemplateRepository ??= new StoryTemplateRepository(_context);
     public IStoryPageTemplateRepository StoryPageTemplateRepository => _storyPageTemplateRepository ??= new StoryPageTemplateRepository(_context);
-
+    public IParentProfileRepository ParentProfileRepository => _parentProfileRepository ??= new ParentProfileRepository(_context);
+    public IChildProfileRepository ChildProfileRepository => _childProfileRepository ??= new ChildProfileRepository(_context);
 
     public IStoryRoleTemplateRepository StoryRoleTemplateRepository => _storyRoleTemplateRepository ??= new StoryRoleTemplateRepository(_context);
 
