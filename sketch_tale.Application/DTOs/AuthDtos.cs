@@ -100,26 +100,7 @@ namespace sketch_tale.Application.DTOs
         public ChildProfileDto? ChildProfile { get; set; }
     }
 
-    public class ParentProfileDto
-    {
-        public Guid Id { get; set; }
-        public int ChildProfileLimit { get; set; }
-        public int RemainingChildProfileLimit { get; set; }
-        public int MonthlyCreditLimit { get; set; }
-        public int RemainingMonthlyCreditLimit { get; set; }
-        public bool CanExportStory { get; set; }
-        public bool AccessFullStories { get; set; }
-        public bool SubscriptionTrialPlusPlan { get; set; }
-        public string CurrentPlan { get; set; } = "Free";
-    }
+   
 
-    public class ChildProfileDto
-    {
-        public Guid Id { get; set; }
-        public Guid ParentProfileId { get; set; }
-        public string NickName { get; set; } = string.Empty;
-        public string TargetAgeGroup { get; set; } = string.Empty;
-        public int DailyTimeLimit { get; set; }
-        public int DailyCharacterLimit { get; set; }
-    }
+   
 }

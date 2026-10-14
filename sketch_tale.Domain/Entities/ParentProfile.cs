@@ -24,4 +24,5 @@ public class ParentProfile : BaseEntity
     public string SecurityCode { get; set; } = "000000";
 
     public ParentProfileSub? ParentProfileSub { get; set; }
+    public ICollection<ChildProfile> ChildProfiles { get; set; } = new List<ChildProfile>();
 }
