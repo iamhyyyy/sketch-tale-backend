@@ -22,6 +22,8 @@ public class UnitOfWork : IUnitOfWork
     private ICharacterSlotTemplateRepository _characterSlotTemplateRepository = null!;
     private IStoryQuizTemplateRepository _storyQuizTemplateRepository = null!;
     private IVocabularyTemplateRepository _vocabularyTemplateRepository = null!;
+    private IParentProfileRepository _parentProfileRepository = null!;
+    private IChildProfileRepository _childProfileRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
