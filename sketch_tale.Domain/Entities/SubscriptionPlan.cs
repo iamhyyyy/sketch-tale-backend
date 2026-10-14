@@ -4,15 +4,15 @@ namespace sketch_tale.Domain.Entities;
 
 public class SubscriptionPlan : BaseEntity
 {
-    public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = null!;
+    public string Code { get; set; } = null!;
     public decimal Price { get; set; }
     public int ChildProfileLimit { get; set; }
     public int MonthlyCreditLimit { get; set; }
     public bool AccessFullStories { get; set; }
     public bool CanExportStory { get; set; }
     public int DurationDays { get; set; }
-    public int? FreeTrialDays { get; set; }
+    public int FreeTrialDays { get; set; } = 0;
     public bool IsActive { get; set; } = true;
 
     // Navigation
