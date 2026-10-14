@@ -11,7 +11,7 @@ public class SubscriptionPlan : BaseEntity
     public int MonthlyCreditLimit { get; set; }
     public bool AccessFullStories { get; set; }
     public bool CanExportStory { get; set; }
-    public int? DurationDays { get; set; }
+    public int DurationDays { get; set; }
     public int? FreeTrialDays { get; set; }
     public bool IsActive { get; set; } = true;
 

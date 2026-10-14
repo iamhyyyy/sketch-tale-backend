@@ -538,6 +538,9 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<int>("RemainingCharacterLimit")
                         .HasColumnType("integer");
 
+                    b.Property<int>("RemainingTimeLimit")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TargetAgeGroup")
                         .HasColumnType("integer");
 
@@ -1424,7 +1427,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int?>("DurationDays")
+                    b.Property<int>("DurationDays")
                         .HasColumnType("integer");
 
                     b.Property<int?>("FreeTrialDays")
