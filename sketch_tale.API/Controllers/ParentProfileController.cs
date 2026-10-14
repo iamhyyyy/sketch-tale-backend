@@ -53,7 +53,7 @@ namespace sketch_tale.API.Controllers
                 return NotFound(new { message = "Không tìm thấy hồ sơ để cập nhật." });
             }
 
-            return NoContent(); // Code 204: Cập nhật thành công, không cần trả về body
+            return Ok(new { message = "Cập nhật thành công!" });
         }
 
         // PUT: api/parent-profiles/{id}/subscription
