@@ -17,4 +17,6 @@ public interface IUnitOfWork : IDisposable
     ICharacterSlotTemplateRepository CharacterSlotTemplateRepository { get; }
     IVocabularyTemplateRepository VocabularyTemplateRepository { get; }
     IStoryQuizTemplateRepository StoryQuizTemplateRepository { get; }
+    IChildProfileRepository ChildProfileRepository { get; }
+    IParentProfileRepository ParentProfileRepository { get; }
 }

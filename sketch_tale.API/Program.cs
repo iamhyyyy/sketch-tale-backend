@@ -74,7 +74,9 @@ public class Program
         builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
-        builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
+        builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();   
+        builder.Services.AddScoped<IChildProfileRepository, ChildProfileRepository>();
+        builder.Services.AddScoped<IParentProfileRepository, ParentProfileRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
@@ -85,7 +87,8 @@ public class Program
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
-
+        builder.Services.AddScoped<IChildProfileService, ChildProfileService>();
+                builder.Services.AddScoped<IParentProfileService, ParentProfileService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
@@ -223,11 +226,11 @@ public class Program
         });
 
         //environment variable for port, default to 8080 if not set
-        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        app.Run($"http://0.0.0.0:{port}");
+        //var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        //app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        // app.Run();
+        app.Run();
 
     }
 }
