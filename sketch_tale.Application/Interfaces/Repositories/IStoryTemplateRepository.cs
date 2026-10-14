@@ -5,5 +5,5 @@ namespace sketch_tale.Domain.Interfaces;
 
 public interface IStoryTemplateRepository : IGenericRepository<StoryTemplate>
 {
-
+    Task<IEnumerable<StoryTemplate>> getByEducationThemeId(Guid storyId);
 }

@@ -1,6 +1,8 @@
-﻿namespace sketch_tale.Application.Interfaces.Repositories
+using sketch_tale.Domain.Entities;
+
+namespace sketch_tale.Application.Interfaces.Repositories;
+
+public interface ICharacterSlotTemplateRepository : IGenericRepository<CharacterSlotTemplate>
 {
-    public interface ICharacterSlotTemplateRepository
-    {
-    }
+    Task<IEnumerable<CharacterSlotTemplate>> GetSlotsByPageIdAsync(Guid pageId);
 }

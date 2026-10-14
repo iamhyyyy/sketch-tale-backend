@@ -1,6 +1,8 @@
-﻿namespace sketch_tale.Application.Interfaces.Repositories
+using sketch_tale.Domain.Entities;
+
+namespace sketch_tale.Application.Interfaces.Repositories;
+
+public interface IStoryQuizTemplateRepository : IGenericRepository<StoryQuizTemplate>
 {
-    public interface IStoryQuizTemplateRepository
-    {
-    }
+    Task<IEnumerable<StoryQuizTemplate>> GetQuizzesByStoryIdAsync(Guid storyId);
 }

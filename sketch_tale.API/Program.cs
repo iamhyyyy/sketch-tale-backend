@@ -73,6 +73,9 @@ public class Program
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
+        builder.Services.AddScoped<ICharacterSlotTemplateRepository, CharacterSlotTemplateRepository>();
+        builder.Services.AddScoped<IStoryQuizTemplateRepository, StoryQuizTemplateRepository>();
+        builder.Services.AddScoped<IVocabularyTemplateRepository, VocabularyTemplateRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
@@ -81,6 +84,9 @@ public class Program
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
+        builder.Services.AddScoped<ICharacterSlotTemplateService, CharacterSlotTemplateService>();
+        builder.Services.AddScoped<IStoryQuizTemplateService, StoryQuizTemplateService>();
+        builder.Services.AddScoped<IVocabularyTemplateService, VocabularyTemplateService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
         // Đăng ký Email Service
