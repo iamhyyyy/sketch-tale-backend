@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Audit.EntityFramework;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Common;
@@ -6,6 +7,7 @@ using sketch_tale.Domain.Entities;
 
 namespace sketch_tale.Infrastructure.Data;
 
+[AuditDbContext(Mode = AuditOptionMode.OptOut, IncludeEntityObjects = true)]
 public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     private readonly ICurrentUserService _currentUserService;
@@ -84,7 +86,7 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
 
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         var entries = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
@@ -118,8 +120,13 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
             }
         }
 
-        return base.SaveChangesAsync(cancellationToken);
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
-    
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return SaveChangesAsync(acceptAllChangesOnSuccess: true, cancellationToken);
+    }
+
+
 }

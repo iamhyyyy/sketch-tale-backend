@@ -32,29 +32,26 @@ public class Program
         //dùng để lưu log
         Audit.Core.Configuration.DataProvider = new Audit.EntityFramework.Providers.EntityFrameworkDataProvider
         {
+            // Cần thiết: Ánh xạ mọi entity thay đổi sang AuditLog (trừ chính AuditLog)
+            AuditTypeMapper = (entityType, entry) =>
+                entityType == typeof(AuditLog) ? null : typeof(AuditLog),
+
             AuditEntityAction = (evt, entry, auditEntity) =>
             {
                 if (auditEntity is AuditLog auditLog)
                 {
-                    //auditLog.Id = Guid.NewGuid();
-
-                    // Lấy UserId từ environment hoặc gán Guid.Empty nếu chưa có
-                    auditLog.CreateBy = Guid.TryParse(evt.Environment?.UserName, out var parsedUser)
-                        ? parsedUser
-                        : Guid.Empty;
-
+                    auditLog.Id = Guid.NewGuid();
                     auditLog.Action = entry.Action; // "Insert", "Update", "Delete"
-                    auditLog.EntityName = entry.EntityType.Name; // Tên bảng/Entity (VD: ChildProfile)
+                    auditLog.EntityName = entry.EntityType.Name;
 
-                    // Lấy Primary Key của bản ghi bị tác động
-                    // Lấy Primary Key của bản ghi bị tác động
                     var pk = entry.PrimaryKey.Values.FirstOrDefault();
                     auditLog.PrimaryKey = pk != null && Guid.TryParse(pk.ToString(), out var parsedPk)
                         ? parsedPk
                         : Guid.Empty;
 
-                    // Map giá trị cũ, mới và các cột bị sửa đổi
-                    auditLog.OldValues = entry.Changes != null ? System.Text.Json.JsonSerializer.Serialize(entry.ColumnValues) : null;
+                    auditLog.OldValues = entry.Changes != null
+                        ? System.Text.Json.JsonSerializer.Serialize(entry.ColumnValues)
+                        : null;
                     auditLog.NewValues = entry.ToJson();
                     auditLog.ChangedColumns = entry.Changes != null
                         ? string.Join(", ", entry.Changes.Select(c => c.ColumnName))
