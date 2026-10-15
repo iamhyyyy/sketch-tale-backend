@@ -1,4 +1,4 @@
-﻿using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

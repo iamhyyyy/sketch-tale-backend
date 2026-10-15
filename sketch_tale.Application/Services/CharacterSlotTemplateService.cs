@@ -4,6 +4,7 @@ using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Application.Services;
 
@@ -26,16 +27,16 @@ public class CharacterSlotTemplateService : ICharacterSlotTemplateService
 
     public async Task<CharacterSlotTemplateDto> CreateSlotAsync(Guid pageId, CreateCharacterSlotTemplateDto dto)
     {
-        // 1. Kiểm tra trang tồn tại
+        // 1. Kiểm tra trang tồn tại và còn hoạt động
         var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
-        if (page == null)
+        if (page == null || page.Status == Domain.Enums.CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Story page with id {pageId} was not found.");
         }
 
-        // 2. Kiểm tra Role tồn tại
+        // 2. Kiểm tra Role tồn tại và còn hoạt động
         var role = await _unitOfWork.StoryRoleTemplateRepository.GetByIdAsync(dto.StoryRoleTemplateId);
-        if (role == null)
+        if (role == null || role.Status == Domain.Enums.CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Story role with id {dto.StoryRoleTemplateId} was not found.");
         }
@@ -68,9 +69,10 @@ public class CharacterSlotTemplateService : ICharacterSlotTemplateService
     public async Task<bool> UpdateSlotAsync(Guid slotId, UpdateCharacterSlotTemplateDto dto)
     {
         var slot = await _unitOfWork.CharacterSlotTemplateRepository.GetByIdAsync(slotId);
-        if (slot == null) return false;
+        if (slot == null || slot.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
         _mapper.Map(dto, slot);
+        slot.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
         _unitOfWork.CharacterSlotTemplateRepository.Update(slot);
         await _unitOfWork.CompleteAsync();
@@ -80,9 +82,12 @@ public class CharacterSlotTemplateService : ICharacterSlotTemplateService
     public async Task<bool> DeleteSlotAsync(Guid slotId)
     {
         var slot = await _unitOfWork.CharacterSlotTemplateRepository.GetByIdAsync(slotId);
-        if (slot == null) return false;
+        if (slot == null || slot.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
-        _unitOfWork.CharacterSlotTemplateRepository.Delete(slot);
+        slot.Status = Domain.Enums.CommonStatus.Inactive;
+        slot.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.CharacterSlotTemplateRepository.Update(slot);
         await _unitOfWork.CompleteAsync();
         return true;
     }

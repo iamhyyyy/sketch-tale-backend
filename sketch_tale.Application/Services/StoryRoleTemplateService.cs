@@ -5,6 +5,7 @@ using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Application.Services;
 
@@ -30,7 +31,7 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
     public async Task<StoryRoleTemplateDto> CreateRoleAsync(Guid storyId, CreateStoryRoleTemplateDto dto, IFormFile? file = null)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
-        if (story == null)
+        if (story == null || story.Status == Domain.Enums.CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Story template with id {storyId} was not found.");
         }
@@ -54,7 +55,7 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
     public async Task<bool> UpdateRoleAsync(Guid roleId, UpdateStoryRoleTemplateDto dto, IFormFile? file = null)
     {
         var role = await _unitOfWork.StoryRoleTemplateRepository.GetByIdAsync(roleId);
-        if (role == null) return false;
+        if (role == null || role.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
         _mapper.Map(dto, role);
 
@@ -62,6 +63,8 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
         {
             role.DefaultAssetUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/roles");
         }
+
+        role.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
         _unitOfWork.StoryRoleTemplateRepository.Update(role);
         await _unitOfWork.CompleteAsync();
@@ -71,9 +74,12 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
     public async Task<bool> DeleteRoleAsync(Guid roleId)
     {
         var role = await _unitOfWork.StoryRoleTemplateRepository.GetByIdAsync(roleId);
-        if (role == null) return false;
+        if (role == null || role.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
-        _unitOfWork.StoryRoleTemplateRepository.Delete(role);
+        role.Status = Domain.Enums.CommonStatus.Inactive;
+        role.UpdatedAt = DateTime.UtcNow.AddHours(7);
+
+        _unitOfWork.StoryRoleTemplateRepository.Update(role);
         await _unitOfWork.CompleteAsync();
         return true;
     }

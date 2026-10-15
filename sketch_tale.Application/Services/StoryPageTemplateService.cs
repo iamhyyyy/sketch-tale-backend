@@ -5,6 +5,7 @@ using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Application.Services;
 
@@ -30,7 +31,7 @@ public class StoryPageTemplateService : IStoryPageTemplateService
     public async Task<StoryPageTemplateDto> CreatePageAsync(Guid storyId, CreateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
-        if (story == null)
+        if (story == null || story.Status == Domain.Enums.CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Story template with id {storyId} was not found.");
         }
@@ -69,7 +70,7 @@ public class StoryPageTemplateService : IStoryPageTemplateService
     public async Task<bool> UpdatePageAsync(Guid pageId, UpdateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null)
     {
         var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
-        if (page == null) return false;
+        if (page == null || page.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
         _mapper.Map(dto, page);
 
@@ -87,6 +88,8 @@ public class StoryPageTemplateService : IStoryPageTemplateService
             page.AudioNarrationUrl = dto.AudioNarrationUrl;
         }
 
+        page.UpdatedAt = DateTime.UtcNow.AddHours(7);
+
         _unitOfWork.StoryPageTemplateRepository.Update(page);
         await _unitOfWork.CompleteAsync();
         return true;
@@ -95,7 +98,7 @@ public class StoryPageTemplateService : IStoryPageTemplateService
     public async Task<bool> DeletePageAsync(Guid pageId)
     {
         var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
-        if (page == null) return false;
+        if (page == null || page.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(page.StoryTemplateId);
         if (story != null && story.TotalPageNumbers > 0)
@@ -104,7 +107,10 @@ public class StoryPageTemplateService : IStoryPageTemplateService
             _unitOfWork.StoryTemplateRepository.Update(story);
         }
 
-        _unitOfWork.StoryPageTemplateRepository.Delete(page);
+        page.Status = Domain.Enums.CommonStatus.Inactive;
+        page.UpdatedAt = DateTime.UtcNow.AddHours(7);
+
+        _unitOfWork.StoryPageTemplateRepository.Update(page);
         await _unitOfWork.CompleteAsync();
         return true;
     }

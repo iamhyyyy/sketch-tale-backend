@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Services;
@@ -40,6 +41,7 @@ public class VocabularyTemplateController : ControllerBase
     }
 
     [HttpPost("story-pages/{pageId}/vocabularies")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<ActionResult<VocabularyTemplateDto>> CreateVocab(
         Guid pageId,
         [FromBody] CreateVocabularyTemplateDto dto)
@@ -64,6 +66,7 @@ public class VocabularyTemplateController : ControllerBase
     }
 
     [HttpPut("story-vocabulary/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> UpdateVocab(
         Guid id,
         [FromBody] UpdateVocabularyTemplateDto dto)
@@ -83,6 +86,7 @@ public class VocabularyTemplateController : ControllerBase
     }
 
     [HttpDelete("story-vocabulary/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> DeleteVocab(Guid id)
     {
         var success = await _vocabularyTemplateService.DeleteVocabAsync(id);

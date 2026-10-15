@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Enums;
 using sketch_tale.Infrastructure.Data;
 
 namespace sketch_tale.Infrastructure.Repositories;
@@ -14,7 +15,7 @@ public class StoryRoleTemplateRepository : GenericRepository<StoryRoleTemplate>,
     public async Task<IEnumerable<StoryRoleTemplate>> GetRolesByStoryIdAsync(Guid storyId)
     {
         return await _dbSet
-            .Where(r => r.StoryTemplateId == storyId)
+            .Where(r => r.StoryTemplateId == storyId && r.Status != CommonStatus.Inactive)
             .ToListAsync();
     }
 }

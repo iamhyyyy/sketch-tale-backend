@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Domain.Entities;
 using sketch_tale.Domain.Interfaces;
