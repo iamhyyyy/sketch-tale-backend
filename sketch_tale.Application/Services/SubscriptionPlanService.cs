@@ -31,6 +31,13 @@ namespace SmartCarWash.Application.Services
             return item == null ? null : _mapper.Map<SubscriptionPlanDto>(item);
         }
 
+        public async Task<SubscriptionPlanDto?> GetPlanByCode(string planCode)
+        {
+            var item = await _unitOfWork.SubscriptionPlanRepository.GetPlanByCode(planCode);
+
+            return item == null ? null : _mapper.Map<SubscriptionPlanDto>(item);
+        }
+
         public async Task<SubscriptionPlanDto> AddAsync(CreateSubscriptionPlanDto dto)
         {
             var item = _mapper.Map<SubscriptionPlan>(dto);

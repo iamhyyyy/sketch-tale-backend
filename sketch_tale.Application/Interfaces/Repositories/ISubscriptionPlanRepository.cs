@@ -7,5 +7,5 @@ namespace sketch_tale.Domain.Interfaces;
 
 public interface ISubscriptionPlanRepository : IGenericRepository<SubscriptionPlan>
 {
-
+    Task<SubscriptionPlan?> GetPlanByCode(string planCode);
 }

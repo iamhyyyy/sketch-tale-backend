@@ -72,6 +72,7 @@ public class Program
         builder.Services.AddScoped<IEducationThemeRepository, EducationThemeRepository>();
         builder.Services.AddScoped<ICreditCostRepository, CreditCostRepository>();
         builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+        builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
@@ -85,6 +86,7 @@ public class Program
         builder.Services.AddScoped<IEducationThemeService, EducationThemeService>();
         builder.Services.AddScoped<ICreditCostService, CreditCostService>();
         builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+        builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();

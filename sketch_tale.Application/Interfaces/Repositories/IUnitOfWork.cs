@@ -11,6 +11,7 @@ public interface IUnitOfWork : IDisposable
     IEducationThemeRepository EducationThemeRepository {  get; }
     ICreditCostRepository CreditCostRepository { get; }
     ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
+    ISubscriptionRepository SubscriptionRepository { get; }
     IStoryTemplateRepository StoryTemplateRepository { get; }
     IStoryPageTemplateRepository StoryPageTemplateRepository { get; }
     IStoryRoleTemplateRepository StoryRoleTemplateRepository { get; }

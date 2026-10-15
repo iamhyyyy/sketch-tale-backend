@@ -58,24 +58,24 @@ namespace sketch_tale.API.Controllers
 
         // PUT: api/parent-profiles/{id}/subscription
         // Dùng FromQuery để nhận các tham số trên URL, hoặc bạn có thể tạo 1 DTO riêng cho body
-        [HttpPut("{id}/subscription")]
-        public async Task<IActionResult> UpdateSubscription(
-            Guid id,
-            [FromQuery] int childProfileLimit,
-            [FromQuery] int monthlyCreditLimit,
-            [FromQuery] bool canExportStory,
-            [FromQuery] bool accessFullStories)
-        {
-            var isUpdated = await _parentProfileService.UpdateProfileForSubscriptionAsync(
-                id, childProfileLimit, monthlyCreditLimit, canExportStory, accessFullStories);
+        //[HttpPut("{id}/subscription")]
+        //public async Task<IActionResult> UpdateSubscription(
+        //    Guid id,
+        //    [FromQuery] int childProfileLimit,
+        //    [FromQuery] int monthlyCreditLimit,
+        //    [FromQuery] bool canExportStory,
+        //    [FromQuery] bool accessFullStories)
+        //{
+        //    var isUpdated = await _parentProfileService.UpdateProfileForSubscriptionAsync(
+        //        id, childProfileLimit, monthlyCreditLimit, canExportStory, accessFullStories);
 
-            if (!isUpdated)
-            {
-                return NotFound(new { message = "Không tìm thấy hồ sơ phụ huynh để cập nhật gói cước." });
-            }
+        //    if (!isUpdated)
+        //    {
+        //        return NotFound(new { message = "Không tìm thấy hồ sơ phụ huynh để cập nhật gói cước." });
+        //    }
 
-            return Ok(new { message = "Cập nhật quyền lợi gói Subscription thành công!" });
-        }
+        //    return Ok(new { message = "Cập nhật quyền lợi gói Subscription thành công!" });
+        //}
 
         // PATCH (hoặc PUT): api/parent-profiles/{id}/mark-trial-plan-used
         [HttpPatch("{id}/mark-trial-plan-used")]

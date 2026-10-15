@@ -25,6 +25,11 @@ public class MappingProfile : Profile
         CreateMap<CreateSubscriptionPlanDto, SubscriptionPlan>();
         CreateMap<UpdateSubscriptionPlanDto, SubscriptionPlan>();
 
+        // Subscription
+        CreateMap<Subscription, SubscriptionDto>().ReverseMap();
+        CreateMap<CreateSubscriptionDto, Subscription>();
+        CreateMap<UpdateSubscriptionDto, Subscription>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
