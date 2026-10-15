@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
     private IEducationThemeRepository _educationThemeRepository = null!;
     private ICreditCostRepository _creditCostRepository = null!;
     private ISubscriptionPlanRepository _subscriptionPlanRepository = null!;
+    private ISubscriptionRepository _subscriptionRepository = null!;
     private IStoryTemplateRepository _storyTemplateRepository = null!;
     private IStoryPageTemplateRepository _storyPageTemplateRepository = null!;
     private IStoryRoleTemplateRepository _storyRoleTemplateRepository = null!;
@@ -48,6 +49,7 @@ public class UnitOfWork : IUnitOfWork
     public IEducationThemeRepository EducationThemeRepository => _educationThemeRepository ??= new EducationThemeRepository(_context);
     public ICreditCostRepository CreditCostRepository => _creditCostRepository ??= new CreditCostRepository(_context);
     public ISubscriptionPlanRepository SubscriptionPlanRepository => _subscriptionPlanRepository ??= new SubscriptionPlanRepository(_context);
+    public ISubscriptionRepository SubscriptionRepository => _subscriptionRepository ??= new SubscriptionRepository(_context);
     public IStoryTemplateRepository StoryTemplateRepository => _storyTemplateRepository ??= new StoryTemplateRepository(_context);
     public IStoryPageTemplateRepository StoryPageTemplateRepository => _storyPageTemplateRepository ??= new StoryPageTemplateRepository(_context);
     public IParentProfileRepository ParentProfileRepository => _parentProfileRepository ??= new ParentProfileRepository(_context);

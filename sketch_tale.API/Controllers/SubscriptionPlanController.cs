@@ -5,7 +5,7 @@ using sketch_tale.Application.Interfaces;
 namespace sketch_tale.WebApi.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/subscription-plans")]
     public class SubscriptionPlanController : ControllerBase
     {
         private readonly ISubscriptionPlanService _subscriptionPlanService;
@@ -15,14 +15,14 @@ namespace sketch_tale.WebApi.Controllers
             _subscriptionPlanService = SubscriptionPlanService;
         } 
 
-        [HttpGet("subscription-plans")]
+        [HttpGet]
         public async Task<ActionResult<List<SubscriptionPlanDto>>> GetAll()
         {
             var items = await _subscriptionPlanService.GetAllAsync();
             return Ok(items);
         }
 
-        [HttpGet("subscription-plan/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<SubscriptionPlanDto>> GetById(Guid id)
         {
             var item = await _subscriptionPlanService.GetByIdAsync(id);
@@ -30,14 +30,22 @@ namespace sketch_tale.WebApi.Controllers
             return Ok(item);
         }
 
-        [HttpPost("subscription-plan")]
+        [HttpGet("code/{plan-code}")]
+        public async Task<ActionResult<SubscriptionPlanDto>> GetByPlanCode(string planCode)
+        {
+            var item = await _subscriptionPlanService.GetPlanByCode(planCode);
+            if (item == null) return NotFound();
+            return Ok(item);
+        }
+
+        [HttpPost]
         public async Task<ActionResult<CreateSubscriptionPlanDto>> Create(CreateSubscriptionPlanDto dto)
         {
             var item = await _subscriptionPlanService.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
         }
 
-        [HttpPatch("subscription-plan/{id}")]
+        [HttpPatch("{id}")]
         public async Task<ActionResult> Update(Guid id, UpdateSubscriptionPlanDto dto)
         {
             var item = await _subscriptionPlanService.Update(id, dto);
@@ -45,7 +53,7 @@ namespace sketch_tale.WebApi.Controllers
             return NoContent();
         }
 
-        [HttpDelete("subscription-plan/{id}")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
             var item = await _subscriptionPlanService.Delete(id);

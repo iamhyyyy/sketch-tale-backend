@@ -563,7 +563,7 @@ public class SeedData
                 PaymentProvider = "INTERNAL",
                 TxnRef = "SEEDTXN0002",
                 TransactionNo = "FREE0001",
-                BankCode = null,
+                BankCode = string.Empty,
                 ResponseCode = "00",
                 PayDate = now.AddDays(-30),
                 RawIpnResponse = "{\"plan\":\"FreePlan\"}",

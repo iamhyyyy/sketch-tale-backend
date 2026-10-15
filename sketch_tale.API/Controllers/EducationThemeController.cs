@@ -6,7 +6,7 @@ using sketch_tale.Application.Interfaces.Services;
 namespace sketch_tale.WebApi.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/education-themes")]
     public class EducationThemeController : ControllerBase
     {
         private readonly IEducationThemeService _educationThemeService;
@@ -18,14 +18,14 @@ namespace sketch_tale.WebApi.Controllers
             _emailService = emailService;
         }
 
-        [HttpGet("education-themes")]
+        [HttpGet]
         public async Task<ActionResult<List<EducationThemeDto>>> GetAll()
         {
             var items = await _educationThemeService.GetAllAsync();
             return Ok(items);
         }
 
-        [HttpGet("education-theme/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<EducationThemeDto>> GetById(Guid id)
         {
             var item = await _educationThemeService.GetByIdAsync(id);
@@ -33,14 +33,14 @@ namespace sketch_tale.WebApi.Controllers
             return Ok(item);
         }
 
-        [HttpPost("education-theme")]
+        [HttpPost]
         public async Task<ActionResult<CreateEducationThemeDto>> Create(CreateEducationThemeDto dto)
         {
             var item = await _educationThemeService.AddAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = item.Id }, item);
         }
 
-        [HttpPatch("education-theme/{id}")]
+        [HttpPatch("{id}")]
         public async Task<ActionResult> Update(Guid id, UpdateEducationThemeDto dto)
         {
             var item = await _educationThemeService.Update(id, dto);
@@ -48,7 +48,7 @@ namespace sketch_tale.WebApi.Controllers
             return NoContent();
         }
 
-        [HttpDelete("education-theme/{id}")]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(Guid id)
         {
             var item = await _educationThemeService.Delete(id);
