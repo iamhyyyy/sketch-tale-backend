@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
@@ -7,6 +8,7 @@ namespace sketch_tale.WebApi.Controllers;
 
 [ApiController]
 [Route("api/storypage-template")]
+
 public class StoryPageTemplateController : ControllerBase
 {
     private readonly IStoryPageTemplateService _storyPageTemplateService;
@@ -24,6 +26,7 @@ public class StoryPageTemplateController : ControllerBase
     }
 
     [HttpPost("{storyId}/page")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<StoryPageTemplateDto>> CreatePage(
         Guid storyId, 
@@ -49,6 +52,7 @@ public class StoryPageTemplateController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Update(
         Guid id, 
@@ -73,6 +77,7 @@ public class StoryPageTemplateController : ControllerBase
     }
 
     [HttpDelete("story-pages/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var success = await _storyPageTemplateService.DeletePageAsync(id);

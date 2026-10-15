@@ -36,7 +36,7 @@ public class StoryTemplateController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "content manager")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<StoryTemplateDto>> Create([FromForm] CreateStoryTemplateDto dto, IFormFile? file)
     {
@@ -45,7 +45,7 @@ public class StoryTemplateController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "content manager")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Update(Guid id, [FromForm] UpdateStoryTemplateDto dto, IFormFile? file)
     {
@@ -57,7 +57,7 @@ public class StoryTemplateController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "content manager")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> Delete(Guid id)
     {
         var success = await _storyTemplateService.DeleteAsync(id);
@@ -68,7 +68,7 @@ public class StoryTemplateController : ControllerBase
     }
 
     [HttpPost("{id}/publish")]
-    [Authorize(Roles = "content manager")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<ActionResult<PublishStoryResultDto>> Publish(Guid id)
     {
         try

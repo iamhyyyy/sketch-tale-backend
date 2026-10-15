@@ -6,6 +6,7 @@ using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Entities;
+using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Application.Services;
 
@@ -24,12 +25,14 @@ public class StoryTemplateService : IStoryTemplateService
     public async Task<IEnumerable<StoryTemplateDto>> GetAllAsync()
     {
         var items = await _unitOfWork.StoryTemplateRepository.GetAllAsync();
-        return _mapper.Map<IEnumerable<StoryTemplateDto>>(items);
+        var activeItems = items.Where(s => s.Status != Domain.Enums.CommonStatus.Inactive);
+        return _mapper.Map<IEnumerable<StoryTemplateDto>>(activeItems);
     }
 
     public async Task<StoryTemplateDto?> GetByIdAsync(Guid id)
     {
         var item = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(id);
+        if (item == null || item.Status == Domain.Enums.CommonStatus.Inactive) return null;
         return _mapper.Map<StoryTemplateDto>(item);
     }
 
@@ -50,7 +53,7 @@ public class StoryTemplateService : IStoryTemplateService
     public async Task<bool> UpdateAsync(Guid id, UpdateStoryTemplateDto dto, IFormFile? file)
     {
         var item = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(id);
-        if (item == null) return false;
+        if (item == null || item.Status == Domain.Enums.CommonStatus.Inactive) return false;
         _mapper.Map(dto, item);
         if (file != null)
             item.CoverImageUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/cover-image");
@@ -65,7 +68,7 @@ public class StoryTemplateService : IStoryTemplateService
     public async Task<PublishStoryResultDto> PublishStoryAsync(Guid storyId)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
-        if (story == null)
+        if (story == null || story.Status == Domain.Enums.CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Story template with id {storyId} was not found.");
         }
@@ -86,9 +89,12 @@ public class StoryTemplateService : IStoryTemplateService
     public async Task<bool> DeleteAsync(Guid id)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(id);
-        if (story == null) return false;
+        if (story == null || story.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
-        _unitOfWork.StoryTemplateRepository.Delete(story);
+        story.Status = Domain.Enums.CommonStatus.Inactive;
+        story.UpdatedAt = DateTime.UtcNow;
+
+        _unitOfWork.StoryTemplateRepository.Update(story);
         await _unitOfWork.CompleteAsync();
         return true;
     }

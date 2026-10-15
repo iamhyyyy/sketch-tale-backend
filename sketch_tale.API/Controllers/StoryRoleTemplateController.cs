@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
@@ -26,6 +27,7 @@ public class StoryRoleTemplateController : ControllerBase
 
 
     [HttpPost("story-template/{storyId}/role")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<StoryRoleTemplateDto>> CreateRole(
         Guid storyId,
@@ -44,6 +46,7 @@ public class StoryRoleTemplateController : ControllerBase
     }
 
     [HttpPut("story-role/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateRole(
         Guid id,
@@ -57,7 +60,7 @@ public class StoryRoleTemplateController : ControllerBase
         return Ok(new { message = "Cập nhật nhân vật thành công." });
     }
 
-
+    [Authorize(Roles = "ContentManager,content manager")]
     [HttpDelete("story-role/{id}")]
     public async Task<IActionResult> DeleteRole(Guid id)
     {

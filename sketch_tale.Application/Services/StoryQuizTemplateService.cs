@@ -26,7 +26,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
     public async Task<IEnumerable<StoryQuizTemplateDto>> GetQuizzesByStoryAsync(Guid storyId)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
-        if (story == null)
+        if (story == null || story.Status == CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Story template với Id {storyId} không tồn tại.");
         }
@@ -38,7 +38,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
     public async Task<StoryQuizTemplateDto?> GetQuizByIdAsync(Guid quizId)
     {
         var quiz = await _unitOfWork.StoryQuizTemplateRepository.GetByIdAsync(quizId);
-        if (quiz == null) return null;
+        if (quiz == null || quiz.Status == CommonStatus.Inactive) return null;
 
         return _mapper.Map<StoryQuizTemplateDto>(quiz);
     }
@@ -46,7 +46,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
     public async Task<StoryQuizTemplateDto> CreateQuizAsync(Guid storyId, CreateStoryQuizTemplateDto dto, IFormFile? file = null)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
-        if (story == null)
+        if (story == null || story.Status == CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Story template với Id {storyId} không tồn tại.");
         }
@@ -88,7 +88,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
     public async Task<bool> UpdateQuizAsync(Guid quizId, UpdateStoryQuizTemplateDto dto, IFormFile? file = null)
     {
         var quiz = await _unitOfWork.StoryQuizTemplateRepository.GetByIdAsync(quizId);
-        if (quiz == null) return false;
+        if (quiz == null || quiz.Status == CommonStatus.Inactive) return false;
 
         if (dto.Options != null && dto.Options.Any())
         {
@@ -126,7 +126,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         }
 
         quiz.Status = dto.Status;
-        quiz.UpdatedAt = DateTime.UtcNow;
+        quiz.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
         _unitOfWork.StoryQuizTemplateRepository.Update(quiz);
         await _unitOfWork.CompleteAsync();
@@ -136,9 +136,12 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
     public async Task<bool> DeleteQuizAsync(Guid quizId)
     {
         var quiz = await _unitOfWork.StoryQuizTemplateRepository.GetByIdAsync(quizId);
-        if (quiz == null) return false;
+        if (quiz == null || quiz.Status == CommonStatus.Inactive) return false;
 
-        _unitOfWork.StoryQuizTemplateRepository.Delete(quiz);
+        quiz.Status = CommonStatus.Inactive;
+        quiz.UpdatedAt = DateTime.UtcNow.AddHours(7);
+
+        _unitOfWork.StoryQuizTemplateRepository.Update(quiz);
         await _unitOfWork.CompleteAsync();
         return true;
     }

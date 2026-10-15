@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Services;
@@ -23,6 +24,7 @@ public class CharacterSlotTemplateController : ControllerBase
     }
 
     [HttpPost("story-pages/{pageId}/slot")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<ActionResult<CharacterSlotTemplateDto>> CreateSlot(
         Guid pageId,
         [FromBody] CreateCharacterSlotTemplateDto dto)
@@ -43,6 +45,7 @@ public class CharacterSlotTemplateController : ControllerBase
     }
 
     [HttpPut("story-slots/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> UpdateSlot(
         Guid id,
         [FromBody] UpdateCharacterSlotTemplateDto dto)
@@ -55,6 +58,7 @@ public class CharacterSlotTemplateController : ControllerBase
     }
 
     [HttpDelete("story-slots/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> DeleteSlot(Guid id)
     {
         var success = await _characterSlotTemplateService.DeleteSlotAsync(id);

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
@@ -6,6 +7,7 @@ using sketch_tale.Application.Interfaces.Services;
 namespace sketch_tale.WebApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api")]
 public class StoryQuizTemplateController : ControllerBase
 {
@@ -41,6 +43,7 @@ public class StoryQuizTemplateController : ControllerBase
     }
 
     [HttpPost("story-template/{storyId}/quiz")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<ActionResult<StoryQuizTemplateDto>> CreateQuiz(
         Guid storyId,
         [FromBody] CreateStoryQuizTemplateDto dto)
@@ -61,6 +64,7 @@ public class StoryQuizTemplateController : ControllerBase
     }
 
     [HttpPost("story-template/{storyId}/quiz/with-image")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult<StoryQuizTemplateDto>> CreateQuizWithImage(
         Guid storyId,
@@ -83,6 +87,7 @@ public class StoryQuizTemplateController : ControllerBase
     }
 
     [HttpPut("story-quiz/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> UpdateQuiz(
         Guid id,
         [FromBody] UpdateStoryQuizTemplateDto dto)
@@ -102,6 +107,7 @@ public class StoryQuizTemplateController : ControllerBase
     }
 
     [HttpPut("story-quiz/{id}/with-image")]
+    [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> UpdateQuizWithImage(
         Guid id,
@@ -123,6 +129,7 @@ public class StoryQuizTemplateController : ControllerBase
     }
 
     [HttpDelete("story-quiz/{id}")]
+    [Authorize(Roles = "ContentManager,content manager")]
     public async Task<IActionResult> DeleteQuiz(Guid id)
     {
         var success = await _storyQuizTemplateService.DeleteQuizAsync(id);

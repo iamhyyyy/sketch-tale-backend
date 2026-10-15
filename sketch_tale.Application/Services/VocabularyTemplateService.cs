@@ -20,7 +20,7 @@ public class VocabularyTemplateService : IVocabularyTemplateService
     public async Task<IEnumerable<VocabularyTemplateDto>> GetVocabsByPageAsync(Guid pageId)
     {
         var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
-        if (page == null)
+        if (page == null || page.Status == sketch_tale.Domain.Enums.CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Trang truyện với Id {pageId} không tồn tại.");
         }
@@ -40,7 +40,7 @@ public class VocabularyTemplateService : IVocabularyTemplateService
     public async Task<VocabularyTemplateDto> CreateVocabAsync(Guid pageId, CreateVocabularyTemplateDto dto)
     {
         var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
-        if (page == null)
+        if (page == null || page.Status == sketch_tale.Domain.Enums.CommonStatus.Inactive)
         {
             throw new KeyNotFoundException($"Trang truyện với Id {pageId} không tồn tại.");
         }
