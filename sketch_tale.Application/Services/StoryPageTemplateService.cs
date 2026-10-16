@@ -53,10 +53,6 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         {
             entity.AudioNarrationUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/audios");
         }
-        else if (!string.IsNullOrWhiteSpace(dto.AudioNarrationUrl))
-        {
-            entity.AudioNarrationUrl = dto.AudioNarrationUrl;
-        }
 
         entity.Status = Domain.Enums.CommonStatus.Draft;
 
@@ -82,10 +78,6 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         if (audioFile != null)
         {
             page.AudioNarrationUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/audios");
-        }
-        else if (dto.AudioNarrationUrl != null)
-        {
-            page.AudioNarrationUrl = dto.AudioNarrationUrl;
         }
 
         page.UpdatedAt = DateTime.UtcNow.AddHours(7);
