@@ -49,18 +49,56 @@ public class Program
                         ? parsedPk
                         : Guid.Empty;
 
-                    auditLog.OldValues = entry.Changes != null
-                        ? System.Text.Json.JsonSerializer.Serialize(entry.ColumnValues)
-                        : null;
-                    auditLog.NewValues = entry.ToJson();
-                    auditLog.ChangedColumns = entry.Changes != null
-                        ? string.Join(", ", entry.Changes.Select(c => c.ColumnName))
-                        : null;
+                    if (entry.Changes != null && entry.Changes.Count > 0)
+                    {
+                        bool AreValuesEqual(object val1, object val2)
+                        {
+                            if (val1 == null && val2 == null) return true;
+                            if (val1 == null || val2 == null) return false;
+
+                            // So sánh chuỗi representation đề phòng khác kiểu dữ liệu nhưng cùng giá trị (vd: int vs long, DateTime formatting)
+                            return Equals(val1, val2) || string.Equals(val1.ToString(), val2.ToString());
+                        }
+
+                        // Danh sách các cột muốn bỏ qua không audit (nếu cần)
+                        var ignoredColumns = new HashSet<string> { "UpdatedAt", "UpdatedBy" };
+
+                        // Lọc riêng từng cột: Chỉ lấy những cột mà OriginalValue KHÁC NewValue
+                        var realChanges = entry.Changes
+                            .Where(c => !ignoredColumns.Contains(c.ColumnName))
+                            .Where(c => !AreValuesEqual(c.OriginalValue, c.NewValue))
+                            .ToList();
+
+                        if (realChanges.Count > 0)
+                        {
+                            var oldValuesDict = realChanges.ToDictionary(c => c.ColumnName, c => c.OriginalValue);
+                            var newValuesDict = realChanges.ToDictionary(c => c.ColumnName, c => c.NewValue);
+
+                            auditLog.OldValues = System.Text.Json.JsonSerializer.Serialize(oldValuesDict);
+                            auditLog.NewValues = System.Text.Json.JsonSerializer.Serialize(newValuesDict);
+                            auditLog.ChangedColumns = string.Join(", ", realChanges.Select(c => c.ColumnName));
+                        }
+                        else
+                        {
+                            // Nếu sau khi lọc không có cột nào thực sự đổi value
+                            auditLog.OldValues = null;
+                            auditLog.NewValues = null;
+                            auditLog.ChangedColumns = null;
+                        }
+                    }
+                    else
+                    {
+                        // Xử lý Insert / Delete
+                        auditLog.OldValues = entry.Action == "Delete" ? entry.ToJson() : null;
+                        auditLog.NewValues = entry.Action == "Insert" ? entry.ToJson() : null;
+                        auditLog.ChangedColumns = null;
+                    }
                 }
 
                 return Task.FromResult(true);
             }
         };
+
 
         // Đăng ký Unit of Work
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -227,11 +265,11 @@ public class Program
         });
 
         //environment variable for port, default to 8080 if not set
-        //var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        //app.Run($"http://0.0.0.0:{port}");
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        app.Run();
+        //app.Run();
 
     }
 }
