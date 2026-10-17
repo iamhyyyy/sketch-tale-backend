@@ -41,6 +41,12 @@ public class Program
                 if (auditEntity is AuditLog auditLog)
                 {
                     auditLog.Id = Guid.NewGuid();
+
+                    auditLog.CreatedAt = DateTime.UtcNow.AddHours(7);
+                    auditLog.CreateBy = Guid.Empty; // Để Guid.Empty để SaveChangesAsync tự gán currentUserId
+                    auditLog.UpdatedAt = null;      // Bản ghi Log mới tạo không có UpdateAt
+                    auditLog.UpdateBy = null;       // Bản ghi Log mới tạo không có UpdateBy
+
                     auditLog.Action = entry.Action; // "Insert", "Update", "Delete"
                     auditLog.EntityName = entry.EntityType.Name;
 
@@ -108,6 +114,7 @@ public class Program
         builder.Services.AddScoped<ICreditCostRepository, CreditCostRepository>();
         builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
         builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+        builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
@@ -122,6 +129,7 @@ public class Program
         builder.Services.AddScoped<ICreditCostService, CreditCostService>();
         builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
         builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+        builder.Services.AddScoped<IAuditLogService, AuditLogService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
