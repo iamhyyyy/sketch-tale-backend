@@ -7,6 +7,8 @@ public interface IStoryTemplateService
 {
     //Story Template CRUD
     Task<IEnumerable<StoryTemplateDto>> GetAllAsync();
+    Task<IEnumerable<StoryTemplateDto>> GetStories();
+    Task<IEnumerable<StoryTemplateDto>> GetStoriesByEduThemeId(Guid EduThemeId);
     Task<StoryTemplateDto?> GetByIdAsync(Guid id);
     Task<StoryTemplateDto> CreateAsync(CreateStoryTemplateDto dto, IFormFile? file);
     Task<bool> UpdateAsync(Guid id, UpdateStoryTemplateDto dto, IFormFile? file);

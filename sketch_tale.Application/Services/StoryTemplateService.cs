@@ -21,14 +21,25 @@ public class StoryTemplateService : IStoryTemplateService
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
     }
-
+    //Này lấy tất cả Templete( tất cả status )
     public async Task<IEnumerable<StoryTemplateDto>> GetAllAsync()
     {
         var items = await _unitOfWork.StoryTemplateRepository.GetAllAsync();
         var activeItems = items.Where(s => s.Status != Domain.Enums.CommonStatus.Inactive);
         return _mapper.Map<IEnumerable<StoryTemplateDto>>(activeItems);
     }
-
+    //này lấy tất cả Templete active
+    public async Task<IEnumerable<StoryTemplateDto>> GetStories()
+    {
+        var stories = await _unitOfWork.StoryTemplateRepository.getStories();
+        return _mapper.Map<IEnumerable<StoryTemplateDto>>(stories); 
+    }
+    //getByEduthemeID
+    public async Task<IEnumerable<StoryTemplateDto>> GetStoriesByEduThemeId(Guid EduThemeId)
+    {
+        var stories = await _unitOfWork.StoryTemplateRepository.getByEducationThemeId(EduThemeId);
+        return _mapper.Map<IEnumerable<StoryTemplateDto>>(stories);
+    }
     public async Task<StoryTemplateDto?> GetByIdAsync(Guid id)
     {
         var item = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(id);
@@ -99,5 +110,5 @@ public class StoryTemplateService : IStoryTemplateService
         return true;
     }
 
-
+    
 }

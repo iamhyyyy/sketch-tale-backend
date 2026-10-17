@@ -25,6 +25,21 @@ public class StoryPageTemplateController : ControllerBase
         return Ok(pages);
     }
 
+    [HttpGet("pages/{id}")]
+    public async Task<ActionResult<IEnumerable<StoryPageTemplateDto>>> GetPageById(Guid pageId)
+    {
+        var page = await _storyPageTemplateService.GetPageByIdAsync(pageId);
+        return Ok(page);
+    }
+
+    [HttpGet("all-pages/{storyId}")]
+    [Authorize(Roles = "ContentManager,content manager")]
+    public async Task<ActionResult<IEnumerable<StoryPageTemplateDto>>> GetAllPagesByStory(Guid storyId)
+    {
+        var pages = await _storyPageTemplateService.GetAllPagesByStoryAsync(storyId);
+        return Ok(pages);
+    }
+
     [HttpPost("{storyId}/page")]
     [Authorize(Roles = "ContentManager,content manager")]
     [Consumes("multipart/form-data")]

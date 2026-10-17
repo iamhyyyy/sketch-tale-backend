@@ -19,4 +19,11 @@ public class StoryPageTemplateRepository : GenericRepository<StoryPageTemplate>,
             .OrderBy(p => p.PageNumber)
             .ToListAsync();
     }
+    public async Task<IEnumerable<StoryPageTemplate>> GetAllPagesByStoryIdAsync(Guid storyId)
+    {
+        return await _dbSet
+            .Where(p => p.StoryTemplateId == storyId)
+            .OrderBy(p => p.PageNumber)
+            .ToListAsync();
+    }
 }

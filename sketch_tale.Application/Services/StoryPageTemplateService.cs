@@ -21,11 +21,23 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
     }
-
+    //mới thêm GetAllPage( bao gồm tất cả status )
+    public async Task<IEnumerable<StoryPageTemplateDto>> GetAllPagesByStoryAsync(Guid storyId)
+    {
+        var pages = await _unitOfWork.StoryPageTemplateRepository.GetAllPagesByStoryIdAsync(storyId);
+        return _mapper.Map<IEnumerable<StoryPageTemplateDto>>(pages);
+    }
+    //cái này là getpages nhưng mà chỉ lấy cái nào active thôi
     public async Task<IEnumerable<StoryPageTemplateDto>> GetPagesByStoryAsync(Guid storyId)
     {
         var pages = await _unitOfWork.StoryPageTemplateRepository.GetPagesByStoryIdAsync(storyId);
         return _mapper.Map<IEnumerable<StoryPageTemplateDto>>(pages);
+    }
+    //lấy page theo ID
+    public async Task<StoryPageTemplateDto> GetPageByIdAsync(Guid pageId)
+    {
+        var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
+        return _mapper.Map<StoryPageTemplateDto>(page);
     }
 
     public async Task<StoryPageTemplateDto> CreatePageAsync(Guid storyId, CreateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null)
@@ -106,4 +118,6 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         await _unitOfWork.CompleteAsync();
         return true;
     }
+
+    
 }

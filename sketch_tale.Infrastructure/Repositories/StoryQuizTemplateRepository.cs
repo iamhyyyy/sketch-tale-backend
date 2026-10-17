@@ -18,4 +18,10 @@ public class StoryQuizTemplateRepository : GenericRepository<StoryQuizTemplate>,
             .Where(q => q.StoryTemplateId == storyId && q.Status != CommonStatus.Inactive)
             .ToListAsync();
     }
+    public async Task<IEnumerable<StoryQuizTemplate>> GetAllQuizzesByStoryIdAsync(Guid storyId)
+    {
+        return await _dbSet
+            .Where(q => q.StoryTemplateId == storyId)
+            .ToListAsync();
+    }
 }
