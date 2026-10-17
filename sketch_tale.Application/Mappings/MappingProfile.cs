@@ -30,6 +30,9 @@ public class MappingProfile : Profile
         CreateMap<CreateSubscriptionDto, Subscription>();
         CreateMap<UpdateSubscriptionDto, Subscription>();
 
+        // AuditLog
+        CreateMap<AuditLog, AuditLogDto>().ReverseMap();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
