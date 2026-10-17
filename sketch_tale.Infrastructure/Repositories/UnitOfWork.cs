@@ -18,6 +18,7 @@ public class UnitOfWork : IUnitOfWork
     private ISubscriptionPlanRepository _subscriptionPlanRepository = null!;
     private ISubscriptionRepository _subscriptionRepository = null!;
     private IAuditLogRepository _auditLogRepository = null!;
+    private IRestrictedKeywordRepository _restrictedKeywordRepository = null!;
     private IStoryTemplateRepository _storyTemplateRepository = null!;
     private IStoryPageTemplateRepository _storyPageTemplateRepository = null!;
     private IStoryRoleTemplateRepository _storyRoleTemplateRepository = null!;
@@ -55,6 +56,7 @@ public class UnitOfWork : IUnitOfWork
     public ISubscriptionPlanRepository SubscriptionPlanRepository => _subscriptionPlanRepository ??= new SubscriptionPlanRepository(_context);
     public ISubscriptionRepository SubscriptionRepository => _subscriptionRepository ??= new SubscriptionRepository(_context);
     public IAuditLogRepository AuditLogRepository => _auditLogRepository ??= new AuditLogRepository(_context);
+    public IRestrictedKeywordRepository RestrictedKeywordRepository => _restrictedKeywordRepository ??= new RestrictedKeywordRepository(_context);
     public IStoryTemplateRepository StoryTemplateRepository => _storyTemplateRepository ??= new StoryTemplateRepository(_context);
     public IStoryPageTemplateRepository StoryPageTemplateRepository => _storyPageTemplateRepository ??= new StoryPageTemplateRepository(_context);
     public IParentProfileRepository ParentProfileRepository => _parentProfileRepository ??= new ParentProfileRepository(_context);

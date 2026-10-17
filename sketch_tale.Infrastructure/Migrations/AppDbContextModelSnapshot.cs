@@ -818,6 +818,7 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -998,6 +999,7 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<string>("BankCode")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("CreateBy")
@@ -1017,9 +1019,11 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("RawIpnResponse")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ResponseCode")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Status")
@@ -1029,6 +1033,7 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("TransactionNo")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TxnRef")
@@ -1599,6 +1604,7 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("AudioUrl")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("CreateBy")

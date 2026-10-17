@@ -34,7 +34,7 @@ namespace SmartCarWash.Application.Services
         public async Task<CreditCostDto> AddAsync(CreateCreditCostDto dto)
         {
             var item = _mapper.Map<CreditCost>(dto);
-            item.Id = Guid.NewGuid();
+
             await _unitOfWork.CreditCostRepository.AddAsync(item);
             await _unitOfWork.CompleteAsync();
 
