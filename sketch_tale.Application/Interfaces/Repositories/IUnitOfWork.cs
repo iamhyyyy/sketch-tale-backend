@@ -12,6 +12,7 @@ public interface IUnitOfWork : IDisposable
     ICreditCostRepository CreditCostRepository { get; }
     ISubscriptionPlanRepository SubscriptionPlanRepository { get; }
     ISubscriptionRepository SubscriptionRepository { get; }
+    IAuditLogRepository AuditLogRepository { get; }
     IStoryTemplateRepository StoryTemplateRepository { get; }
     IStoryPageTemplateRepository StoryPageTemplateRepository { get; }
     IStoryRoleTemplateRepository StoryRoleTemplateRepository { get; }
