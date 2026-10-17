@@ -21,11 +21,23 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
     }
-
+    //l‚Ïy active
     public async Task<IEnumerable<StoryRoleTemplateDto>> GetRolesByStoryAsync(Guid storyId)
     {
         var roles = await _unitOfWork.StoryRoleTemplateRepository.GetRolesByStoryIdAsync(storyId);
         return _mapper.Map<IEnumerable<StoryRoleTemplateDto>>(roles);
+    }
+    //l‚Ïy all t‚Ït ca“ status
+    public async Task<IEnumerable<StoryRoleTemplateDto>> GetAllRolesByStoryAsync(Guid storyId)
+    {
+        var roles = await _unitOfWork.StoryRoleTemplateRepository.GetAllRolesByStoryIdAsync(storyId);
+        return _mapper.Map<IEnumerable<StoryRoleTemplateDto>>(roles);
+    }
+    //l‚Ïy role b„Ãng id
+    public async Task<StoryRoleTemplateDto> GetRoleByIdAsync(Guid RoleId)
+    {
+        var role = await _unitOfWork.StoryRoleTemplateRepository.GetByIdAsync(RoleId);
+        return _mapper.Map<StoryRoleTemplateDto>(role);
     }
 
     public async Task<StoryRoleTemplateDto> CreateRoleAsync(Guid storyId, CreateStoryRoleTemplateDto dto, IFormFile? file = null)
@@ -83,4 +95,6 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
         await _unitOfWork.CompleteAsync();
         return true;
     }
+
+    
 }

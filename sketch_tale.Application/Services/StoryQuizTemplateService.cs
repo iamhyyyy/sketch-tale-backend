@@ -22,7 +22,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
     }
-
+    //lấy status active
     public async Task<IEnumerable<StoryQuizTemplateDto>> GetQuizzesByStoryAsync(Guid storyId)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
@@ -34,6 +34,12 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         var quizzes = await _unitOfWork.StoryQuizTemplateRepository.GetQuizzesByStoryIdAsync(storyId);
         return _mapper.Map<IEnumerable<StoryQuizTemplateDto>>(quizzes);
     }
+    //Lấy All tất cả status
+    public async Task<IEnumerable<StoryQuizTemplateDto>> GetAllQuizzesByStoryAsync(Guid storyId)
+    {
+        var quizzes = await _unitOfWork.StoryQuizTemplateRepository.GetAllQuizzesByStoryIdAsync(storyId);
+        return _mapper.Map<IEnumerable<StoryQuizTemplateDto>>(quizzes);
+    }
 
     public async Task<StoryQuizTemplateDto?> GetQuizByIdAsync(Guid quizId)
     {
@@ -43,7 +49,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         return _mapper.Map<StoryQuizTemplateDto>(quiz);
     }
 
-    public async Task<StoryQuizTemplateDto> CreateQuizAsync(Guid storyId, CreateStoryQuizTemplateDto dto, IFormFile? file = null)
+    public async Task<StoryQuizTemplateDto> CreateQuizAsync(Guid storyId, CreateStoryQuizTemplateDto dto, IFormFile? file = null, IFormFile? audioFile = null)
     {
         var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
         if (story == null || story.Status == CommonStatus.Inactive)
@@ -76,7 +82,10 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         {
             entity.QuestionPicUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/quizzes");
         }
-
+        if (audioFile != null)
+        {
+            entity.QuestionAudioUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/quizz-audios");
+        }
         await _unitOfWork.StoryQuizTemplateRepository.AddAsync(entity);
         await _unitOfWork.CompleteAsync();
 
@@ -85,7 +94,7 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         return resultDto;
     }
 
-    public async Task<bool> UpdateQuizAsync(Guid quizId, UpdateStoryQuizTemplateDto dto, IFormFile? file = null)
+    public async Task<bool> UpdateQuizAsync(Guid quizId, UpdateStoryQuizTemplateDto dto, IFormFile? file = null, IFormFile? audioFile = null)
     {
         var quiz = await _unitOfWork.StoryQuizTemplateRepository.GetByIdAsync(quizId);
         if (quiz == null || quiz.Status == CommonStatus.Inactive) return false;
@@ -111,18 +120,14 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
             quiz.QuestionText = dto.QuestionText;
         }
 
-        if (dto.QuestionAudioUrl != null)
+        if (audioFile != null)
         {
-            quiz.QuestionAudioUrl = dto.QuestionAudioUrl;
+            quiz.QuestionAudioUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/quizz-audios");
         }
 
         if (file != null)
         {
             quiz.QuestionPicUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/quizzes");
-        }
-        else if (dto.QuestionPicUrl != null)
-        {
-            quiz.QuestionPicUrl = dto.QuestionPicUrl;
         }
 
         quiz.Status = dto.Status;
@@ -145,4 +150,6 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         await _unitOfWork.CompleteAsync();
         return true;
     }
+
+   
 }

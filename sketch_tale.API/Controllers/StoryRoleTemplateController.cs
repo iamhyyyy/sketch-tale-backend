@@ -17,14 +17,28 @@ public class StoryRoleTemplateController : ControllerBase
         _storyRoleTemplateService = storyRoleTemplateService;
     }
 
-
+    //lấy active
     [HttpGet("story-template/{storyId}/roles")]
     public async Task<ActionResult<IEnumerable<StoryRoleTemplateDto>>> GetRolesByStory(Guid storyId)
     {
         var roles = await _storyRoleTemplateService.GetRolesByStoryAsync(storyId);
         return Ok(roles);
     }
+    //lấy all
+    [HttpGet("story-template/{storyId}/all-roles")]
+    [Authorize(Roles = "ContentManager,content manager")]
+    public async Task<ActionResult<IEnumerable<StoryRoleTemplateDto>>> GetAllRolesByStory(Guid storyId)
+    {
+        var roles = await _storyRoleTemplateService.GetAllRolesByStoryAsync(storyId);
+        return Ok(roles);
+    }
 
+    [HttpGet("role/{id}")]
+    public async Task<ActionResult<IEnumerable<StoryRoleTemplateDto>>> GetRoleById(Guid roleId)
+    {
+        var role = await _storyRoleTemplateService.GetRoleByIdAsync(roleId);
+        return Ok(role);
+    }
 
     [HttpPost("story-template/{storyId}/role")]
     [Authorize(Roles = "ContentManager,content manager")]

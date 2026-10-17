@@ -18,4 +18,10 @@ public class StoryRoleTemplateRepository : GenericRepository<StoryRoleTemplate>,
             .Where(r => r.StoryTemplateId == storyId && r.Status != CommonStatus.Inactive)
             .ToListAsync();
     }
+    public async Task<IEnumerable<StoryRoleTemplate>> GetAllRolesByStoryIdAsync(Guid storyId)
+    {
+        return await _dbSet
+            .Where(r => r.StoryTemplateId == storyId )
+            .ToListAsync();
+    }
 }

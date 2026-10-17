@@ -14,7 +14,6 @@ namespace sketch_tale.Application.DTOs
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
         public TargetAgeGroup AgeGroup { get; set; }
-        public CommonStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public Guid CreateBy { get; set; }
     }
@@ -167,8 +166,7 @@ namespace sketch_tale.Application.DTOs
     public class CreateStoryQuizTemplateDto
     {
         public string QuestionText { get; set; } = string.Empty;
-        public string? QuestionAudioUrl { get; set; }
-        public string? QuestionPicUrl { get; set; }
+
         public List<string> Options { get; set; } = new(); // FE gửi list, BE convert sang JSON
         public int CorrectOptionIndex { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -177,8 +175,7 @@ namespace sketch_tale.Application.DTOs
     public class UpdateStoryQuizTemplateDto
     {
         public string QuestionText { get; set; } = string.Empty;
-        public string? QuestionAudioUrl { get; set; }
-        public string? QuestionPicUrl { get; set; }
+
         public List<string> Options { get; set; } = new();
         public int CorrectOptionIndex { get; set; }
         public CommonStatus Status { get; set; }

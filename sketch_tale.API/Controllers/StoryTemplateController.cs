@@ -17,15 +17,30 @@ public class StoryTemplateController : ControllerBase
     {
         _storyTemplateService = storyTemplateService;
     }
-
-    [HttpGet("getallstories")]
-    public async Task<ActionResult<IEnumerable<StoryTemplateDto>>> GetAll()
+    //Này lấy tất cả Templete( tất cả status )
+    [HttpGet("all-stories")]
+    [Authorize(Roles = "ContentManager,content manager")]
+    public async Task<ActionResult<IEnumerable<StoryTemplateDto>>> GetAllStories()
     {
         var items = await _storyTemplateService.GetAllAsync();
         return Ok(items);
     }
+    //này lấy tất cả Templete active
+    [HttpGet("stories")]
+    public async Task<ActionResult<IEnumerable<StoryTemplateDto>>> GetStories()
+    {
+        var items = await _storyTemplateService.GetStories();
+        return Ok(items);
+    }
+    //này lấy theo EducationThemeId
+    [HttpGet("stories/education-theme/{id}")]
+    public async Task<ActionResult<IEnumerable<StoryTemplateDto>>> GetStoriesByEducationThemeId(Guid EduThemeId)
+    {
+        var items = await _storyTemplateService.GetStoriesByEduThemeId(EduThemeId);
+        return Ok(items);
+    }
 
-    [HttpGet("{id}")]
+    [HttpGet("stories/{id}")]
     public async Task<ActionResult<StoryTemplateDto>> GetById(Guid id)
     {
         var item = await _storyTemplateService.GetByIdAsync(id);
