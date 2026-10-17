@@ -41,7 +41,7 @@ namespace SmartCarWash.Application.Services
         public async Task<SubscriptionPlanDto> AddAsync(CreateSubscriptionPlanDto dto)
         {
             var item = _mapper.Map<SubscriptionPlan>(dto);
-            item.Id = Guid.NewGuid();
+            
             await _unitOfWork.SubscriptionPlanRepository.AddAsync(item);
             await _unitOfWork.CompleteAsync();
 

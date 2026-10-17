@@ -33,6 +33,11 @@ public class MappingProfile : Profile
         // AuditLog
         CreateMap<AuditLog, AuditLogDto>().ReverseMap();
 
+        // RestrictedKeyword
+        CreateMap<RestrictedKeyword, RestrictedKeywordDto>().ReverseMap();
+        CreateMap<CreateRestrictedKeywordDto, RestrictedKeyword>();
+        CreateMap<UpdateRestrictedKeywordDto, RestrictedKeyword>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))

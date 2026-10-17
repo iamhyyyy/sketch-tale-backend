@@ -315,7 +315,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.High,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new RestrictedKeyword
@@ -325,7 +325,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.Medium,
                 Action = ModerationAction.FlagForReview,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new RestrictedKeyword
@@ -335,7 +335,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Exact,
                 SeverityLevel = SeverityLevel.BlockImmediately,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             }
         );
@@ -355,7 +355,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.High,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new ProhibitedTheme
@@ -365,7 +365,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.Medium,
                 Action = ModerationAction.FlagForReview,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new ProhibitedTheme
@@ -375,7 +375,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.BlockImmediately,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             }
         );
