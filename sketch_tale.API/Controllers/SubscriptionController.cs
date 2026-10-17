@@ -30,17 +30,17 @@ namespace sketch_tale.WebApi.Controllers
             return Ok(item);
         }
 
-        [HttpGet("parent-profile/{parentProfileId}")]
-        public async Task<ActionResult<List<SubscriptionDto>>> GetByParentProfileId(Guid parentProfileId)
+        [HttpGet("parent-profile/{id}")]
+        public async Task<ActionResult<List<SubscriptionDto>>> GetByParentProfileId(Guid id)
         {
-            var items = await _subscriptionService.GetByParentProfileId(parentProfileId);
+            var items = await _subscriptionService.GetByParentProfileId(id);
             return Ok(items);
         }
 
-        [HttpGet("subscription-plan/{subscriptionPlanId}")]
-        public async Task<ActionResult<List<SubscriptionDto>>> GetBySubscriptionPlanId(Guid subscriptionPlanId)
+        [HttpGet("subscription-plan/{id}")]
+        public async Task<ActionResult<List<SubscriptionDto>>> GetBySubscriptionPlanId(Guid id)
         {
-            var items = await _subscriptionService.GetBySubscriptionPlanId(subscriptionPlanId);
+            var items = await _subscriptionService.GetBySubscriptionPlanId(id);
             return Ok(items);
         }
 
