@@ -122,6 +122,8 @@ public class Program
         builder.Services.AddScoped<ICharacterSlotTemplateRepository, CharacterSlotTemplateRepository>();
         builder.Services.AddScoped<IStoryQuizTemplateRepository, StoryQuizTemplateRepository>();
         builder.Services.AddScoped<IVocabularyTemplateRepository, VocabularyTemplateRepository>();
+        builder.Services.AddScoped<IParentProfileRepository, ParentProfileRepository>();
+        builder.Services.AddScoped<IChildProfileRepository, ChildProfileRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();

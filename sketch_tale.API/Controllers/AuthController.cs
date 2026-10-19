@@ -276,6 +276,27 @@ namespace sketch_tale.API.Controllers
             }
         }
 
+        // 13. Lấy role của user hiện tại đang login (Đã double check với DB)
+        [HttpGet("current-role")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUserRole()
+        {
+            try
+            {
+                var role = await _authService.GetCurrentUserRoleAsync();
+                if (string.IsNullOrEmpty(role))
+                {
+                    return Unauthorized(new { message = "Không xác định được quyền hạn người dùng hiện tại hoặc phiên đăng nhập đã hết hạn." });
+                }
+
+                return Ok(new { data = role, message = "Lấy quyền người dùng thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         private Guid? GetCurrentUserId()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
