@@ -47,7 +47,7 @@ public class Program
                     auditLog.UpdatedAt = null;      // Bản ghi Log mới tạo không có UpdateAt
                     auditLog.UpdateBy = null;       // Bản ghi Log mới tạo không có UpdateBy
 
-                    auditLog.Action = entry.Action; // "Insert", "Update", "Delete"
+                    auditLog.AuditAction = entry.Action; // "Insert", "Update", "Delete"
                     auditLog.EntityName = entry.EntityType.Name;
 
                     var pk = entry.PrimaryKey.Values.FirstOrDefault();
@@ -232,6 +232,7 @@ public class Program
         var app = builder.Build();
 
         //seed data
+        Audit.Core.Configuration.AuditDisabled = true; //Tắt tạm thời Audit.NET
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
@@ -254,6 +255,7 @@ public class Program
                 logger.LogError(ex, "An error occurred while migrating or seeding the database.");
             }
         }
+        Audit.Core.Configuration.AuditDisabled = false;//Bật lại Audit.NET
 
         // Configure the HTTP request pipeline.
         //if (app.Environment.IsDevelopment())

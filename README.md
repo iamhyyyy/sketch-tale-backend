@@ -138,6 +138,6 @@ dotnet run --project sketch_tale.API
 | Vai trò | Username | Mật khẩu mặc định | Mục đích sử dụng |
 | :--- | :--- | :--- | :--- |
 | **Admin** | `admin` | `Admin@123` | Quản trị viên hệ thống |
-| **Content Manager** | `cmanager` | `Manager@123` | Biên tập viên nội dung truyện |
+| **Content Manager** | `manager` | `Manager@123` | Biên tập viên nội dung truyện |
 | **Parent** | `parent` | `Parent@123` | Tài khoản phụ huynh mẫu |
 | **Child** | `child` | `Child@123` | Tài khoản trẻ em mẫu |
