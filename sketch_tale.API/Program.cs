@@ -116,6 +116,7 @@ public class Program
         builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         builder.Services.AddScoped<IRestrictedKeywordRepository, RestrictedKeywordRepository>();
+        builder.Services.AddScoped<IProhibitedThemeRepository, ProhibitedThemeRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
@@ -134,6 +135,7 @@ public class Program
         builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
         builder.Services.AddScoped<IAuditLogService, AuditLogService>();
         builder.Services.AddScoped<IRestrictedKeywordService, RestrictedKeywordService>();
+        builder.Services.AddScoped<IProhibitedThemeService, ProhibitedThemeService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
@@ -279,7 +281,7 @@ public class Program
         });
 
         //environment variable for port, default to 8080 if not set
-        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+         var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
         app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên

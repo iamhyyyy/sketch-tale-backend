@@ -38,6 +38,11 @@ public class MappingProfile : Profile
         CreateMap<CreateRestrictedKeywordDto, RestrictedKeyword>();
         CreateMap<UpdateRestrictedKeywordDto, RestrictedKeyword>();
 
+        // ProhibitedTheme
+        CreateMap<ProhibitedTheme, ProhibitedThemeDto>().ReverseMap();
+        CreateMap<CreateProhibitedThemeDto, ProhibitedTheme>();
+        CreateMap<UpdateProhibitedThemeDto, ProhibitedTheme>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
