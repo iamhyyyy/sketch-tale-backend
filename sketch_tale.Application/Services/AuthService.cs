@@ -1,15 +1,15 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,6 +24,7 @@ namespace sketch_tale.Application.Services
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuthService(
             UserManager<User> userManager,
@@ -32,7 +33,8 @@ namespace sketch_tale.Application.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IEmailService emailService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -41,42 +43,39 @@ namespace sketch_tale.Application.Services
             _mapper = mapper;
             _emailService = emailService;
             _configuration = configuration;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // 1. PHỤ HUYNH TỰ ĐĂNG KÝ
         public async Task<bool> RegisterParentAsync(RegisterParentDto dto)
         {
-            // Check trùng Email an toàn bằng LINQ (tránh lỗi trùng lặp dữ liệu trong DB)
+            // Check trùng Email qua UserManager
             if (!string.IsNullOrEmpty(dto.Email))
             {
-                var existingEmail = await _userManager.Users
-                    .FirstOrDefaultAsync(u => u.Email == dto.Email);
-
+                var existingEmail = await _userManager.FindByEmailAsync(dto.Email);
                 if (existingEmail != null)
                 {
                     throw new Exception("Email đã tồn tại trong hệ thống.");
                 }
             }
+            // Check trùng Username qua UserManager
+            var existingUsername = await _userManager.FindByNameAsync(dto.Username);
 
-            // Check trùng Username
-            var existingUsername = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.UserName == dto.Username);
-
-            if (existingUsername != null)
+            if (existingUsername != null)   
             {
                 throw new Exception("Username đã tồn tại trong hệ thống.");
             }
 
             // Dùng AutoMapper để chuyển DTO thành User Entity
             var user = _mapper.Map<User>(dto);
-            user.CreatedAt = DateTime.UtcNow;
+            user.CreatedAt = DateTime.UtcNow.AddHours(7);
             user.EmailConfirmed = false; // Phụ huynh bắt buộc phải xác thực email qua link gửi tới hộp thư
 
             // Tạo user và băm mật khẩu tự động bằng Identity
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
             {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                var errors = FormatIdentityErrors(result.Errors);
                 throw new Exception($"Đăng ký thất bại: {errors}");
             }
 
@@ -86,7 +85,7 @@ namespace sketch_tale.Application.Services
             // Khởi tạo sẵn một ParentProfile đi kèm cho phụ huynh này (Mặc định GÓI 1: FREE - 0k/tháng)
             var parentProfile = CreateDefaultParentProfile(user.Id);
 
-            await _unitOfWork.Repository<ParentProfile>().AddAsync(parentProfile);
+            await _unitOfWork.ParentProfileRepository.AddAsync(parentProfile);
             await _unitOfWork.CompleteAsync();
 
             // Gửi email xác thực tài khoản
@@ -97,7 +96,7 @@ namespace sketch_tale.Application.Services
             catch (Exception ex)
             {
                 // Nếu gửi email thất bại (do cấu hình email hoặc email không hợp lệ), rollback để user có thể đăng ký lại
-                _unitOfWork.Repository<ParentProfile>().Delete(parentProfile);
+                _unitOfWork.ParentProfileRepository.Delete(parentProfile);
                 await _unitOfWork.CompleteAsync();
                 await _userManager.DeleteAsync(user);
                 throw new InvalidOperationException($"Đăng ký thất bại do không thể gửi email xác thực: {ex.Message}");
@@ -109,7 +108,7 @@ namespace sketch_tale.Application.Services
         // 2. ĐĂNG NHẬP CHO 3 ROLE: ADMIN, CONTENT MANAGER, PARENT (Bằng Email hoặc Username)
         public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
         {
-            // Cho phép nhập Email hoặc Username đều được
+            // Cho phép nhập Email hoặc Username đều được qua UserManager
             var user = await _userManager.FindByEmailAsync(dto.Identifier)
                        ?? await _userManager.FindByNameAsync(dto.Identifier);
 
@@ -132,10 +131,13 @@ namespace sketch_tale.Application.Services
 
             var roles = await _userManager.GetRolesAsync(user);
 
-            // Nếu tài khoản là Child mà cố tình đăng nhập ở cổng này -> Từ chối
-            if (roles.Any(r => r.Equals("child", StringComparison.OrdinalIgnoreCase)))
+            // Nếu tài khoản là Child mà cố tình đăng nhập ở cổng này -> Từ chối (không dùng LINQ)
+            foreach (var r in roles)
             {
-                throw new UnauthorizedAccessException("Tài khoản trẻ em không thể đăng nhập tại đây. Vui lòng đăng nhập tại cổng dành cho trẻ em!");
+                if (r.Equals("child", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new UnauthorizedAccessException("Tài khoản trẻ em không thể đăng nhập tại đây. Vui lòng đăng nhập tại cổng dành cho trẻ em!");
+                }
             }
 
             // Kiểm tra xem user có thuộc một trong các role cho phép: Admin, ContentManager, Parent
@@ -179,16 +181,26 @@ namespace sketch_tale.Application.Services
         // 3. TRẺ EM ĐĂNG NHẬP (Chỉ dùng Username, không có email)
         public async Task<AuthResponseDto?> LoginChildAsync(LoginChildDto dto)
         {
-            // Trẻ em bắt buộc tìm theo Username
+            // Trẻ em bắt buộc tìm theo Username qua UserManager
             var user = await _userManager.FindByNameAsync(dto.Username);
             if (user == null) return null;
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: false);
             if (!result.Succeeded) return null;
 
-            // Kiểm tra xem user này có đúng là Child không
+            // Kiểm tra xem user này có đúng là Child không (không dùng LINQ)
             var roles = await _userManager.GetRolesAsync(user);
-            if (!roles.Any(r => r.Equals("child", StringComparison.OrdinalIgnoreCase)))
+            bool isChild = false;
+            foreach (var r in roles)
+            {
+                if (r.Equals("child", StringComparison.OrdinalIgnoreCase))
+                {
+                    isChild = true;
+                    break;
+                }
+            }
+
+            if (!isChild)
             {
                 throw new UnauthorizedAccessException("Cổng đăng nhập này chỉ dành riêng cho tài khoản trẻ em!");
             }
@@ -208,25 +220,14 @@ namespace sketch_tale.Application.Services
         // 4. PHỤ HUYNH TẠO TÀI KHOẢN CHO CON (CHILD)
         public async Task<bool> CreateChildAccountAsync(Guid parentUserId, RegisterChildDto dto)
         {
-            // Lấy danh sách ParentProfile và tìm theo UserId của phụ huynh đang thao tác
-            var allParentProfiles = await _unitOfWork.Repository<ParentProfile>().GetAllAsync();
-            var parentProfile = allParentProfiles.FirstOrDefault(p => p.UserId == parentUserId);
+            // Lấy ParentProfile qua Repository trực tiếp theo parentUserId (không dùng LINQ)
+            var parentProfile = await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(parentUserId);
 
-            // Nếu tài khoản phụ huynh chưa có ParentProfile (ví dụ: tài khoản seed 'parent'), tự khởi tạo (mặc định Gói 1: Free)
+            // Nếu tài khoản phụ huynh chưa có ParentProfile, tự khởi tạo (mặc định Gói 1: Free)
             if (parentProfile == null)
             {
-
-                parentProfile = new ParentProfile
-                {
-                    UserId = parentUserId,
-                    ChildProfileLimit = 3,
-                    RemainingChildProfileLimit = 3,
-                    CreatedAt = DateTime.UtcNow,
-                    CreateBy = parentUserId
-                };
-
                 parentProfile = CreateDefaultParentProfile(parentUserId);
-                await _unitOfWork.Repository<ParentProfile>().AddAsync(parentProfile);
+                await _unitOfWork.ParentProfileRepository.AddAsync(parentProfile);
                 await _unitOfWork.CompleteAsync();
             }
 
@@ -235,7 +236,7 @@ namespace sketch_tale.Application.Services
                 throw new InvalidOperationException($"Phụ huynh đã đạt giới hạn tối đa {parentProfile.ChildProfileLimit} hồ sơ trẻ em của gói hiện tại ({parentProfile.ChildProfileLimit} bé)! Vui lòng nâng cấp lên gói PLUS (tối đa 3 bé) hoặc PRO (tối đa 5 bé) để tiếp tục tạo tài khoản cho con.");
             }
 
-            // Kiểm tra username của bé đã tồn tại chưa
+            // Kiểm tra username của bé đã tồn tại chưa qua UserManager
             var existingUser = await _userManager.FindByNameAsync(dto.Username);
             if (existingUser != null)
             {
@@ -245,13 +246,13 @@ namespace sketch_tale.Application.Services
             // Dùng AutoMapper để tạo User cho con với Email để bằng NULL
             var childUser = _mapper.Map<User>(dto);
             childUser.Email = null;
-            childUser.CreatedAt = DateTime.UtcNow;
+            childUser.CreatedAt = DateTime.UtcNow.AddHours(7);
             childUser.CreateBy = parentUserId;
 
             var identityResult = await _userManager.CreateAsync(childUser, dto.Password);
             if (!identityResult.Succeeded)
             {
-                var errors = string.Join("; ", identityResult.Errors.Select(e => e.Description));
+                var errors = FormatIdentityErrors(identityResult.Errors);
                 throw new InvalidOperationException($"Tạo tài khoản cho bé thất bại: {errors}");
             }
 
@@ -262,17 +263,17 @@ namespace sketch_tale.Application.Services
             var childProfile = _mapper.Map<ChildProfile>(dto);
             childProfile.UserId = childUser.Id;
             childProfile.ParentProfileId = parentProfile.Id;
-            childProfile.CreatedAt = DateTime.UtcNow;
+            childProfile.CreatedAt = DateTime.UtcNow.AddHours(7);
             childProfile.CreateBy = parentUserId;
 
-            await _unitOfWork.Repository<ChildProfile>().AddAsync(childProfile);
+            await _unitOfWork.ChildProfileRepository.AddAsync(childProfile);
 
             // Trừ đi 1 lượt tạo con của phụ huynh
             parentProfile.RemainingChildProfileLimit -= 1;
-            parentProfile.UpdatedAt = DateTime.UtcNow;
+            parentProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
             parentProfile.UpdateBy = parentUserId;
 
-            _unitOfWork.Repository<ParentProfile>().Update(parentProfile);
+            _unitOfWork.ParentProfileRepository.Update(parentProfile);
 
             await _unitOfWork.CompleteAsync();
             return true;
@@ -416,7 +417,7 @@ namespace sketch_tale.Application.Services
             var result = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
             if (!result.Succeeded)
             {
-                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                var errors = FormatIdentityErrors(result.Errors);
                 throw new InvalidOperationException($"Đặt lại mật khẩu thất bại: {errors}");
             }
 
@@ -435,7 +436,7 @@ namespace sketch_tale.Application.Services
             var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
             if (!result.Succeeded)
             {
-                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                var errors = FormatIdentityErrors(result.Errors);
                 throw new InvalidOperationException($"Đổi mật khẩu không thành công: {errors}");
             }
 
@@ -483,8 +484,7 @@ namespace sketch_tale.Application.Services
 
             if (primaryRole == "Parent")
             {
-                var parentProfiles = await _unitOfWork.Repository<ParentProfile>().GetAllAsync();
-                var parentProfile = parentProfiles.FirstOrDefault(p => p.UserId == user.Id);
+                var parentProfile = await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(user.Id);
                 if (parentProfile != null)
                 {
                     var parentDto = _mapper.Map<ParentProfileDto>(parentProfile);
@@ -507,8 +507,7 @@ namespace sketch_tale.Application.Services
             }
             else if (primaryRole == "Child")
             {
-                var childProfiles = await _unitOfWork.Repository<ChildProfile>().GetAllAsync();
-                var childProfile = childProfiles.FirstOrDefault(c => c.UserId == user.Id);
+                var childProfile = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(user.Id);
                 if (childProfile != null)
                 {
                     profileDto.ChildProfile = _mapper.Map<ChildProfileDto>(childProfile);
@@ -548,7 +547,7 @@ namespace sketch_tale.Application.Services
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (!result.Succeeded)
             {
-                var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+                var errors = FormatIdentityErrors(result.Errors);
                 throw new InvalidOperationException($"Xác thực email thất bại: {errors}");
             }
 
@@ -580,6 +579,89 @@ namespace sketch_tale.Application.Services
         {
             await _signInManager.SignOutAsync();
         }
+
+        // 12. LẤY ROLE CỦA USER HIỆN TẠI ĐANG LOGIN (DOUBLE CHECK VỚI DB QUA REPOSITORY, KHÔNG DÙNG LINQ)
+        public async Task<string?> GetCurrentUserRoleAsync()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext == null || httpContext.User?.Identity?.IsAuthenticated != true)
+            {
+                return null;
+            }
+
+            // 1. Lấy role từ session/token hiện tại của user đang login
+            var tokenRole = httpContext.User.FindFirstValue(ClaimTypes.Role)
+                         ?? httpContext.User.FindFirstValue("role");
+
+            // Lấy ID của user từ claims (hỗ trợ cả NameIdentifier, sub, nameid)
+            var userIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? httpContext.User.FindFirstValue("sub")
+                         ?? httpContext.User.FindFirstValue("nameid");
+
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return tokenRole;
+            }
+
+            // 2. Double check lại với role thực tế dưới database bằng UserManager có sẵn (không dùng LINQ)
+            var user = await _userManager.FindByIdAsync(userIdStr);
+            if (user == null)
+            {
+                return null;
+            }
+
+            var dbRoles = await _userManager.GetRolesAsync(user);
+            string? dbRole = null;
+
+            // Duyệt foreach thông thường để chuẩn hóa role theo hệ thống, không dùng LINQ
+            foreach (var r in dbRoles)
+            {
+                if (r.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                {
+                    dbRole = "Admin";
+                    break;
+                }
+                if (r.Equals("content manager", StringComparison.OrdinalIgnoreCase) || r.Equals("contentmanager", StringComparison.OrdinalIgnoreCase))
+                {
+                    dbRole = "ContentManager";
+                    break;
+                }
+                if (r.Equals("parent", StringComparison.OrdinalIgnoreCase))
+                {
+                    dbRole = "Parent";
+                    break;
+                }
+                if (r.Equals("child", StringComparison.OrdinalIgnoreCase))
+                {
+                    dbRole = "Child";
+                    break;
+                }
+            }
+
+            // Nếu không thuộc 4 role chuẩn trên nhưng trong DB có gán role, lấy role đầu tiên bằng foreach
+            if (string.IsNullOrEmpty(dbRole))
+            {
+                foreach (var r in dbRoles)
+                {
+                    dbRole = r;
+                    break;
+                }
+            }
+
+            // 3. Double check: so sánh role từ session login với role dưới DB
+            // Nếu có role dưới DB:
+            // - Nếu không giống nhau (ví dụ: session cũ vẫn giữ role cũ, nhưng admin đã đổi role dưới DB) -> ưu tiên role dưới DB
+            // - Nếu giống nhau -> trả về dbRole
+            if (!string.IsNullOrEmpty(dbRole))
+            {
+                return dbRole;
+            }
+
+            // Fallback: Nếu DB chưa gán role, giữ role hiện tại từ session token
+            return tokenRole;
+        }
+
+        public Task<string?> GetCurrentUserRole() => GetCurrentUserRoleAsync();
 
         // HÀM TIỆN ÍCH: GỬI EMAIL XÁC THỰC TÀI KHOẢN VỚI GIAO DIỆN HTML ĐẸP MẮT
         private async Task SendVerificationEmailAsync(User user)
@@ -692,9 +774,20 @@ namespace sketch_tale.Application.Services
                 AccessFullStories = false,
                 SubscriptionTrialPlusPlan = false,
                 SecurityCode = "000000",
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow.AddHours(7),
                 CreateBy = userId
             };
+        }
+
+        // HÀM TIỆN ÍCH: FORMAT LỖI IDENTITY KHÔNG CẦN DÙNG LINQ
+        private static string FormatIdentityErrors(IEnumerable<IdentityError> errors)
+        {
+            var list = new List<string>();
+            foreach (var error in errors)
+            {
+                list.Add(error.Description);
+            }
+            return string.Join("; ", list);
         }
     }
 }

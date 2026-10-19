@@ -12,5 +12,6 @@ namespace sketch_tale.Application.Interfaces.Repositories
     {
         Task<IEnumerable<ParentProfile>> GetAllWithDetailsAsync();
         Task<ParentProfile?> GetByIdWithDetailsAsync(Guid id);
+        Task<ParentProfile?> GetByUserIdAsync(Guid userId);
     }
 }

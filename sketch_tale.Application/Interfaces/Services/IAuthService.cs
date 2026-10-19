@@ -41,5 +41,9 @@ namespace sketch_tale.Application.Interfaces.Services
 
         // 11. Đăng xuất
         Task LogoutAsync();
+
+        // 12. Lấy role của user hiện tại đang login (double check và ưu tiên theo DB)
+        Task<string?> GetCurrentUserRoleAsync();
+        //Task<string?> GetCurrentUserRole();
     }
 }
