@@ -285,7 +285,7 @@ namespace sketch_tale.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Action")
+                    b.Property<string>("AuditAction")
                         .IsRequired()
                         .HasColumnType("text");
 

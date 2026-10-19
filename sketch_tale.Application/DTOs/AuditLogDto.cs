@@ -4,7 +4,7 @@ namespace sketch_tale.Application.DTOs;
 
 public class AuditLogDto : BaseFieldDto
 {
-    public string Action { get; set; } = null!;      
+    public string AuditAction { get; set; } = null!;      
     public string EntityName { get; set; } = null!;   
     public Guid PrimaryKey { get; set; }  
 
