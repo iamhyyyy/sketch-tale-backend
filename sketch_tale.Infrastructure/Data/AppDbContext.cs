@@ -1,4 +1,4 @@
-﻿using Audit.EntityFramework;
+using Audit.EntityFramework;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Services;
@@ -67,6 +67,13 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
         modelBuilder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
         modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+
+        // Ánh xạ cột Action của AuditLog sang AuditAction trên database
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.ToTable("AuditLogs");
+            entity.Property(e => e.Action).HasColumnName("AuditAction");
+        });
 
         // Seed roles với GUID cố định
         var system = Guid.Parse("11111111-1111-1111-1111-111111111111");

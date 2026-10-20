@@ -1,10 +1,12 @@
-﻿using sketch_tale.Domain.Common;
+using System.ComponentModel.DataAnnotations.Schema;
+using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Domain.Entities;
 
 public class AuditLog : BaseEntity
 {
+    [Column("AuditAction")]
     public string Action { get; set; } = null!;          // Hành động: Create, Update, Delete
     public string EntityName { get; set; } = null!;      // Bảng nào: UserProfile, ChildProfile,...
     public Guid PrimaryKey { get; set; }      // ID của bản ghi bị thay đổi

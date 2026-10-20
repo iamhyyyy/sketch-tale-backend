@@ -25,10 +25,10 @@ public class StoryPageTemplateController : ControllerBase
         return Ok(pages);
     }
 
-    [HttpGet("pages/{id}")]
-    public async Task<ActionResult<IEnumerable<StoryPageTemplateDto>>> GetPageById(Guid pageId)
+    [HttpGet("page/{id}")]
+    public async Task<ActionResult<StoryPageTemplateDto>> GetPageById(Guid id)
     {
-        var page = await _storyPageTemplateService.GetPageByIdAsync(pageId);
+        var page = await _storyPageTemplateService.GetPageByIdAsync(id);
         return Ok(page);
     }
 

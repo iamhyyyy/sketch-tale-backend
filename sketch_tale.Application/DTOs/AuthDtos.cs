@@ -42,6 +42,7 @@ namespace sketch_tale.Application.DTOs
     public class AuthResponseDto
     {
         public string Token { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string? Email { get; set; } // Có thể null nếu là Child
         public string Role { get; set; } = string.Empty; // Trả về "Parent", "Child", "Admin", hoặc "ContentManager"
@@ -100,7 +101,15 @@ namespace sketch_tale.Application.DTOs
         public ChildProfileDto? ChildProfile { get; set; }
     }
 
-   
+    // --- ĐĂNG XUẤT (LOGOUT) ---
+    public class LogoutRequestDto
+    {
+        public string? Token { get; set; }
+    }
 
-   
+    // --- LÀM MỚI TOKEN (REFRESH TOKEN) ---
+    public class RefreshTokenDto
+    {
+        public string RefreshToken { get; set; } = string.Empty;
+    }
 }

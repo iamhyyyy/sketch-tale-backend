@@ -39,7 +39,10 @@ namespace sketch_tale.Application.Interfaces.Services
         // 10. Gửi lại email xác thực
         Task<bool> ResendConfirmationEmailAsync(ResendConfirmationEmailDto dto);
 
-        // 11. Đăng xuất
-        Task LogoutAsync();
+        // 11. Đăng xuất (Vô hiệu hóa token)
+        Task LogoutAsync(string? token = null);
+
+        // 12. Làm mới token (Refresh Token)
+        Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto dto);
     }
 }

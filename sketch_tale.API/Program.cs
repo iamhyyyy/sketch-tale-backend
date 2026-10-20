@@ -138,6 +138,8 @@ public class Program
         builder.Services.AddScoped<ICharacterSlotTemplateService, CharacterSlotTemplateService>();
         builder.Services.AddScoped<IStoryQuizTemplateService, StoryQuizTemplateService>();
         builder.Services.AddScoped<IVocabularyTemplateService, VocabularyTemplateService>();
+        builder.Services.AddScoped<IParentProfileService, ParentProfileService>();
+        builder.Services.AddScoped<IChildProfileService, ChildProfileService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
@@ -145,8 +147,11 @@ public class Program
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGridSettings"));
 
-        // Đăng ký Auth Service
-        // Đăng ký AuthService và JwtService vào DI container
+        // Đăng ký MemoryCache và Token Blacklist Service để hỗ trợ thu hồi token khi đăng xuất
+        builder.Services.AddMemoryCache();
+        builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
+
+        // Đăng ký Auth Service và JwtService vào DI container
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IJwtService, JwtService>();
 
@@ -192,17 +197,18 @@ public class Program
             });
 
             c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-            },
-            Array.Empty<string>()
-        }
-    });
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+                    },
+                    Array.Empty<string>()
+                }
+            });
         });
-        // 2. Cấu hình JWT Authentication (Sửa lại cho khớp với JwtSettings và Secret trong appsettings.json)
+
+        // 2. Cấu hình JWT Authentication
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["Secret"];
 
@@ -226,7 +232,54 @@ public class Program
                 ClockSkew = TimeSpan.Zero
             };
 
+            // Kiểm tra trạng thái Blacklist của token mỗi khi request tới
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    var tokenBlacklistService = context.HttpContext.RequestServices.GetRequiredService<ITokenBlacklistService>();
+
+                    // 1. Kiểm tra theo JTI (JWT ID) nếu có
+                    if (context.SecurityToken is JwtSecurityToken jwtToken)
+                    {
+                        var jti = jwtToken.Id;
+                        if (!string.IsNullOrEmpty(jti) && await tokenBlacklistService.IsTokenBlacklistedAsync(jti))
+                        {
+                            context.Fail("Token đã bị vô hiệu hóa do người dùng đã đăng xuất.");
+                            return;
+                        }
+                    }
+
+                    // 2. Kiểm tra chuỗi Raw Token từ header Authorization
+                    var authHeader = context.Request.Headers["Authorization"].ToString();
+                    var token = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                        ? authHeader.Substring(7).Trim()
+                        : authHeader.Trim();
+
+                    if (!string.IsNullOrEmpty(token) && await tokenBlacklistService.IsTokenBlacklistedAsync(token))
+                    {
+                        context.Fail("Token đã bị vô hiệu hóa do người dùng đã đăng xuất.");
+                    }
+                },
+                OnChallenge = async context =>
+                {
+                    // Trả về JSON thông báo lỗi rõ ràng nếu bị fail do blacklist hoặc token không hợp lệ
+                    if (context.AuthenticateFailure != null)
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+                        var result = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            message = "Token không hợp lệ hoặc đã bị vô hiệu hóa (người dùng đã đăng xuất). Vui lòng đăng nhập lại!",
+                            error = context.AuthenticateFailure.Message
+                        });
+                        await context.Response.WriteAsync(result);
+                    }
+                }
+            };
         });
+
         var app = builder.Build();
 
         //seed data
@@ -254,11 +307,6 @@ public class Program
         }
 
         // Configure the HTTP request pipeline.
-        //if (app.Environment.IsDevelopment())
-        //{
-        //    app.UseSwagger();
-        //    app.UseSwaggerUI();
-        //}
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseCors("AllowAll");
@@ -276,10 +324,7 @@ public class Program
 
         //environment variable for port, default to 8080 if not set
         var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        app.Run($"http://0.0.0.0:{port}");
-
-        //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        //app.Run();
-
+        //app.Run($"http://0.0.0.0:{port}");
+        app.Run();
     }
 }

@@ -261,14 +261,49 @@ namespace sketch_tale.API.Controllers
             }
         }
 
-        // 12. Đăng xuất (Logout)
+        // 12. Đăng xuất (Logout - Thu hồi và vô hiệu hóa JWT Token ngay lập tức)
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             try
             {
-                await _authService.LogoutAsync();
-                return Ok(new { message = "Đăng xuất thành công!" });
+                // Tự động lấy token từ header Authorization (do Swagger hoặc Frontend gửi lên)
+                var authHeader = Request.Headers["Authorization"].ToString();
+                var token = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? authHeader.Substring(7).Trim()
+                    : authHeader.Trim();
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    return Unauthorized(new { message = "Không tìm thấy token hợp lệ trong header Authorization." });
+                }
+
+                await _authService.LogoutAsync(token);
+                return Ok(new { message = "Đăng xuất thành công! Token của bạn đã bị vô hiệu hóa hoàn toàn trên hệ thống." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // 13. Làm mới Access Token (Refresh Token)
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto dto)
+        {
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(dto);
+                return Ok(new { data = result, message = "Làm mới token thành công!" });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {

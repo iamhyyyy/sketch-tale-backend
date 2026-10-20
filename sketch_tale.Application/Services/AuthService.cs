@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using sketch_tale.Application.DTOs;
@@ -24,6 +25,8 @@ namespace sketch_tale.Application.Services
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly ITokenBlacklistService _tokenBlacklistService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AuthService(
             UserManager<User> userManager,
@@ -32,7 +35,9 @@ namespace sketch_tale.Application.Services
             IUnitOfWork unitOfWork,
             IMapper mapper,
             IEmailService emailService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ITokenBlacklistService tokenBlacklistService,
+            IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -41,6 +46,8 @@ namespace sketch_tale.Application.Services
             _mapper = mapper;
             _emailService = emailService;
             _configuration = configuration;
+            _tokenBlacklistService = tokenBlacklistService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         // 1. PHỤ HUYNH TỰ ĐĂNG KÝ
@@ -167,9 +174,15 @@ namespace sketch_tale.Application.Services
             // Tạo token JWT mang đúng Role thực tế của user
             var token = _jwtService.GenerateToken(user, matchedRole);
 
+            // Tạo và lưu Refresh Token (hạn 7 ngày)
+            var refreshToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+            var expiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.SetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken", $"{refreshToken}|{expiry:O}");
+
             return new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 Username = user.UserName ?? string.Empty,
                 Email = user.Email,
                 Role = matchedRole
@@ -196,9 +209,15 @@ namespace sketch_tale.Application.Services
             // Tạo token JWT với role "Child"
             var token = _jwtService.GenerateToken(user, "Child");
 
+            // Tạo và lưu Refresh Token (hạn 7 ngày)
+            var refreshToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+            var expiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.SetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken", $"{refreshToken}|{expiry:O}");
+
             return new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 Username = user.UserName ?? string.Empty,
                 Email = null, // Child không có email
                 Role = "Child"
@@ -575,10 +594,111 @@ namespace sketch_tale.Application.Services
             return true;
         }
 
-        // 11. ĐĂNG XUẤT
-        public async Task LogoutAsync()
+        // 11. ĐĂNG XUẤT (VÔ HIỆU HÓA TOKEN VÀ HỦY PHIÊN)
+        public async Task LogoutAsync(string? token = null)
         {
             await _signInManager.SignOutAsync();
+
+            var tokenToRevoke = token;
+            if (string.IsNullOrWhiteSpace(tokenToRevoke))
+            {
+                var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+                if (!string.IsNullOrWhiteSpace(authHeader))
+                {
+                    tokenToRevoke = authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                        ? authHeader.Substring(7).Trim()
+                        : authHeader.Trim();
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(tokenToRevoke))
+            {
+                // 1. Blacklist Access Token ngay lập tức
+                await _tokenBlacklistService.BlacklistTokenAsync(tokenToRevoke);
+
+                // 2. Tìm User từ ClaimsPrincipal hoặc UserManager để xóa Refresh Token trong hệ thống
+                var userIdStr = _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                             ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+
+                if (!string.IsNullOrEmpty(userIdStr) && Guid.TryParse(userIdStr, out var userId))
+                {
+                    var user = await _userManager.FindByIdAsync(userId.ToString());
+                    if (user != null)
+                    {
+                        await _userManager.RemoveAuthenticationTokenAsync(user, "SketchTale", "RefreshToken");
+                    }
+                }
+            }
+        }
+
+        // 12. LÀM MỚI TOKEN (REFRESH TOKEN)
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            {
+                throw new ArgumentException("Refresh Token không được để trống.");
+            }
+
+            var cleanRefreshToken = dto.RefreshToken.Trim();
+
+            // Tìm bản ghi RefreshToken tương ứng trong UserTokens
+            var allTokens = await _unitOfWork.Repository<IdentityUserToken<Guid>>().GetAllAsync();
+            var matchedToken = allTokens.FirstOrDefault(t =>
+                t.LoginProvider == "SketchTale" &&
+                t.Name == "RefreshToken" &&
+                !string.IsNullOrEmpty(t.Value) &&
+                t.Value.StartsWith(cleanRefreshToken, StringComparison.OrdinalIgnoreCase));
+
+            if (matchedToken == null || string.IsNullOrEmpty(matchedToken.Value))
+            {
+                throw new UnauthorizedAccessException("Refresh Token không hợp lệ hoặc đã bị thu hồi. Vui lòng đăng nhập lại!");
+            }
+
+            // Kiểm tra hạn sử dụng
+            var parts = matchedToken.Value.Split('|');
+            if (parts.Length > 1 && DateTime.TryParse(parts[1], null, System.Globalization.DateTimeStyles.RoundtripKind, out var expiryUtc))
+            {
+                if (expiryUtc < DateTime.UtcNow)
+                {
+                    _unitOfWork.Repository<IdentityUserToken<Guid>>().Delete(matchedToken);
+                    await _unitOfWork.CompleteAsync();
+                    throw new UnauthorizedAccessException("Refresh Token đã hết hạn. Vui lòng đăng nhập lại!");
+                }
+            }
+
+            var user = await _userManager.FindByIdAsync(matchedToken.UserId.ToString());
+            if (user == null)
+            {
+                throw new UnauthorizedAccessException("Không tìm thấy thông tin tài khoản người dùng.");
+            }
+
+            // Lấy role của user
+            var roles = await _userManager.GetRolesAsync(user);
+            string primaryRole = "User";
+            foreach (var r in roles)
+            {
+                if (r.Equals("admin", StringComparison.OrdinalIgnoreCase)) { primaryRole = "Admin"; break; }
+                if (r.Equals("content manager", StringComparison.OrdinalIgnoreCase) || r.Equals("contentmanager", StringComparison.OrdinalIgnoreCase)) { primaryRole = "ContentManager"; break; }
+                if (r.Equals("parent", StringComparison.OrdinalIgnoreCase)) { primaryRole = "Parent"; break; }
+                if (r.Equals("child", StringComparison.OrdinalIgnoreCase)) { primaryRole = "Child"; break; }
+            }
+
+            // Cấp Access Token mới
+            var newAccessToken = _jwtService.GenerateToken(user, primaryRole);
+
+            // Cấp Refresh Token mới (Xoay vòng Refresh Token - Refresh Token Rotation)
+            var newRefreshToken = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+            var newExpiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.SetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken", $"{newRefreshToken}|{newExpiry:O}");
+
+            return new AuthResponseDto
+            {
+                Token = newAccessToken,
+                RefreshToken = newRefreshToken,
+                Username = user.UserName ?? string.Empty,
+                Email = user.Email,
+                Role = primaryRole
+            };
         }
 
         // HÀM TIỆN ÍCH: GỬI EMAIL XÁC THỰC TÀI KHOẢN VỚI GIAO DIỆN HTML ĐẸP MẮT
