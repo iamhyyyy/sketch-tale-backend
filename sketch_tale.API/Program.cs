@@ -233,7 +233,21 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? string.Empty)),
                 NameClaimType = JwtRegisteredClaimNames.Sub,
                 RoleClaimType = "role",
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
+                LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
+                {
+                    if (expires != null && DateTime.UtcNow > expires)
+                    {
+                        var accessor = new HttpContextAccessor();
+                        var path = accessor.HttpContext?.Request.Path.Value;
+                        if (path != null && path.EndsWith("/refresh-token", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    return true;
+                }
             };
 
             options.Events = new JwtBearerEvents

@@ -622,55 +622,88 @@ namespace sketch_tale.Application.Services
             await _signInManager.SignOutAsync();
         }
 
-        // 12. CẤP LẠI TOKEN MỚI QUA REFRESH TOKEN (REFRESH TOKEN ROTATION)
-        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto dto)
+        // 12. CẤP LẠI TOKEN MỚI QUA REFRESH TOKEN (REFRESH TOKEN ROTATION - HỖ TRỢ CẢ AUTHORIZE VÀ BODY)
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto? dto = null, Guid? userId = null)
         {
-            if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            string? inputRefreshToken = dto?.RefreshToken?.Trim();
+
+            // 1. Nếu không truyền refreshToken qua body, tự động lấy userId từ HttpContext/Authorize
+            if (string.IsNullOrWhiteSpace(inputRefreshToken) && userId == null)
             {
-                throw new UnauthorizedAccessException("Refresh token không được để trống.");
+                var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                             ?? _httpContextAccessor.HttpContext?.User.FindFirstValue("sub")
+                             ?? _httpContextAccessor.HttpContext?.User.FindFirstValue("nameid");
+
+                if (!string.IsNullOrEmpty(userIdStr) && Guid.TryParse(userIdStr, out var parsedId))
+                {
+                    userId = parsedId;
+                }
             }
 
-            // Tìm token trong DB bằng Repository (không dùng LINQ)
-            var allTokens = await _unitOfWork.Repository<IdentityUserToken<Guid>>().GetAllAsync();
             IdentityUserToken<Guid>? matchedToken = null;
+            User? user = null;
 
-            foreach (var t in allTokens)
+            // 2. Nếu có userId (từ Authorize), tìm RefreshToken của user đó trong database
+            if (userId != null && userId != Guid.Empty)
             {
-                if (t.LoginProvider == "SketchTale" && t.Name == "RefreshToken")
+                user = await _userManager.FindByIdAsync(userId.Value.ToString());
+                if (user != null)
                 {
-                    var parts = (t.Value ?? string.Empty).Split('|');
-                    if (parts.Length > 0 && parts[0] == dto.RefreshToken)
+                    var tokenValue = await _userManager.GetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken");
+                    if (!string.IsNullOrEmpty(tokenValue))
                     {
-                        matchedToken = t;
-                        break;
+                        var parts = tokenValue.Split('|');
+                        if (string.IsNullOrWhiteSpace(inputRefreshToken) || parts[0] == inputRefreshToken)
+                        {
+                            matchedToken = new IdentityUserToken<Guid>
+                            {
+                                UserId = user.Id,
+                                LoginProvider = "SketchTale",
+                                Name = "RefreshToken",
+                                Value = tokenValue
+                            };
+                        }
                     }
                 }
             }
 
-            if (matchedToken == null)
+            // 3. Nếu chưa tìm thấy và client có truyền inputRefreshToken, duyệt DB tìm token tương ứng
+            if (matchedToken == null && !string.IsNullOrWhiteSpace(inputRefreshToken))
+            {
+                var allTokens = await _unitOfWork.Repository<IdentityUserToken<Guid>>().GetAllAsync();
+                foreach (var t in allTokens)
+                {
+                    if (t.LoginProvider == "SketchTale" && t.Name == "RefreshToken")
+                    {
+                        var parts = (t.Value ?? string.Empty).Split('|');
+                        if (parts.Length > 0 && parts[0] == inputRefreshToken)
+                        {
+                            matchedToken = t;
+                            break;
+                        }
+                    }
+                }
+
+                if (matchedToken != null)
+                {
+                    user = await _userManager.FindByIdAsync(matchedToken.UserId.ToString());
+                }
+            }
+
+            if (matchedToken == null || user == null)
             {
                 throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã bị thu hồi.");
             }
 
-            // Kiểm tra hạn sử dụng của refresh token
+            // 4. Kiểm tra hạn sử dụng của refresh token
             var valParts = (matchedToken.Value ?? string.Empty).Split('|');
             if (valParts.Length >= 2 && DateTime.TryParse(valParts[1], null, System.Globalization.DateTimeStyles.RoundtripKind, out var expiryDate))
             {
                 if (DateTime.UtcNow > expiryDate)
                 {
-                    var expiredUser = await _userManager.FindByIdAsync(matchedToken.UserId.ToString());
-                    if (expiredUser != null)
-                    {
-                        await _userManager.RemoveAuthenticationTokenAsync(expiredUser, "SketchTale", "RefreshToken");
-                    }
+                    await _userManager.RemoveAuthenticationTokenAsync(user, "SketchTale", "RefreshToken");
                     throw new UnauthorizedAccessException("Refresh token đã hết hạn. Vui lòng đăng nhập lại.");
                 }
-            }
-
-            var user = await _userManager.FindByIdAsync(matchedToken.UserId.ToString());
-            if (user == null)
-            {
-                throw new UnauthorizedAccessException("Không tìm thấy người dùng sở hữu refresh token.");
             }
 
             var roles = await _userManager.GetRolesAsync(user);

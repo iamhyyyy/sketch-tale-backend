@@ -277,13 +277,40 @@ namespace sketch_tale.API.Controllers
             }
         }
 
-        // 12. Refresh Token (Cấp mới access token và refresh token rotation)
+        // 12. Refresh Token (Cấp mới access token và refresh token rotation nhờ Authorize)
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto dto)
+        [Authorize]
+        public async Task<IActionResult> RefreshToken()
         {
             try
             {
-                var result = await _authService.RefreshTokenAsync(dto);
+                string? refreshToken = null;
+                if (Request.ContentLength > 0 && Request.HasJsonContentType())
+                {
+                    try
+                    {
+                        using var reader = new System.IO.StreamReader(Request.Body, System.Text.Encoding.UTF8);
+                        var bodyText = await reader.ReadToEndAsync();
+                        if (!string.IsNullOrWhiteSpace(bodyText))
+                        {
+                            using var doc = System.Text.Json.JsonDocument.Parse(bodyText);
+                            if (doc.RootElement.TryGetProperty("refreshToken", out var prop))
+                            {
+                                refreshToken = prop.GetString();
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback sang Authorize
+                    }
+                }
+
+                var userId = GetCurrentUserId();
+                var result = await _authService.RefreshTokenAsync(
+                    string.IsNullOrEmpty(refreshToken) ? null : new RefreshTokenDto { RefreshToken = refreshToken },
+                    userId);
+
                 return Ok(new { data = result, message = "Làm mới token thành công!" });
             }
             catch (Exception ex)
