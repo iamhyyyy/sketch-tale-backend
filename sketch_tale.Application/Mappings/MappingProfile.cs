@@ -43,6 +43,11 @@ public class MappingProfile : Profile
         CreateMap<CreateProhibitedThemeDto, ProhibitedTheme>();
         CreateMap<UpdateProhibitedThemeDto, ProhibitedTheme>();
 
+        // ContentReport
+        CreateMap<ContentReport, ContentReportDto>().ReverseMap();
+        CreateMap<CreateContentReportDto, ContentReport>();
+        CreateMap<UpdateContentReportDto, ContentReport>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
