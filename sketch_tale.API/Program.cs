@@ -118,6 +118,7 @@ public class Program
         builder.Services.AddScoped<IRestrictedKeywordRepository, RestrictedKeywordRepository>();
         builder.Services.AddScoped<IProhibitedThemeRepository, ProhibitedThemeRepository>();
         builder.Services.AddScoped<IContentReportRepository, ContentReportRepository>();
+        builder.Services.AddScoped<ICharTypeRepository, CharTypeRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
@@ -138,6 +139,7 @@ public class Program
         builder.Services.AddScoped<IRestrictedKeywordService, RestrictedKeywordService>();
         builder.Services.AddScoped<IProhibitedThemeService, ProhibitedThemeService>();
         builder.Services.AddScoped<IContentReportService, ContentReportService>();
+        builder.Services.AddScoped<ICharTypeService, CharTypeService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
@@ -347,7 +349,7 @@ public class Program
         app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        // app.Run();
+        //app.Run();
 
     }
 }
