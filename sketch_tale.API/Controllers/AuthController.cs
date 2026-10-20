@@ -261,18 +261,61 @@ namespace sketch_tale.API.Controllers
             }
         }
 
-        // 12. Đăng xuất (Logout)
+        // 11. Đăng xuất (Logout - Thu hồi access token và refresh token)
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             try
             {
                 await _authService.LogoutAsync();
-                return Ok(new { message = "Đăng xuất thành công!" });
+                return Ok(new { message = "Đăng xuất thành công! Token đã bị vô hiệu hóa." });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // 12. Refresh Token (Cấp mới access token và refresh token rotation nhờ Authorize)
+        [HttpPost("refresh-token")]
+        [Authorize]
+        public async Task<IActionResult> RefreshToken()
+        {
+            try
+            {
+                string? refreshToken = null;
+                if (Request.ContentLength > 0 && Request.HasJsonContentType())
+                {
+                    try
+                    {
+                        using var reader = new System.IO.StreamReader(Request.Body, System.Text.Encoding.UTF8);
+                        var bodyText = await reader.ReadToEndAsync();
+                        if (!string.IsNullOrWhiteSpace(bodyText))
+                        {
+                            using var doc = System.Text.Json.JsonDocument.Parse(bodyText);
+                            if (doc.RootElement.TryGetProperty("refreshToken", out var prop))
+                            {
+                                refreshToken = prop.GetString();
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Fallback sang Authorize
+                    }
+                }
+
+                var userId = GetCurrentUserId();
+                var result = await _authService.RefreshTokenAsync(
+                    string.IsNullOrEmpty(refreshToken) ? null : new RefreshTokenDto { RefreshToken = refreshToken },
+                    userId);
+
+                return Ok(new { data = result, message = "Làm mới token thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
         }
 

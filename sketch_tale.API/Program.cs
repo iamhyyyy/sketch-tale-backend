@@ -142,12 +142,18 @@ public class Program
         builder.Services.AddScoped<ICharacterSlotTemplateService, CharacterSlotTemplateService>();
         builder.Services.AddScoped<IStoryQuizTemplateService, StoryQuizTemplateService>();
         builder.Services.AddScoped<IVocabularyTemplateService, VocabularyTemplateService>();
+        builder.Services.AddScoped<IParentProfileService, ParentProfileService>();
+        builder.Services.AddScoped<IChildProfileService, ChildProfileService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
         // Đăng ký Email Service
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGridSettings"));
+
+        // Đăng ký Memory Cache & Token Blacklist
+        builder.Services.AddMemoryCache();
+        builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
 
         // Đăng ký Auth Service
         // Đăng ký AuthService và JwtService vào DI container
@@ -227,7 +233,61 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? string.Empty)),
                 NameClaimType = JwtRegisteredClaimNames.Sub,
                 RoleClaimType = "role",
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
+                LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
+                {
+                    if (expires != null && DateTime.UtcNow > expires)
+                    {
+                        var accessor = new HttpContextAccessor();
+                        var path = accessor.HttpContext?.Request.Path.Value;
+                        if (path != null && path.EndsWith("/refresh-token", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    return true;
+                }
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    var blacklistService = context.HttpContext.RequestServices.GetRequiredService<ITokenBlacklistService>();
+
+                    // 1. Kiểm tra qua JTI claim
+                    var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                    if (!string.IsNullOrEmpty(jti) && await blacklistService.IsJtiBlacklistedAsync(jti))
+                    {
+                        context.Fail("Token này đã bị vô hiệu hóa do người dùng đã đăng xuất.");
+                        return;
+                    }
+
+                    // 2. Kiểm tra qua raw token trong Authorization header
+                    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                    if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var rawToken = authHeader.Substring("Bearer ".Length).Trim();
+                        if (await blacklistService.IsTokenBlacklistedAsync(rawToken))
+                        {
+                            context.Fail("Token này đã bị vô hiệu hóa do người dùng đã đăng xuất.");
+                            return;
+                        }
+                    }
+                },
+                OnChallenge = async context =>
+                {
+                    if (!context.Response.HasStarted)
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+                        var msg = context.ErrorDescription ?? "Bạn chưa đăng nhập hoặc token đã hết hạn / bị vô hiệu hóa.";
+                        var json = System.Text.Json.JsonSerializer.Serialize(new { message = msg });
+                        await context.Response.WriteAsync(json);
+                    }
+                }
             };
 
         });
@@ -281,7 +341,7 @@ public class Program
         });
 
         //environment variable for port, default to 8080 if not set
-         var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+        var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
         app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên

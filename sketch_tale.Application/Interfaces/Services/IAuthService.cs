@@ -39,10 +39,13 @@ namespace sketch_tale.Application.Interfaces.Services
         // 10. Gửi lại email xác thực
         Task<bool> ResendConfirmationEmailAsync(ResendConfirmationEmailDto dto);
 
-        // 11. Đăng xuất
-        Task LogoutAsync();
+        // 11. Đăng xuất (Blacklist access token và huỷ refresh token)
+        Task LogoutAsync(string? token = null);
 
-        // 12. Lấy role của user hiện tại đang login (double check và ưu tiên theo DB)
+        // 12. Refresh Token (Cấp mới access token và refresh token rotation nhờ Authorize hoặc Body)
+        Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto? dto = null, Guid? userId = null);
+
+        // 13. Lấy role của user hiện tại đang login (double check và ưu tiên theo DB)
         Task<string?> GetCurrentUserRoleAsync();
         //Task<string?> GetCurrentUserRole();
     }

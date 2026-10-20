@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,7 @@ namespace sketch_tale.Application.Services
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ITokenBlacklistService _tokenBlacklistService;
 
         public AuthService(
             UserManager<User> userManager,
@@ -34,7 +36,8 @@ namespace sketch_tale.Application.Services
             IMapper mapper,
             IEmailService emailService,
             IConfiguration configuration,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ITokenBlacklistService tokenBlacklistService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -44,6 +47,7 @@ namespace sketch_tale.Application.Services
             _emailService = emailService;
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
+            _tokenBlacklistService = tokenBlacklistService;
         }
 
         // 1. PHỤ HUYNH TỰ ĐĂNG KÝ
@@ -168,10 +172,14 @@ namespace sketch_tale.Application.Services
 
             // Tạo token JWT mang đúng Role thực tế của user
             var token = _jwtService.GenerateToken(user, matchedRole);
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.SetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken", $"{refreshToken}|{refreshTokenExpiry:O}");
 
             return new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 Username = user.UserName ?? string.Empty,
                 Email = user.Email,
                 Role = matchedRole
@@ -207,10 +215,14 @@ namespace sketch_tale.Application.Services
 
             // Tạo token JWT với role "Child"
             var token = _jwtService.GenerateToken(user, "Child");
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.SetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken", $"{refreshToken}|{refreshTokenExpiry:O}");
 
             return new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 Username = user.UserName ?? string.Empty,
                 Email = null, // Child không có email
                 Role = "Child"
@@ -574,10 +586,158 @@ namespace sketch_tale.Application.Services
             return true;
         }
 
-        // 11. ĐĂNG XUẤT
-        public async Task LogoutAsync()
+        // 11. ĐĂNG XUẤT (VÔ HIỆU HÓA ACCESS TOKEN NGAY LẬP TỨC VÀ HỦY REFRESH TOKEN)
+        public async Task LogoutAsync(string? token = null)
         {
+            // 1. Nếu không truyền token cụ thể, tự trích xuất Bearer token từ HttpContext Request Authorization Header
+            if (string.IsNullOrEmpty(token))
+            {
+                var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    token = authHeader.Substring("Bearer ".Length).Trim();
+                }
+            }
+
+            // 2. Blacklist access token vào memory cache để vô hiệu hóa tức thì
+            if (!string.IsNullOrEmpty(token))
+            {
+                await _tokenBlacklistService.BlacklistTokenAsync(token);
+            }
+
+            // 3. Xoá RefreshToken của user trong bảng UserTokens (Identity)
+            var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? _httpContextAccessor.HttpContext?.User.FindFirstValue("sub")
+                         ?? _httpContextAccessor.HttpContext?.User.FindFirstValue("nameid");
+
+            if (!string.IsNullOrEmpty(userIdStr) && Guid.TryParse(userIdStr, out var userId))
+            {
+                var user = await _userManager.FindByIdAsync(userIdStr);
+                if (user != null)
+                {
+                    await _userManager.RemoveAuthenticationTokenAsync(user, "SketchTale", "RefreshToken");
+                }
+            }
+
             await _signInManager.SignOutAsync();
+        }
+
+        // 12. CẤP LẠI TOKEN MỚI QUA REFRESH TOKEN (REFRESH TOKEN ROTATION - HỖ TRỢ CẢ AUTHORIZE VÀ BODY)
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto? dto = null, Guid? userId = null)
+        {
+            string? inputRefreshToken = dto?.RefreshToken?.Trim();
+
+            // 1. Nếu không truyền refreshToken qua body, tự động lấy userId từ HttpContext/Authorize
+            if (string.IsNullOrWhiteSpace(inputRefreshToken) && userId == null)
+            {
+                var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                             ?? _httpContextAccessor.HttpContext?.User.FindFirstValue("sub")
+                             ?? _httpContextAccessor.HttpContext?.User.FindFirstValue("nameid");
+
+                if (!string.IsNullOrEmpty(userIdStr) && Guid.TryParse(userIdStr, out var parsedId))
+                {
+                    userId = parsedId;
+                }
+            }
+
+            IdentityUserToken<Guid>? matchedToken = null;
+            User? user = null;
+
+            // 2. Nếu có userId (từ Authorize), tìm RefreshToken của user đó trong database
+            if (userId != null && userId != Guid.Empty)
+            {
+                user = await _userManager.FindByIdAsync(userId.Value.ToString());
+                if (user != null)
+                {
+                    var tokenValue = await _userManager.GetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken");
+                    if (!string.IsNullOrEmpty(tokenValue))
+                    {
+                        var parts = tokenValue.Split('|');
+                        if (string.IsNullOrWhiteSpace(inputRefreshToken) || parts[0] == inputRefreshToken)
+                        {
+                            matchedToken = new IdentityUserToken<Guid>
+                            {
+                                UserId = user.Id,
+                                LoginProvider = "SketchTale",
+                                Name = "RefreshToken",
+                                Value = tokenValue
+                            };
+                        }
+                    }
+                }
+            }
+
+            // 3. Nếu chưa tìm thấy và client có truyền inputRefreshToken, duyệt DB tìm token tương ứng
+            if (matchedToken == null && !string.IsNullOrWhiteSpace(inputRefreshToken))
+            {
+                var allTokens = await _unitOfWork.Repository<IdentityUserToken<Guid>>().GetAllAsync();
+                foreach (var t in allTokens)
+                {
+                    if (t.LoginProvider == "SketchTale" && t.Name == "RefreshToken")
+                    {
+                        var parts = (t.Value ?? string.Empty).Split('|');
+                        if (parts.Length > 0 && parts[0] == inputRefreshToken)
+                        {
+                            matchedToken = t;
+                            break;
+                        }
+                    }
+                }
+
+                if (matchedToken != null)
+                {
+                    user = await _userManager.FindByIdAsync(matchedToken.UserId.ToString());
+                }
+            }
+
+            if (matchedToken == null || user == null)
+            {
+                throw new UnauthorizedAccessException("Refresh token không hợp lệ hoặc đã bị thu hồi.");
+            }
+
+            // 4. Kiểm tra hạn sử dụng của refresh token
+            var valParts = (matchedToken.Value ?? string.Empty).Split('|');
+            if (valParts.Length >= 2 && DateTime.TryParse(valParts[1], null, System.Globalization.DateTimeStyles.RoundtripKind, out var expiryDate))
+            {
+                if (DateTime.UtcNow > expiryDate)
+                {
+                    await _userManager.RemoveAuthenticationTokenAsync(user, "SketchTale", "RefreshToken");
+                    throw new UnauthorizedAccessException("Refresh token đã hết hạn. Vui lòng đăng nhập lại.");
+                }
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            string role = "Parent";
+            foreach (var r in roles)
+            {
+                if (r.Equals("admin", StringComparison.OrdinalIgnoreCase)) { role = "Admin"; break; }
+                if (r.Equals("content manager", StringComparison.OrdinalIgnoreCase) || r.Equals("contentmanager", StringComparison.OrdinalIgnoreCase)) { role = "ContentManager"; break; }
+                if (r.Equals("child", StringComparison.OrdinalIgnoreCase)) { role = "Child"; break; }
+                if (r.Equals("parent", StringComparison.OrdinalIgnoreCase)) { role = "Parent"; break; }
+            }
+
+            // Tạo access token mới & Refresh token mới (Rotation)
+            var newAccessToken = _jwtService.GenerateToken(user, role);
+            var newRefreshToken = GenerateRefreshToken();
+            var newExpiry = DateTime.UtcNow.AddDays(7);
+            await _userManager.SetAuthenticationTokenAsync(user, "SketchTale", "RefreshToken", $"{newRefreshToken}|{newExpiry:O}");
+
+            return new AuthResponseDto
+            {
+                Token = newAccessToken,
+                RefreshToken = newRefreshToken,
+                Username = user.UserName ?? string.Empty,
+                Email = user.Email,
+                Role = role
+            };
+        }
+
+        private static string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
 
         // 12. LẤY ROLE CỦA USER HIỆN TẠI ĐANG LOGIN (DOUBLE CHECK VỚI DB QUA REPOSITORY, KHÔNG DÙNG LINQ)
