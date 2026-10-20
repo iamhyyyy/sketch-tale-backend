@@ -261,18 +261,34 @@ namespace sketch_tale.API.Controllers
             }
         }
 
-        // 12. Đăng xuất (Logout)
+        // 11. Đăng xuất (Logout - Thu hồi access token và refresh token)
         [HttpPost("logout")]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             try
             {
                 await _authService.LogoutAsync();
-                return Ok(new { message = "Đăng xuất thành công!" });
+                return Ok(new { message = "Đăng xuất thành công! Token đã bị vô hiệu hóa." });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // 12. Refresh Token (Cấp mới access token và refresh token rotation)
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto dto)
+        {
+            try
+            {
+                var result = await _authService.RefreshTokenAsync(dto);
+                return Ok(new { data = result, message = "Làm mới token thành công!" });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new { message = ex.Message });
             }
         }
 
