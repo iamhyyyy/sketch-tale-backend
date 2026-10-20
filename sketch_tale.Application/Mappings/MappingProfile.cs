@@ -48,6 +48,11 @@ public class MappingProfile : Profile
         CreateMap<CreateContentReportDto, ContentReport>();
         CreateMap<UpdateContentReportDto, ContentReport>();
 
+        // CharType
+        CreateMap<CharType, CharTypeDto>().ReverseMap();
+        CreateMap<CreateCharTypeDto, CharType>();
+        CreateMap<UpdateCharTypeDto, CharType>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
