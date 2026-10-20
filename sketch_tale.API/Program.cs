@@ -47,7 +47,7 @@ public class Program
                     auditLog.UpdatedAt = null;      // Bản ghi Log mới tạo không có UpdateAt
                     auditLog.UpdateBy = null;       // Bản ghi Log mới tạo không có UpdateBy
 
-                    auditLog.Action = entry.Action; // "Insert", "Update", "Delete"
+                    auditLog.AuditAction = entry.Action; // "Insert", "Update", "Delete"
                     auditLog.EntityName = entry.EntityType.Name;
 
                     var pk = entry.PrimaryKey.Values.FirstOrDefault();
@@ -115,12 +115,16 @@ public class Program
         builder.Services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
         builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
         builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        builder.Services.AddScoped<IRestrictedKeywordRepository, RestrictedKeywordRepository>();
+        builder.Services.AddScoped<IProhibitedThemeRepository, ProhibitedThemeRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
         builder.Services.AddScoped<ICharacterSlotTemplateRepository, CharacterSlotTemplateRepository>();
         builder.Services.AddScoped<IStoryQuizTemplateRepository, StoryQuizTemplateRepository>();
         builder.Services.AddScoped<IVocabularyTemplateRepository, VocabularyTemplateRepository>();
+        builder.Services.AddScoped<IParentProfileRepository, ParentProfileRepository>();
+        builder.Services.AddScoped<IChildProfileRepository, ChildProfileRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
@@ -130,18 +134,26 @@ public class Program
         builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
         builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
         builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+        builder.Services.AddScoped<IRestrictedKeywordService, RestrictedKeywordService>();
+        builder.Services.AddScoped<IProhibitedThemeService, ProhibitedThemeService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
         builder.Services.AddScoped<ICharacterSlotTemplateService, CharacterSlotTemplateService>();
         builder.Services.AddScoped<IStoryQuizTemplateService, StoryQuizTemplateService>();
         builder.Services.AddScoped<IVocabularyTemplateService, VocabularyTemplateService>();
+        builder.Services.AddScoped<IParentProfileService, ParentProfileService>();
+        builder.Services.AddScoped<IChildProfileService, ChildProfileService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
         // Đăng ký Email Service
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.Configure<SendGridSettings>(builder.Configuration.GetSection("SendGridSettings"));
+
+        // Đăng ký Memory Cache & Token Blacklist
+        builder.Services.AddMemoryCache();
+        builder.Services.AddSingleton<ITokenBlacklistService, TokenBlacklistService>();
 
         // Đăng ký Auth Service
         // Đăng ký AuthService và JwtService vào DI container
@@ -221,13 +233,68 @@ public class Program
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? string.Empty)),
                 NameClaimType = JwtRegisteredClaimNames.Sub,
                 RoleClaimType = "role",
-                ClockSkew = TimeSpan.Zero
+                ClockSkew = TimeSpan.Zero,
+                LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
+                {
+                    if (expires != null && DateTime.UtcNow > expires)
+                    {
+                        var accessor = new HttpContextAccessor();
+                        var path = accessor.HttpContext?.Request.Path.Value;
+                        if (path != null && path.EndsWith("/refresh-token", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    return true;
+                }
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    var blacklistService = context.HttpContext.RequestServices.GetRequiredService<ITokenBlacklistService>();
+
+                    // 1. Kiểm tra qua JTI claim
+                    var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                    if (!string.IsNullOrEmpty(jti) && await blacklistService.IsJtiBlacklistedAsync(jti))
+                    {
+                        context.Fail("Token này đã bị vô hiệu hóa do người dùng đã đăng xuất.");
+                        return;
+                    }
+
+                    // 2. Kiểm tra qua raw token trong Authorization header
+                    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                    if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var rawToken = authHeader.Substring("Bearer ".Length).Trim();
+                        if (await blacklistService.IsTokenBlacklistedAsync(rawToken))
+                        {
+                            context.Fail("Token này đã bị vô hiệu hóa do người dùng đã đăng xuất.");
+                            return;
+                        }
+                    }
+                },
+                OnChallenge = async context =>
+                {
+                    if (!context.Response.HasStarted)
+                    {
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        context.Response.ContentType = "application/json";
+                        var msg = context.ErrorDescription ?? "Bạn chưa đăng nhập hoặc token đã hết hạn / bị vô hiệu hóa.";
+                        var json = System.Text.Json.JsonSerializer.Serialize(new { message = msg });
+                        await context.Response.WriteAsync(json);
+                    }
+                }
             };
 
         });
         var app = builder.Build();
 
         //seed data
+        Audit.Core.Configuration.AuditDisabled = true; //Tắt tạm thời Audit.NET
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
@@ -250,6 +317,7 @@ public class Program
                 logger.LogError(ex, "An error occurred while migrating or seeding the database.");
             }
         }
+        Audit.Core.Configuration.AuditDisabled = false;//Bật lại Audit.NET
 
         // Configure the HTTP request pipeline.
         //if (app.Environment.IsDevelopment())

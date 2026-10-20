@@ -89,7 +89,7 @@ public class SeedData
         if (await userManager.Users.AnyAsync()) return;
 
         await CreateUserAsync(userManager, "admin", "admin@sketch.tale.com", "Admin@123", "Admin", "User", "admin");
-        await CreateUserAsync(userManager, "cmanager", "cmanager@sketch.tale.com", "Manager@123", "Content", "Manager", "content manager");
+        await CreateUserAsync(userManager, "manager", "manager@sketch.tale.com", "Manager@123", "Content", "Manager", "content manager");
         await CreateUserAsync(userManager, "parent", "parent@sketch.tale.com", "Parent@123", "Parent", "User", "parent");
         await CreateUserAsync(userManager, "child", "child@sketch.tale.com", "Child@123", "Little", "Artist", "child");
     }
@@ -315,7 +315,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.High,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new RestrictedKeyword
@@ -325,7 +325,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.Medium,
                 Action = ModerationAction.FlagForReview,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new RestrictedKeyword
@@ -335,7 +335,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Exact,
                 SeverityLevel = SeverityLevel.BlockImmediately,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             }
         );
@@ -355,7 +355,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.High,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new ProhibitedTheme
@@ -365,7 +365,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.Medium,
                 Action = ModerationAction.FlagForReview,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             },
             new ProhibitedTheme
@@ -375,7 +375,7 @@ public class SeedData
                 MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
                 SeverityLevel = SeverityLevel.BlockImmediately,
                 Action = ModerationAction.Reject,
-                Status = ModerationStatus.Approved,
+                Status = CommonStatus.Active,
                 CreateBy = SystemUserId
             }
         );
@@ -1395,7 +1395,7 @@ public class SeedData
         context.AuditLogs.AddRange(
             new AuditLog
             {
-                Action = "Create",
+                AuditAction = "Create",
                 EntityName = nameof(ChildProfile),
                 PrimaryKey = child.Id,
                 OldValues = null,
@@ -1405,7 +1405,7 @@ public class SeedData
             },
             new AuditLog
             {
-                Action = "Update",
+                AuditAction = "Update",
                 EntityName = nameof(Character),
                 PrimaryKey = character.Id,
                 OldValues = "{\"Status\":\"Pending\"}",
@@ -1415,7 +1415,7 @@ public class SeedData
             },
             new AuditLog
             {
-                Action = "Create",
+                AuditAction = "Create",
                 EntityName = nameof(GeneratedStory),
                 PrimaryKey = story.Id,
                 OldValues = null,

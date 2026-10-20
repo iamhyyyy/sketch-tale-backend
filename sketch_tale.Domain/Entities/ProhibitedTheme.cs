@@ -10,5 +10,5 @@ public class ProhibitedTheme : BaseEntity
     public Enums.MatchType MatchType { get; set; } = Enums.MatchType.Contains;
     public SeverityLevel SeverityLevel { get; set; } = SeverityLevel.Medium;
     public ModerationAction Action { get; set; } = ModerationAction.Reject;
-    public ModerationStatus Status { get; set; } = ModerationStatus.Pending;
+    public CommonStatus Status { get; set; } = CommonStatus.Draft;
 }

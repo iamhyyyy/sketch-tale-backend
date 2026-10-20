@@ -35,7 +35,7 @@ namespace SmartCarWash.Application.Services
         public async Task<EducationThemeDto> AddAsync(CreateEducationThemeDto dto)
         {
             var item = _mapper.Map<EducationTheme>(dto);
-            item.Id = Guid.NewGuid();
+
             await _unitOfWork.EducationThemeRepository.AddAsync(item);
             await _unitOfWork.CompleteAsync();
 

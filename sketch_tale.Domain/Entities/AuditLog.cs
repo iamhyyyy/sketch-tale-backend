@@ -5,7 +5,7 @@ namespace sketch_tale.Domain.Entities;
 
 public class AuditLog : BaseEntity
 {
-    public string Action { get; set; } = null!;          // Hành động: Create, Update, Delete
+    public string AuditAction { get; set; } = null!;          // Hành động: Create, Update, Delete
     public string EntityName { get; set; } = null!;      // Bảng nào: UserProfile, ChildProfile,...
     public Guid PrimaryKey { get; set; }      // ID của bản ghi bị thay đổi
 

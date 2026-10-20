@@ -29,6 +29,11 @@ namespace sketch_tale.Infrastructure.Repositories
                 .Include(c => c.ChildProfiles)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
+
+        public async Task<ParentProfile?> GetByUserIdAsync(Guid userId)
+        {
+            return await _dbSet.FirstOrDefaultAsync(p => p.UserId == userId);
+        }
     }
 }
    

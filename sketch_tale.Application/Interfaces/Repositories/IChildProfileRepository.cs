@@ -10,5 +10,6 @@ namespace sketch_tale.Application.Interfaces.Repositories
     public interface IChildProfileRepository : IGenericRepository<ChildProfile>
     {
         //Task<IEnumerable<ChildProfile>> GetAllWithDetailsAsync();
+        Task<ChildProfile?> GetByUserIdAsync(Guid userId);
     }
 }
