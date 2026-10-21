@@ -18,7 +18,8 @@ public class ChildProfile : BaseEntity
     public int DailyCharacterLimit { get; set; } = 1;
     public int RemainingCharacterLimit { get; set; } = 1;
 
-    public string? AllowedThemeIdsJson { get; set; }
+    public List<Guid> AllowedThemeIds { get; set; } = new List<Guid>();
+    public List<Guid> StoryTemplateRecommendIds { get; set; } = new List<Guid>();
 
     public ICollection<Drawing> Drawings { get; set; } = new List<Drawing>();
     public ICollection<Character> Characters { get; set; } = new List<Character>();
