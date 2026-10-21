@@ -49,7 +49,6 @@ public class SeedData
             await SeedDrawingsAsync(context);
             await SeedAICharacterGeneratesAsync(context);
             await SeedCharactersAsync(context);
-            await SeedParentStoryRecommendationsAsync(context);
             await SeedGeneratedStoriesAsync(context);
             await SeedUserStoryCharacterMappingsAsync(context);
             await SeedChildVocabularyProgressesAsync(context);
@@ -475,7 +474,6 @@ public class SeedData
                 DailyTimeLimit = 30,
                 DailyCharacterLimit = 2,
                 RemainingCharacterLimit = 1,
-                AllowedThemeIdsJson = allowedThemes,
                 CreateBy = SystemUserId
             },
             new ChildProfile
@@ -488,7 +486,6 @@ public class SeedData
                 DailyTimeLimit = 45,
                 DailyCharacterLimit = 1,
                 RemainingCharacterLimit = 0,
-                AllowedThemeIdsJson = allowedThemes,
                 CreateBy = SystemUserId
             }
         );
@@ -1012,32 +1009,6 @@ public class SeedData
                 FinalImageUrl = generations[2].GenerateImageUrl ?? "/seed/ai/explorer.png",
                 Status = CharacterStatus.Approved,
                 IsFavorite = true,
-                CreateBy = SystemUserId
-            }
-        );
-
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedParentStoryRecommendationsAsync(AppDbContext context)
-    {
-        if (await context.ParentStoryRecommendations.AnyAsync()) return;
-
-        var children = await context.ChildProfiles.OrderBy(c => c.NickName).ToListAsync();
-        var stories = await context.StoryTemplates.OrderBy(s => s.Title).Select(s => s.Id).ToListAsync();
-        if (children.Count < 2 || stories.Count < 2) return;
-
-        context.ParentStoryRecommendations.AddRange(
-            new ParentStoryRecommendation
-            {
-                ChildProfileId = children[0].Id,
-                StoryTemplateIds = stories.Take(2).ToList(),
-                CreateBy = SystemUserId
-            },
-            new ParentStoryRecommendation
-            {
-                ChildProfileId = children[1].Id,
-                StoryTemplateIds = stories.Skip(1).Take(2).ToList(),
                 CreateBy = SystemUserId
             }
         );

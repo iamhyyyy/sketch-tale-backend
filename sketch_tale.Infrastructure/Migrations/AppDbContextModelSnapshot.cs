@@ -510,8 +510,9 @@ namespace sketch_tale.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("AllowedThemeIdsJson")
-                        .HasColumnType("text");
+                    b.Property<List<Guid>>("AllowedThemeIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
 
                     b.Property<Guid>("CreateBy")
                         .HasColumnType("uuid");
@@ -540,6 +541,10 @@ namespace sketch_tale.Infrastructure.Migrations
 
                     b.Property<int>("RemainingTimeLimit")
                         .HasColumnType("integer");
+
+                    b.Property<List<Guid>>("StoryTemplateRecommendIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]");
 
                     b.Property<int>("TargetAgeGroup")
                         .HasColumnType("integer");
@@ -955,38 +960,6 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.HasKey("ParentProfileId");
 
                     b.ToTable("ParentProfileSubs");
-                });
-
-            modelBuilder.Entity("sketch_tale.Domain.Entities.ParentStoryRecommendation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("ChildProfileId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CreateBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<List<Guid>>("StoryTemplateIds")
-                        .IsRequired()
-                        .HasColumnType("uuid[]");
-
-                    b.Property<Guid?>("UpdateBy")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChildProfileId");
-
-                    b.ToTable("ParentStoryRecommendations");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.PaymentTransaction", b =>
@@ -1877,17 +1850,6 @@ namespace sketch_tale.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("ParentProfile");
-                });
-
-            modelBuilder.Entity("sketch_tale.Domain.Entities.ParentStoryRecommendation", b =>
-                {
-                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", "Child")
-                        .WithMany()
-                        .HasForeignKey("ChildProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Child");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.PaymentTransaction", b =>
