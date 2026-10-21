@@ -119,6 +119,7 @@ public class Program
         builder.Services.AddScoped<IProhibitedThemeRepository, ProhibitedThemeRepository>();
         builder.Services.AddScoped<IContentReportRepository, ContentReportRepository>();
         builder.Services.AddScoped<ICharTypeRepository, CharTypeRepository>();
+        builder.Services.AddScoped<IUserStoryCharacterMappingRepository, UserStoryCharacterMappingRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
         builder.Services.AddScoped<IStoryPageTemplateRepository, StoryPageTemplateRepository>();    
         builder.Services.AddScoped<IStoryRoleTemplateRepository, StoryRoleTemplateRepository>();    
@@ -140,6 +141,7 @@ public class Program
         builder.Services.AddScoped<IProhibitedThemeService, ProhibitedThemeService>();
         builder.Services.AddScoped<IContentReportService, ContentReportService>();
         builder.Services.AddScoped<ICharTypeService, CharTypeService>();
+        builder.Services.AddScoped<IUserStoryCharacterMappingService, UserStoryCharacterMappingService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();
         builder.Services.AddScoped<IStoryPageTemplateService, StoryPageTemplateService>();
         builder.Services.AddScoped<IStoryRoleTemplateService, StoryRoleTemplateService>();
