@@ -53,6 +53,11 @@ public class MappingProfile : Profile
         CreateMap<CreateCharTypeDto, CharType>();
         CreateMap<UpdateCharTypeDto, CharType>();
 
+        // UserStoryCharacterMapping
+        CreateMap<UserStoryCharacterMapping, UserStoryCharacterMappingDto>().ReverseMap();
+        CreateMap<CreateUserStoryCharacterMappingDto, UserStoryCharacterMapping>();
+        CreateMap<UpdateUserStoryCharacterMappingDto, UserStoryCharacterMapping>();
+
         // Auth & User
         CreateMap<RegisterParentDto, User>()
             .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))

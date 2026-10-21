@@ -22,6 +22,7 @@ public class UnitOfWork : IUnitOfWork
     private IProhibitedThemeRepository _prohibitedThemeRepository = null!;
     private IContentReportRepository _contentReportRepository = null!;
     private ICharTypeRepository _charTypeRepository = null!;
+    private IUserStoryCharacterMappingRepository _userStoryCharacterMappingRepository = null!;
     private IStoryTemplateRepository _storyTemplateRepository = null!;
     private IStoryPageTemplateRepository _storyPageTemplateRepository = null!;
     private IStoryRoleTemplateRepository _storyRoleTemplateRepository = null!;
@@ -63,6 +64,7 @@ public class UnitOfWork : IUnitOfWork
     public IProhibitedThemeRepository ProhibitedThemeRepository => _prohibitedThemeRepository ??= new ProhibitedThemeRepository(_context);
     public IContentReportRepository ContentReportRepository => _contentReportRepository ??= new ContentReportRepository(_context);
     public ICharTypeRepository CharTypeRepository => _charTypeRepository ??= new CharTypeRepository(_context);
+    public IUserStoryCharacterMappingRepository UserStoryCharacterMappingRepository => _userStoryCharacterMappingRepository ??= new UserStoryCharacterMappingRepository(_context);
     public IStoryTemplateRepository StoryTemplateRepository => _storyTemplateRepository ??= new StoryTemplateRepository(_context);
     public IStoryPageTemplateRepository StoryPageTemplateRepository => _storyPageTemplateRepository ??= new StoryPageTemplateRepository(_context);
     public IParentProfileRepository ParentProfileRepository => _parentProfileRepository ??= new ParentProfileRepository(_context);

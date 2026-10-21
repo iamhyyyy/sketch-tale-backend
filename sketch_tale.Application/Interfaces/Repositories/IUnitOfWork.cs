@@ -17,6 +17,7 @@ public interface IUnitOfWork : IDisposable
     IProhibitedThemeRepository ProhibitedThemeRepository { get; }
     IContentReportRepository ContentReportRepository { get; }
     ICharTypeRepository CharTypeRepository { get; }
+    IUserStoryCharacterMappingRepository UserStoryCharacterMappingRepository { get; }
     IStoryTemplateRepository StoryTemplateRepository { get; }
     IStoryPageTemplateRepository StoryPageTemplateRepository { get; }
     IStoryRoleTemplateRepository StoryRoleTemplateRepository { get; }
