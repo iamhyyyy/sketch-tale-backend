@@ -17,7 +17,7 @@ namespace sketch_tale.Application.Interfaces.Services
         
 
         // Các hàm nghiệp vụ riêng của Parent
-        Task<bool> UpdateProfileForSubscriptionAsync(Guid id, int childProfileLimit, int monthlyCreditLimit, bool canExportStory, bool accessFullStories);
+        //Task<bool> UpdateProfileForSubscriptionAsync(Guid id, int childProfileLimit, int monthlyCreditLimit, bool canExportStory, bool accessFullStories);
         Task<bool> MarkTrialPlanUsedAsync(Guid id);
     }
 }

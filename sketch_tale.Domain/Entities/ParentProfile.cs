@@ -9,20 +9,12 @@ namespace sketch_tale.Domain.Entities;
 public class ParentProfile : BaseEntity
 {
     public Guid UserId { get; set; }
-
-    public int ChildProfileLimit { get; set; } = 1;
-    public int RemainingChildProfileLimit { get; set; } = 1;
-
-    public int MonthlyCreditLimit { get; set; } = 500;
-    public int RemainingMonthlyCreditLimit { get; set; } = 500;
-
-    public bool CanExportStory { get; set; } = false;
-    public bool AccessFullStories { get; set; } = false;
-    public bool SubscriptionTrialPlusPlan { get; set; } = false;
-
-    [RegularExpression(@"^\d{6}$", ErrorMessage = "Mã bảo mật phải bao gồm đúng 6 chữ số.")]
-    public string SecurityCode { get; set; } = "000000";
+    public Guid SubscriptionPlanId { get; set; } = Guid.Parse("66666666-6666-6666-6666-666666666666");
+    public int RemainingChildProfile { get; set; } = 1;
+    public int RemainingMonthlyCredit { get; set; } = 500;
+    public bool TrialPlusPlan { get; set; } = false;
 
     public ParentProfileSub? ParentProfileSub { get; set; }
+    public SubscriptionPlan SubscriptionPlan { get; set; } = null!;
     public ICollection<ChildProfile> ChildProfiles { get; set; } = new List<ChildProfile>();
 }

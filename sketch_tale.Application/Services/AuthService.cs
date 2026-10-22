@@ -243,9 +243,9 @@ namespace sketch_tale.Application.Services
                 await _unitOfWork.CompleteAsync();
             }
 
-            if (parentProfile.RemainingChildProfileLimit <= 0)
+            if (parentProfile.RemainingChildProfile <= 0)
             {
-                throw new InvalidOperationException($"Phụ huynh đã đạt giới hạn tối đa {parentProfile.ChildProfileLimit} hồ sơ trẻ em của gói hiện tại ({parentProfile.ChildProfileLimit} bé)! Vui lòng nâng cấp lên gói PLUS (tối đa 3 bé) hoặc PRO (tối đa 5 bé) để tiếp tục tạo tài khoản cho con.");
+                throw new InvalidOperationException($"Phụ huynh đã đạt giới hạn tối đa hồ sơ trẻ em của gói hiện tại ({parentProfile.SubscriptionPlan.ChildProfileLimit} bé)! Vui lòng nâng cấp gói để tiếp tục tạo tài khoản cho con.");
             }
 
             // Kiểm tra username của bé đã tồn tại chưa qua UserManager
@@ -281,7 +281,7 @@ namespace sketch_tale.Application.Services
             await _unitOfWork.ChildProfileRepository.AddAsync(childProfile);
 
             // Trừ đi 1 lượt tạo con của phụ huynh
-            parentProfile.RemainingChildProfileLimit -= 1;
+            parentProfile.RemainingChildProfile -= 1;
             parentProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
             parentProfile.UpdateBy = parentUserId;
 
@@ -497,24 +497,20 @@ namespace sketch_tale.Application.Services
             if (primaryRole == "Parent")
             {
                 var parentProfile = await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(user.Id);
+                
                 if (parentProfile != null)
                 {
-                    var parentDto = _mapper.Map<ParentProfileDto>(parentProfile);
-                    // Xác định gói dịch vụ hiện tại: Free (1 con, 500 credit), Plus (3 con, 4000 credit), Pro (5 con, 10000 credit)
-                    if (parentProfile.ChildProfileLimit >= 5 || parentProfile.MonthlyCreditLimit >= 10000)
+                    var currentPlan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(parentProfile.SubscriptionPlanId);
+                    if (currentPlan != null)
                     {
-                        parentDto.CurrentPlan = "Pro";
-                    }
-                    else if (parentProfile.ChildProfileLimit >= 3 || parentProfile.MonthlyCreditLimit >= 4000)
-                    {
-                        parentDto.CurrentPlan = "Plus";
-                    }
-                    else
-                    {
-                        parentDto.CurrentPlan = "Free";
-                    }
+                        var parentDto = _mapper.Map<ParentProfileDto>(parentProfile);
+                        // Xác định gói dịch vụ hiện tại:
+                        if (currentPlan.Code == "ProPlan") parentDto.CurrentPlan = "Pro";
+                        else if (currentPlan.Code == "PlusPlan") parentDto.CurrentPlan = "Plus";
+                        else if (currentPlan.Code == "FreePlan") parentDto.CurrentPlan = "Free";
 
-                    profileDto.ParentProfile = parentDto;
+                        profileDto.ParentProfile = parentDto;
+                    }
                 }
             }
             else if (primaryRole == "Child")
@@ -926,15 +922,9 @@ namespace sketch_tale.Application.Services
             return new ParentProfile
             {
                 UserId = userId,
-                ChildProfileLimit = 1,
-                RemainingChildProfileLimit = 1,
-                MonthlyCreditLimit = 500,
-                RemainingMonthlyCreditLimit = 500,
-                CanExportStory = false,
-                AccessFullStories = false,
-                SubscriptionTrialPlusPlan = false,
-                SecurityCode = "000000",
-                CreatedAt = DateTime.UtcNow.AddHours(7),
+                RemainingChildProfile = 1,
+                RemainingMonthlyCredit = 500,
+                TrialPlusPlan = false,
                 CreateBy = userId
             };
         }

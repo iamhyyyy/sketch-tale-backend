@@ -14,5 +14,5 @@ public class ParentProfileSub : BaseEntityWithoutId
     public Guid ParentProfileId { get; set; }
 
     // Bắt buộc phải gắn với 1 ParentProfile
-    public required ParentProfile ParentProfile { get; set; }
+    public ParentProfile ParentProfile { get; set; } = null!;
 }
