@@ -134,6 +134,7 @@ public class SeedData
         context.SubscriptionPlans.AddRange(
             new SubscriptionPlan
             {
+                Id = Guid.Parse("66666666-6666-6666-6666-666666666666"),
                 Name = "Free",
                 Price = 0,
                 Code = "FreePlan",
@@ -148,6 +149,7 @@ public class SeedData
             },
             new SubscriptionPlan
             {
+                Id = Guid.Parse("77777777-7777-7777-7777-777777777777"),
                 Name = "Plus",
                 Price = 49,
                 Code = "PlusPlan",
@@ -164,6 +166,7 @@ public class SeedData
             },
             new SubscriptionPlan
             {
+                Id = Guid.Parse("88888888-8888-8888-8888-888888888888"),
                 Name = "Pro",
                 Price = 99,
                 Code = "ProPlan",
@@ -394,27 +397,17 @@ public class SeedData
             new ParentProfile
             {
                 UserId = parent.Id,
-                ChildProfileLimit = 3,
-                RemainingChildProfileLimit = 2,
-                MonthlyCreditLimit = 4000,
-                RemainingMonthlyCreditLimit = 3720,
-                CanExportStory = true,
-                AccessFullStories = true,
-                SubscriptionTrialPlusPlan = true,
-                SecurityCode = "123456",
+                RemainingChildProfile = 2,
+                RemainingMonthlyCredit = 3720,
+                TrialPlusPlan = true,
                 CreateBy = SystemUserId
             },
             new ParentProfile
             {
                 UserId = parent2.Id,
-                ChildProfileLimit = 1,
-                RemainingChildProfileLimit = 0,
-                MonthlyCreditLimit = 500,
-                RemainingMonthlyCreditLimit = 470,
-                CanExportStory = false,
-                AccessFullStories = false,
-                SubscriptionTrialPlusPlan = false,
-                SecurityCode = "654321",
+                RemainingChildProfile = 0,
+                RemainingMonthlyCredit = 470,
+                TrialPlusPlan = false,
                 CreateBy = SystemUserId
             }
         );

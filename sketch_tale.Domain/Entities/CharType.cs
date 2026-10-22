@@ -9,7 +9,4 @@ public class CharType : BaseEntity
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public CommonStatus Status { get; set; }
-
-    // Navigation Properties
-    public ICollection<Character> Characters { get; set; } = new List<Character>();
 }

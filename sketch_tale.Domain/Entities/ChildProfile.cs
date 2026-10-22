@@ -18,10 +18,11 @@ public class ChildProfile : BaseEntity
     public int DailyCharacterLimit { get; set; } = 1;
     public int RemainingCharacterLimit { get; set; } = 1;
 
-    public List<Guid> AllowedThemeIds { get; set; } = new List<Guid>();
-    public List<Guid> StoryTemplateRecommendIds { get; set; } = new List<Guid>();
+    public ICollection<EducationTheme> AllowedThemes { get; set; } = new List<EducationTheme>();
+    public ICollection<StoryTemplate> StoryTemplateRecommends { get; set; } = new List<StoryTemplate>();
 
     public ICollection<Drawing> Drawings { get; set; } = new List<Drawing>();
     public ICollection<Character> Characters { get; set; } = new List<Character>();
     public ICollection<GeneratedStory> GeneratedStories { get; set; } = new List<GeneratedStory>();
+
 }

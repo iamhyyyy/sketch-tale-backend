@@ -4,6 +4,7 @@ using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Domain.Entities;
 using sketch_tale.Domain.Enums;
+using System.Numerics;
 
 namespace SmartCarWash.Application.Services
 {
@@ -85,7 +86,8 @@ namespace SmartCarWash.Application.Services
                 {
                     var plan = await GetPlanBySubs(item);
                     SetSubscriptionDate(item, plan.DurationDays);
-                    UpdateParentProfile(await GetParentBySubs(item), plan);
+                    var parentProfile = await GetParentBySubs(item);
+                    parentProfile.SubscriptionPlanId = plan.Id;
                 }
 
             }
@@ -106,14 +108,6 @@ namespace SmartCarWash.Application.Services
             return true;
         }
 
-        private void UpdateParentProfile(ParentProfile parentProfile, SubscriptionPlan plan)
-        {
-            parentProfile.ChildProfileLimit = plan.ChildProfileLimit;
-            parentProfile.MonthlyCreditLimit = plan.MonthlyCreditLimit;
-            parentProfile.CanExportStory = plan.CanExportStory;
-            parentProfile.AccessFullStories = plan.AccessFullStories;
-            _unitOfWork.ParentProfileRepository.Update(parentProfile);
-        }
         private async Task<SubscriptionPlan> GetPlanBySubs(Subscription item)
         {
             var plan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(item.SubscriptionPlanId);
@@ -147,7 +141,12 @@ namespace SmartCarWash.Application.Services
                 item.Status = SubscriptionStatus.Expired;
                 _unitOfWork.SubscriptionRepository.Update(item);
                 var freePlan = await _unitOfWork.SubscriptionPlanRepository.GetPlanByCode("FreePlan");
-                if (freePlan != null) UpdateParentProfile(await GetParentBySubs(item), freePlan);
+                if (freePlan != null)
+                {
+                    var parentProfile = await GetParentBySubs(item);
+                    parentProfile.SubscriptionPlanId = freePlan.Id;
+                }
+
             }
 
             await _unitOfWork.CompleteAsync();
