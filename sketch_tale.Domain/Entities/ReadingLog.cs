@@ -12,7 +12,5 @@ public class ReadingLog : BaseEntity
     public int ReadDurationSeconds { get; set; } = 0;
 
     // Navigation Properties
-    public ChildProfile Child { get; set; } = null!;
-    public GeneratedStory GeneratedStory { get; set; } = null!;
     public ICollection<ChildQuizAnswer> ChildQuizAnswers { get; set; } = new List<ChildQuizAnswer>();
 }

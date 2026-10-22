@@ -14,8 +14,5 @@ public class SubscriptionPlan : BaseEntity
     public int DurationDays { get; set; }
     public int FreeTrialDays { get; set; } = 0;
     public bool IsActive { get; set; } = true;
-
-    // Navigation
-    public ICollection<Subscription> Subscriptions { get; set; } = new List<Subscription>();
 }
 

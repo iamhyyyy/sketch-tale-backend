@@ -26,7 +26,7 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
 
     public DbSet<CreditCost> CreditCosts => Set<CreditCost>();
-    public DbSet<CreditTransaction> CreditTransactions => Set<CreditTransaction>();
+    public DbSet<CreditTransactionLog> CreditTransactionLogs => Set<CreditTransactionLog>();
 
     public DbSet<Drawing> Drawings => Set<Drawing>();
     public DbSet<CharType> CharTypes => Set<CharType>();

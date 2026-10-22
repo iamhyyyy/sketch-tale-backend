@@ -11,17 +11,12 @@ public class PaymentTransaction : BaseEntity
     public Guid ParentProfileId { get; set; }
     public decimal Amount { get; set; }
     public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
-    public string PaymentProvider { get; set; } = "VNPAY";
+    public string PaymentProvider { get; set; } = "PayOS";
 
-    // VNPay Data
-    public string TxnRef { get; set; } = string.Empty; // vnp_TxnRef
-    public string TransactionNo { get; set; } = string.Empty;   // vnp_TransactionNo
-    public string BankCode { get; set; } = string.Empty;             // vnp_BankCode
-    public string ResponseCode { get; set; } = string.Empty;         // vnp_ResponseCode
-    public DateTime? PayDate { get; set; }      // Parsed from vnp_PayDate
-    public string RawIpnResponse { get; set; } = string.Empty;       // Audit trail Log JSON
-
-    // Navigation
-    public Subscription Subscription { get; set; } = null!;
-    public ParentProfile ParentProfile { get; set; } = null!;
+    public string TxnRef { get; set; } = string.Empty; 
+    public string TransactionNo { get; set; } = string.Empty;   
+    public string BankCode { get; set; } = string.Empty;             
+    public string ResponseCode { get; set; } = string.Empty;         
+    public DateTime? PayDate { get; set; }      
+    public string RawIpnResponse { get; set; } = string.Empty;       
 }

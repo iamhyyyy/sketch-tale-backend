@@ -14,7 +14,5 @@ public class UserStoryCharacterMapping : BaseEntity
     //if false => NotRequired, if true => Pending
 
     // Navigation Properties
-    public GeneratedStory GeneratedStory { get; set; } = null!;
     public StoryRoleTemplate StoryRoleTemplate { get; set; } = null!;
-    public Character Character { get; set; } = null!;
 }
