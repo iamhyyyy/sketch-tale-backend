@@ -8,7 +8,4 @@ public class EducationTheme : BaseEntity
     public string Name { get; set; } = null!;
     public string Description { get; set; } = string.Empty;
     public CommonStatus Status { get; set; }
-
-    // Navigation Properties
-    public ICollection<StoryTemplate> StoryTemplates { get; set; } = new List<StoryTemplate>();
 }

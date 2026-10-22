@@ -12,7 +12,6 @@ public class GeneratedStory : BaseEntity
     public int LastPageRead { get; set; }
 
     // Navigation Properties
-    public ChildProfile Child { get; set; } = null!;
     public StoryTemplate StoryTemplate { get; set; } = null!;
     public ICollection<UserStoryCharacterMapping> UserStoryCharacterMappings { get; set; } = new List<UserStoryCharacterMapping>();
 }

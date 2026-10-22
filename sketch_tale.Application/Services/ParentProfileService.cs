@@ -48,26 +48,26 @@ namespace sketch_tale.Application.Services
             return true;
         }
 
-        public async Task<bool> UpdateProfileForSubscriptionAsync(Guid id, int childProfileLimit, int monthlyCreditLimit, bool canExportStory, bool accessFullStories)
-        {
-            var profile = await _unitOfWork.ParentProfileRepository.GetByIdAsync(id);
-            if (profile == null) return false;
+        //public async Task<bool> UpdateProfileForSubscriptionAsync(Guid id, int childProfileLimit, int monthlyCreditLimit, bool canExportStory, bool accessFullStories)
+        //{
+        //    var profile = await _unitOfWork.ParentProfileRepository.GetByIdAsync(id);
+        //    if (profile == null) return false;
 
-            // Cập nhật thông số giới hạn của gói cước
-            profile.ChildProfileLimit = childProfileLimit;
-            profile.MonthlyCreditLimit = monthlyCreditLimit;
-            profile.CanExportStory = canExportStory;
-            profile.AccessFullStories = accessFullStories;
+        //    // Cập nhật thông số giới hạn của gói cước
+        //    profile.ChildProfileLimit = childProfileLimit;
+        //    profile.MonthlyCreditLimit = monthlyCreditLimit;
+        //    profile.CanExportStory = canExportStory;
+        //    profile.AccessFullStories = accessFullStories;
 
-            // Lưu ý: Tuỳ thuộc vào logic kinh doanh, bạn có thể cần cộng thêm 
-            // vào RemainingChildProfileLimit và RemainingMonthlyCreditLimit ở đây.
-            // Ví dụ: profile.RemainingMonthlyCreditLimit += monthlyCreditLimit;
+        //    // Lưu ý: Tuỳ thuộc vào logic kinh doanh, bạn có thể cần cộng thêm 
+        //    // vào RemainingChildProfileLimit và RemainingMonthlyCreditLimit ở đây.
+        //    // Ví dụ: profile.RemainingMonthlyCreditLimit += monthlyCreditLimit;
 
-            _unitOfWork.ParentProfileRepository.Update(profile);
-            await _unitOfWork.CompleteAsync();
+        //    _unitOfWork.ParentProfileRepository.Update(profile);
+        //    await _unitOfWork.CompleteAsync();
 
-            return true;
-        }
+        //    return true;
+        //}
 
         public async Task<bool> MarkTrialPlanUsedAsync(Guid id)
         {
@@ -75,7 +75,7 @@ namespace sketch_tale.Application.Services
             if (profile == null) return false;
 
             // Đánh dấu đã xài bản trial
-            profile.SubscriptionTrialPlusPlan = true;
+            profile.TrialPlusPlan = true;
 
             _unitOfWork.ParentProfileRepository.Update(profile);
             await _unitOfWork.CompleteAsync();

@@ -42,7 +42,6 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
     public DbSet<VocabularyTemplate> VocabularyTemplates => Set<VocabularyTemplate>();
     public DbSet<StoryQuizTemplate> StoryQuizTemplates => Set<StoryQuizTemplate>();
 
-    public DbSet<ParentStoryRecommendation> ParentStoryRecommendations => Set<ParentStoryRecommendation>();
     public DbSet<GeneratedStory> GeneratedStories => Set<GeneratedStory>();
     public DbSet<UserStoryCharacterMapping> UserStoryCharacterMappings => Set<UserStoryCharacterMapping>();
     public DbSet<ChildVocabularyProgress> ChildVocabularyProgresses => Set<ChildVocabularyProgress>();
