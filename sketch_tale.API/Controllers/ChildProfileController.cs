@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Services;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace sketch_tale.API.Controllers
 {
@@ -15,6 +19,7 @@ namespace sketch_tale.API.Controllers
         {
             _childProfileService = childProfileService;
         }
+
         // GET: api/child-profiles
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -35,31 +40,14 @@ namespace sketch_tale.API.Controllers
             return Ok(profile);
         }
 
-        // GET: api/child-profiles/parent/{parentProfileId}
-        //[HttpGet("parent/{parentProfileId}")]
-        //public async Task<IActionResult> GetByParentId(Guid parentProfileId)
-        //{
-        //    try
-        //    {
-        //        var parentProfile = await _childProfileService.GetByParentProfileIdAsync(parentProfileId);
-        //        if (parentProfile == null) return NotFound();
-        //        return Ok(parentProfile);
-        //    }
-        //    catch (NotImplementedException)
-        //    {
-        //        // Bắt lỗi NotImplementedException do bạn đang để throw trong Service
-        //        return StatusCode(501, new { message = "Tính năng này chưa được thiết lập." });
-        //    }
-        //}
-
         // GET: api/child-profiles/{id}/nickname
         [HttpGet("{id}/nickname")]
         public async Task<IActionResult> GetNickName(Guid id)
         {
             var nickname = await _childProfileService.GetNickNameByIdAsync(id);
-            if (nickname == null) return NotFound();
+            if (nickname == null) return NotFound(new { message = "Không tìm thấy hồ sơ bé." });
 
-            return Ok(new { NickName = nickname }); // Bọc trong object trả về cho JSON đẹp
+            return Ok(new { NickName = nickname });
         }
 
         // GET: api/child-profiles/{id}/target-age-group
@@ -67,7 +55,7 @@ namespace sketch_tale.API.Controllers
         public async Task<IActionResult> GetTargetAgeGroup(Guid id)
         {
             var ageGroup = await _childProfileService.GetTargetAgeGroupByIdAsync(id);
-            if (ageGroup == null) return NotFound();
+            if (ageGroup == null) return NotFound(new { message = "Không tìm thấy hồ sơ bé." });
 
             return Ok(new { TargetAgeGroup = ageGroup });
         }
@@ -77,7 +65,7 @@ namespace sketch_tale.API.Controllers
         public async Task<IActionResult> GetDailyTimeLimit(Guid id)
         {
             var timeLimit = await _childProfileService.GetDailyTimeLimitByIdAsync(id);
-            if (timeLimit == null) return NotFound();
+            if (timeLimit == null) return NotFound(new { message = "Không tìm thấy hồ sơ bé." });
 
             return Ok(new { DailyTimeLimit = timeLimit });
         }
@@ -87,27 +75,42 @@ namespace sketch_tale.API.Controllers
         public async Task<IActionResult> GetDailyCharacterLimit(Guid id)
         {
             var charLimit = await _childProfileService.GetDailyCharacterLimitByIdAsync(id);
-            if (charLimit == null) return NotFound();
+            if (charLimit == null) return NotFound(new { message = "Không tìm thấy hồ sơ bé." });
 
             return Ok(new { DailyCharacterLimit = charLimit });
         }
 
+        /// <summary>
+        /// Cập nhật thông tin hồ sơ bé (ChildProfile) - Dành cho Phụ huynh và Admin
+        /// </summary>
+        [Authorize(Roles = "Parent,parent,Admin,admin")]
         // PUT: api/child-profiles/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateChildProfileDto dto)
+        public async Task<IActionResult> UpdateChildProfile(Guid id, [FromBody] UpdateChildProfileDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var isUpdated = await _childProfileService.UpdateAsync(id, dto);
-            if (!isUpdated)
+            try
             {
-                return NotFound(new { message = "Không tìm thấy hồ sơ để cập nhật." });
+                var isUpdated = await _childProfileService.UpdateChildProfileAsync(id, dto);
+                if (!isUpdated)
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ bé để cập nhật." });
+                }
+
+                return Ok(new { message = "Cập nhật hồ sơ bé thành công!" });
             }
-            return Ok(new { message = "Cập nhật thành công!" });
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
         }
     }
 }
-

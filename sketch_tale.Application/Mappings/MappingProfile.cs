@@ -1,4 +1,3 @@
-
 using AutoMapper;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Domain.Entities;
@@ -75,20 +74,24 @@ public class MappingProfile : Profile
 
         // ParentProfile & ChildProfile
         CreateMap<ParentProfile, ParentProfileDto>()
-            .ForMember(dest => dest.CurrentPlan, opt => opt.Ignore())
+            .ForMember(dest => dest.CurrentPlan, opt => opt.MapFrom(src => src.SubscriptionPlan != null ? src.SubscriptionPlan.Name : "Free"))
             .ReverseMap();
+
         //StoryTemplate
         CreateMap<StoryTemplate, StoryTemplateDto>();
         CreateMap<CreateStoryTemplateDto, StoryTemplate>();
         CreateMap<UpdateStoryTemplateDto, StoryTemplate>();
+
         //Story_PAGE_Template
         CreateMap<CreateStoryPageTemplateDto, StoryPageTemplate>();
         CreateMap<UpdateStoryPageTemplateDto, StoryPageTemplate>();
         CreateMap<StoryPageTemplate, StoryPageTemplateDto>();
+
         //Story_ROLE_Template
         CreateMap<CreateStoryRoleTemplateDto, StoryRoleTemplate>();
         CreateMap<UpdateStoryRoleTemplateDto, StoryRoleTemplate>();
         CreateMap<StoryRoleTemplate, StoryRoleTemplateDto>();
+
         //Character_SLOT_Template
         CreateMap<CreateCharacterSlotTemplateDto, CharacterSlotTemplate>();
         CreateMap<UpdateCharacterSlotTemplateDto, CharacterSlotTemplate>();
@@ -120,10 +123,8 @@ public class MappingProfile : Profile
         CreateMap<UpdateVocabularyTemplateDto, VocabularyTemplate>();
         CreateMap<VocabularyTemplate, VocabularyTemplateDto>();
 
-        CreateMap<ChildProfile, ChildProfileDto>()
-            .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()));
-
         CreateMap<RegisterChildDto, ChildProfile>();
+
         //ChildProfile
         CreateMap<ChildProfile, ChildProfileDto>()
             .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()))
@@ -133,11 +134,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ReadingLevel, opt => opt.MapFrom(src => Enum.Parse<ReadingLevel>(src.ReadingLevel)));
         CreateMap<UpdateChildProfileDto, ChildProfile>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-        //ParentProfile
-        CreateMap<ParentProfile, ParentProfileDto>()
-            .ForMember(dest => dest.CurrentPlan, opt => opt.Ignore())
-            .ReverseMap();
+
         CreateMap<UpdateParentProfileDto, ParentProfile>()
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
     }
 }
