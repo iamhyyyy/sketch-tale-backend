@@ -12,7 +12,7 @@ namespace sketch_tale.Application.Interfaces.Services
         Task<IEnumerable<ChildProfileDto>> GetAllChildProfilesAsync();
         Task<ChildProfileDto?> GetByIdAsync(Guid id);
         Task<ParentProfileDto?> GetByParentProfileIdAsync(Guid parentProfileId);
-        Task<bool> UpdateAsync(Guid id, UpdateChildProfileDto dto);
+        Task<bool> UpdateChildProfileAsync(Guid id, UpdateChildProfileDto dto);
         //Task<bool> DeleteAsync(Guid id);
         Task<string?> GetNickNameByIdAsync(Guid id);
         Task<int?> GetDailyTimeLimitByIdAsync(Guid id);       // Kiểu int (hoặc TimeSpan tùy thuộc vào thiết kế DB của bạn)
