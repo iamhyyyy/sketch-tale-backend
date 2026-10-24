@@ -48,5 +48,8 @@ namespace sketch_tale.Application.Interfaces.Services
         // 13. Lấy role của user hiện tại đang login (double check và ưu tiên theo DB)
         Task<string?> GetCurrentUserRoleAsync();
         //Task<string?> GetCurrentUserRole();
+
+        // 14. Cập nhật role cho người dùng (Chỉ dành cho Admin)
+        Task<bool> UpdateRoleAsync(UpdateRoleDto dto);
     }
 }

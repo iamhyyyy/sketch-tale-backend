@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
@@ -20,6 +21,7 @@ namespace sketch_tale.Application.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly IJwtService _jwtService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -31,6 +33,7 @@ namespace sketch_tale.Application.Services
         public AuthService(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
+            RoleManager<IdentityRole<Guid>> roleManager,
             IJwtService jwtService,
             IUnitOfWork unitOfWork,
             IMapper mapper,
@@ -41,6 +44,7 @@ namespace sketch_tale.Application.Services
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _jwtService = jwtService;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -736,7 +740,7 @@ namespace sketch_tale.Application.Services
             return Convert.ToBase64String(randomNumber);
         }
 
-        // 12. LẤY ROLE CỦA USER HIỆN TẠI ĐANG LOGIN (DOUBLE CHECK VỚI DB QUA REPOSITORY, KHÔNG DÙNG LINQ)
+        // 12. LẤY ROLE CỦA USER HIỆN TẠI ĐANG LOGIN (DOUBLE CHECK VỚI DB )
         public async Task<string?> GetCurrentUserRoleAsync()
         {
             var httpContext = _httpContextAccessor.HttpContext;
@@ -759,7 +763,7 @@ namespace sketch_tale.Application.Services
                 return tokenRole;
             }
 
-            // 2. Double check lại với role thực tế dưới database bằng UserManager có sẵn (không dùng LINQ)
+            // 2. Double check lại với role thực tế dưới database bằng UserManager có sẵn 
             var user = await _userManager.FindByIdAsync(userIdStr);
             if (user == null)
             {
@@ -769,7 +773,6 @@ namespace sketch_tale.Application.Services
             var dbRoles = await _userManager.GetRolesAsync(user);
             string? dbRole = null;
 
-            // Duyệt foreach thông thường để chuẩn hóa role theo hệ thống, không dùng LINQ
             foreach (var r in dbRoles)
             {
                 if (r.Equals("admin", StringComparison.OrdinalIgnoreCase))
@@ -813,11 +816,120 @@ namespace sketch_tale.Application.Services
                 return dbRole;
             }
 
-            // Fallback: Nếu DB chưa gán role, giữ role hiện tại từ session token
+            //Nếu DB chưa gán role, giữ role hiện tại từ session token
             return tokenRole;
         }
 
         public Task<string?> GetCurrentUserRole() => GetCurrentUserRoleAsync();
+
+        // 14. CẬP NHẬT ROLE CHO NGƯỜI DÙNG (CHỈ DÀNH CHO ADMIN)
+        public async Task<bool> UpdateRoleAsync(UpdateRoleDto dto)
+        {
+            if (dto.UserId == Guid.Empty)
+            {
+                throw new ArgumentException("UserId không hợp lệ.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Role))
+            {
+                throw new ArgumentException("Role mới không được để trống.");
+            }
+
+            // Tìm người dùng cần đổi role
+            var user = await _userManager.FindByIdAsync(dto.UserId.ToString());
+            if (user == null)
+            {
+                throw new KeyNotFoundException("Không tìm thấy người dùng với Id đã cung cấp.");
+            }
+
+            // Chuẩn hóa và kiểm tra role hợp lệ trong hệ thống
+            var targetRoleName = await ResolveRoleNameAsync(dto.Role.Trim());
+            if (string.IsNullOrEmpty(targetRoleName))
+            {
+                throw new ArgumentException($"Role '{dto.Role}' không hợp lệ trong hệ thống. Các role hợp lệ: Admin, ContentManager, Parent, Child, System.");
+            }
+
+            // Lấy danh sách các role hiện tại của user
+            var currentRoles = await _userManager.GetRolesAsync(user);
+
+            // Nếu user đã có đúng role này rồi thì không cần cập nhật lại
+            foreach (var r in currentRoles)
+            {
+                if (r.Equals(targetRoleName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            // Gỡ bỏ tất cả các role cũ của user
+            if (currentRoles.Count > 0)
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    var errors = FormatIdentityErrors(removeResult.Errors);
+                    throw new Exception($"Không thể xóa các role cũ của người dùng: {errors}");
+                }
+            }
+
+            // Gán role mới
+            var addResult = await _userManager.AddToRoleAsync(user, targetRoleName);
+            if (!addResult.Succeeded)
+            {
+                var errors = FormatIdentityErrors(addResult.Errors);
+                throw new Exception($"Không thể gán role mới: {errors}");
+            }
+
+            // Cập nhật thông tin audit
+            user.UpdatedAt = DateTime.UtcNow.AddHours(7);
+
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext != null)
+            {
+                var currentAdminIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                                     ?? httpContext.User.FindFirstValue("sub")
+                                     ?? httpContext.User.FindFirstValue("nameid");
+
+                if (Guid.TryParse(currentAdminIdStr, out var adminGuid))
+                {
+                    user.UpdateBy = adminGuid;
+                }
+            }
+
+            await _userManager.UpdateAsync(user);
+
+            return true;
+        }
+        // hàm tiện ích: Chuẩn hóa role name từ input của admin (loại bỏ khoảng trắng, không phân biệt hoa thường)
+        private async Task<string?> ResolveRoleNameAsync(string roleName)
+        {
+            var cleanedInput = roleName.Replace(" ", "").ToLowerInvariant();
+
+            // Lấy tất cả role có trong DB từ RoleManager
+            var allRoles = await _roleManager.Roles.ToListAsync();
+            foreach (var r in allRoles)
+            {
+                if (!string.IsNullOrEmpty(r.Name))
+                {
+                    var cleanedRoleName = r.Name.Replace(" ", "").ToLowerInvariant();
+                    if (cleanedRoleName == cleanedInput || r.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return r.Name;
+                    }
+                }
+            }
+
+            // Fallback map các case chuẩn nếu DB chưa query được
+            return cleanedInput switch
+            {
+                "admin" => "admin",
+                "contentmanager" => "content manager",
+                "parent" => "parent",
+                "child" => "child",
+                "system" => "system",
+                _ => null
+            };
+        }
 
         // HÀM TIỆN ÍCH: GỬI EMAIL XÁC THỰC TÀI KHOẢN VỚI GIAO DIỆN HTML ĐẸP MẮT
         private async Task SendVerificationEmailAsync(User user)
@@ -929,7 +1041,7 @@ namespace sketch_tale.Application.Services
             };
         }
 
-        // HÀM TIỆN ÍCH: FORMAT LỖI IDENTITY KHÔNG CẦN DÙNG LINQ
+        // HÀM TIỆN ÍCH: FORMAT LỖI IDENTITY
         private static string FormatIdentityErrors(IEnumerable<IdentityError> errors)
         {
             var list = new List<string>();
