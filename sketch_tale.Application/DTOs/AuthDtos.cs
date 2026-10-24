@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -110,4 +111,20 @@ namespace sketch_tale.Application.DTOs
     {
         public string? Token { get; set; }
     }
+
+    // --- CẬP NHẬT ROLE (DÀNH CHO ADMIN) ---
+    public class UpdateRoleDto
+    {
+        public Guid UserId { get; set; }
+        
+        private string _role = string.Empty;
+        public string Role
+        {
+            get => _role;
+            set => _role = value;
+        }
+
+    }
+
+   
 }
