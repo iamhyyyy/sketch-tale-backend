@@ -26,4 +26,5 @@ public interface IUnitOfWork : IDisposable
     IStoryQuizTemplateRepository StoryQuizTemplateRepository { get; }
     IChildProfileRepository ChildProfileRepository { get; }
     IParentProfileRepository ParentProfileRepository { get; }
+    IPaymentTransactionRepository PaymentTransactionRepository { get; }
 }
