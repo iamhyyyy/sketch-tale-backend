@@ -566,13 +566,13 @@ public class SeedData
 
     private static async Task SeedCreditTransactionsAsync(AppDbContext context)
     {
-        if (await context.CreditTransactions.AnyAsync()) return;
+        if (await context.CreditTransactionLogs.AnyAsync()) return;
 
         var parents = await context.ParentProfiles.OrderBy(p => p.CreatedAt).ToListAsync();
         if (parents.Count == 0) return;
 
-        context.CreditTransactions.AddRange(
-            new CreditTransaction
+        context.CreditTransactionLogs.AddRange(
+            new CreditTransactionLog
             {
                 ParentProfileId = parents[0].Id,
                 Amount = -30,
@@ -580,7 +580,7 @@ public class SeedData
                 Description = "Classify a child's drawing.",
                 CreateBy = SystemUserId
             },
-            new CreditTransaction
+            new CreditTransactionLog
             {
                 ParentProfileId = parents[0].Id,
                 Amount = -150,
@@ -588,7 +588,7 @@ public class SeedData
                 Description = "Generate a character from drawing.",
                 CreateBy = SystemUserId
             },
-            new CreditTransaction
+            new CreditTransactionLog
             {
                 ParentProfileId = parents[0].Id,
                 Amount = -50,
@@ -927,7 +927,6 @@ public class SeedData
                 ChildProfileId = children[0].Id,
                 DrawingId = child0Drawings[0].Id,
                 CharTypeId = charTypes[0].Id,
-                RawImageUrl = child0Drawings[0].OriginalImageUrl,
                 AIPromptUsed = "Turn this drawing into a friendly fox hero, child-safe, bright colors.",
                 GenerateImageUrl = "/seed/ai/fox-hero.png",
                 AIDetectedTagsJson = "[\"fox\",\"hero\",\"kind\"]",
@@ -939,7 +938,6 @@ public class SeedData
                 ChildProfileId = children[0].Id,
                 DrawingId = child0Drawings[1].Id,
                 CharTypeId = charTypes[2].Id,
-                RawImageUrl = child0Drawings[1].OriginalImageUrl,
                 AIPromptUsed = "Turn this drawing into a cheerful companion animal.",
                 GenerateImageUrl = "/seed/ai/buddy.png",
                 AIDetectedTagsJson = "[\"buddy\",\"animal\",\"smile\"]",
@@ -951,7 +949,6 @@ public class SeedData
                 ChildProfileId = children[1].Id,
                 DrawingId = child1Drawings[0].Id,
                 CharTypeId = charTypes[1].Id,
-                RawImageUrl = child1Drawings[0].OriginalImageUrl,
                 AIPromptUsed = "Turn this drawing into a curious child explorer.",
                 GenerateImageUrl = "/seed/ai/explorer.png",
                 AIDetectedTagsJson = "[\"explorer\",\"human\",\"curious\"]",

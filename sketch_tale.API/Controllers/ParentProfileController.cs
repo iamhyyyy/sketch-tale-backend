@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Services;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace sketch_tale.API.Controllers
 {
-    [Route("api/parent-profiles")] // Đã bỏ dấu [] đi để URL là chuẩn: /api/parent-profiles
+    [Route("api/parent-profiles")]
     [ApiController]
     public class ParentProfileController : ControllerBase
     {
@@ -38,44 +40,38 @@ namespace sketch_tale.API.Controllers
             return Ok(profile);
         }
 
+        /// <summary>
+        /// Cập nhật gói dịch vụ (Subscription Plan) cho tài khoản phụ huynh - Chỉ dành cho Admin
+        /// </summary>
+        //[Authorize(Roles = "admin,Admin")]
         // PUT: api/parent-profiles/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateParentProfileDto dto)
+        public async Task<IActionResult> UpdateParentProfile(Guid id, [FromBody] UpdateParentProfileDto dto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var isUpdated = await _parentProfileService.UpdateAsync(id, dto);
-            if (!isUpdated)
+            try
             {
-                return NotFound(new { message = "Không tìm thấy hồ sơ để cập nhật." });
+                var isUpdated = await _parentProfileService.UpdateAsync(id, dto);
+                if (!isUpdated)
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ phụ huynh để cập nhật." });
+                }
+
+                return Ok(new { message = "Cập nhật gói dịch vụ cho hồ sơ phụ huynh thành công!" });
             }
-
-            return Ok(new { message = "Cập nhật thành công!" });
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
-
-        // PUT: api/parent-profiles/{id}/subscription
-        // Dùng FromQuery để nhận các tham số trên URL, hoặc bạn có thể tạo 1 DTO riêng cho body
-        //[HttpPut("{id}/subscription")]
-        //public async Task<IActionResult> UpdateSubscription(
-        //    Guid id,
-        //    [FromQuery] int childProfileLimit,
-        //    [FromQuery] int monthlyCreditLimit,
-        //    [FromQuery] bool canExportStory,
-        //    [FromQuery] bool accessFullStories)
-        //{
-        //    var isUpdated = await _parentProfileService.UpdateProfileForSubscriptionAsync(
-        //        id, childProfileLimit, monthlyCreditLimit, canExportStory, accessFullStories);
-
-        //    if (!isUpdated)
-        //    {
-        //        return NotFound(new { message = "Không tìm thấy hồ sơ phụ huynh để cập nhật gói cước." });
-        //    }
-
-        //    return Ok(new { message = "Cập nhật quyền lợi gói Subscription thành công!" });
-        //}
 
         // PATCH (hoặc PUT): api/parent-profiles/{id}/mark-trial-plan-used
         [HttpPatch("{id}/mark-trial-plan-used")]

@@ -20,6 +20,7 @@ namespace sketch_tale.Infrastructure.Repositories
         {
             return await _dbSet
              .Include(c => c.ChildProfiles)
+             .Include(c => c.SubscriptionPlan)
              .ToListAsync();
         }
 
@@ -27,14 +28,15 @@ namespace sketch_tale.Infrastructure.Repositories
         {
             return await _dbSet
                 .Include(c => c.ChildProfiles)
+                .Include(c => c.SubscriptionPlan)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<ParentProfile?> GetByUserIdAsync(Guid userId)
         {
-            return await _dbSet.FirstOrDefaultAsync(p => p.UserId == userId);
+            return await _dbSet
+                .Include(c => c.SubscriptionPlan)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
         }
     }
 }
-   
-

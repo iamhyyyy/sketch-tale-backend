@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
@@ -12,7 +12,6 @@ namespace sketch_tale.Application.Services
 {
     public class ParentProfileService : IParentProfileService
     {
-       
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
@@ -36,38 +35,29 @@ namespace sketch_tale.Application.Services
 
         public async Task<bool> UpdateAsync(Guid id, UpdateParentProfileDto dto)
         {
+            if (dto.SubscriptionPlanId == Guid.Empty)
+            {
+                throw new ArgumentException("SubscriptionPlanId không được để trống hoặc là Guid rỗng.");
+            }
+
             var profile = await _unitOfWork.ParentProfileRepository.GetByIdAsync(id);
             if (profile == null) return false;
 
-            // Map đè các trường từ dto sang profile (ở đây là SecurityCode)
-            _mapper.Map(dto, profile);
+            // Kiểm tra gói dịch vụ (Subscription Plan) có tồn tại trong hệ thống (SeedData / Database) hay không
+            var plan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(dto.SubscriptionPlanId);
+            if (plan == null)
+            {
+                throw new KeyNotFoundException("Không tìm thấy gói đăng ký (Subscription Plan) tương ứng.");
+            }
+
+            // Cập nhật SubscriptionPlanId cho hồ sơ phụ huynh
+            profile.SubscriptionPlanId = dto.SubscriptionPlanId;
 
             _unitOfWork.ParentProfileRepository.Update(profile);
             await _unitOfWork.CompleteAsync();
 
             return true;
         }
-
-        //public async Task<bool> UpdateProfileForSubscriptionAsync(Guid id, int childProfileLimit, int monthlyCreditLimit, bool canExportStory, bool accessFullStories)
-        //{
-        //    var profile = await _unitOfWork.ParentProfileRepository.GetByIdAsync(id);
-        //    if (profile == null) return false;
-
-        //    // Cập nhật thông số giới hạn của gói cước
-        //    profile.ChildProfileLimit = childProfileLimit;
-        //    profile.MonthlyCreditLimit = monthlyCreditLimit;
-        //    profile.CanExportStory = canExportStory;
-        //    profile.AccessFullStories = accessFullStories;
-
-        //    // Lưu ý: Tuỳ thuộc vào logic kinh doanh, bạn có thể cần cộng thêm 
-        //    // vào RemainingChildProfileLimit và RemainingMonthlyCreditLimit ở đây.
-        //    // Ví dụ: profile.RemainingMonthlyCreditLimit += monthlyCreditLimit;
-
-        //    _unitOfWork.ParentProfileRepository.Update(profile);
-        //    await _unitOfWork.CompleteAsync();
-
-        //    return true;
-        //}
 
         public async Task<bool> MarkTrialPlanUsedAsync(Guid id)
         {

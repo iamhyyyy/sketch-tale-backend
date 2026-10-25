@@ -10,8 +10,6 @@ public class AICharacterGenerate : BaseEntity
     public Guid DrawingId { get; set; }
     public Guid CharTypeId { get; set; }
 
-    public string RawImageUrl { get; set; } = null!;
-
     public string AIPromptUsed { get; set; } = null!;
     public string? GenerateImageUrl { get; set; }
     public string? AIDetectedTagsJson { get; set; }
@@ -21,7 +19,5 @@ public class AICharacterGenerate : BaseEntity
     public string? ErrorMessage { get; set; }
 
     // Navigation Properties
-    public ChildProfile Child { get; set; } = null!;
     public Drawing Drawing { get; set; } = null!;
-    public CharType CharType { get; set; } = null!;
 }
