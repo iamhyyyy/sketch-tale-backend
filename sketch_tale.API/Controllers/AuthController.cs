@@ -340,6 +340,40 @@ namespace sketch_tale.API.Controllers
             }
         }
 
+        // 14. Cập nhật role người dùng (Chỉ dành cho Admin)
+        [HttpPut("update-role")]
+        [Authorize(Roles = "Admin,admin")]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleDto dto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var success = await _authService.UpdateRoleAsync(dto);
+                if (!success)
+                {
+                    return BadRequest(new { message = "Cập nhật role thất bại!" });
+                }
+
+                return Ok(new { message = "Cập nhật role cho người dùng thành công!" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         private Guid? GetCurrentUserId()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier)
