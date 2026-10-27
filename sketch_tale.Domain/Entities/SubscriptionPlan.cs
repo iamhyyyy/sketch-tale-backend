@@ -13,6 +13,7 @@ public class SubscriptionPlan : BaseEntity
     public bool CanExportStory { get; set; }
     public int DurationDays { get; set; }
     public int FreeTrialDays { get; set; } = 0;
+    public bool HaveParentProfileSub { get; set; }
     public bool IsActive { get; set; } = true;
 }
 
