@@ -4,7 +4,7 @@ using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Domain.Entities;
 
-namespace SmartCarWash.Application.Services
+namespace sketch_tale.Application.Services
 {
     public class CreditCostService : ICreditCostService
     {

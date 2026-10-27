@@ -16,7 +16,6 @@ using sketch_tale.Infrastructure.Data;
 using sketch_tale.Infrastructure.Repositories;
 using sketch_tale.Infrastructure.Services;
 using sketch_tale.Infrastructure.Settings;
-using SmartCarWash.Application.Services;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
