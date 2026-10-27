@@ -5,7 +5,7 @@ using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Domain.Entities;
 using sketch_tale.Domain.Enums;
 
-namespace SmartCarWash.Application.Services
+namespace sketch_tale.Application.Services
 {
     public class AuditLogService : IAuditLogService
     {
