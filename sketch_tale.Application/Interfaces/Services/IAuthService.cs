@@ -51,5 +51,20 @@ namespace sketch_tale.Application.Interfaces.Services
 
         // 14. Cập nhật role cho người dùng (Chỉ dành cho Admin)
         Task<bool> UpdateRoleAsync(UpdateRoleDto dto);
+
+        // 15. Lấy danh sách tất cả người dùng (Dành cho Admin)
+        Task<List<UserProfileDto>> GetAllUsersAsync();
+
+        // 16. Lấy chi tiết người dùng theo ID (Dành cho Admin)
+        Task<UserProfileDto> GetUserByIdAsync(Guid userId);
+
+        // 17. Admin chủ động tạo tài khoản (Nhân sự hoặc User mới)
+        Task<UserProfileDto> AdminCreateUserAsync(AdminCreateUserDto dto, Guid? adminId);
+
+        // 18. Admin cập nhật thông tin user
+        Task<UserProfileDto> AdminUpdateUserAsync(Guid userId, AdminUpdateUserDto dto, Guid? adminId);
+
+        // 19. Khóa hoặc mở khóa tài khoản (Ban/Unban)
+        Task<bool> UpdateUserStatusAsync(Guid userId, UpdateUserStatusDto dto, Guid? adminId);
     }
 }

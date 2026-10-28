@@ -125,6 +125,11 @@ namespace sketch_tale.Application.Services
                 return null;
             }
 
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                throw new UnauthorizedAccessException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên!");
+            }
+
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: false);
             if (!result.Succeeded)
             {
@@ -196,6 +201,11 @@ namespace sketch_tale.Application.Services
             // Trẻ em bắt buộc tìm theo Username qua UserManager
             var user = await _userManager.FindByNameAsync(dto.Username);
             if (user == null) return null;
+
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                throw new UnauthorizedAccessException("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên!");
+            }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, lockoutOnFailure: false);
             if (!result.Succeeded) return null;
@@ -497,6 +507,7 @@ namespace sketch_tale.Application.Services
             // Dùng AutoMapper để chuyển User Entity thành UserProfileDto
             var profileDto = _mapper.Map<UserProfileDto>(user);
             profileDto.Role = primaryRole;
+            profileDto.IsLockedOut = await _userManager.IsLockedOutAsync(user);
 
             if (primaryRole == "Parent")
             {
@@ -900,6 +911,269 @@ namespace sketch_tale.Application.Services
 
             return true;
         }
+
+        // 15. LẤY TOÀN BỘ DANH SÁCH NGƯỜI DÙNG (DÀNH CHO ADMIN)
+        public async Task<List<UserProfileDto>> GetAllUsersAsync()
+        {
+            var users = await _userManager.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
+
+            var result = new List<UserProfileDto>();
+
+            foreach (var user in users)
+            {
+                var profileDto = _mapper.Map<UserProfileDto>(user);
+                profileDto.Role = await GetUserPrimaryRoleAsync(user);
+                profileDto.IsLockedOut = await _userManager.IsLockedOutAsync(user);
+
+                if (profileDto.Role == "Parent")
+                {
+                    var parentProfile = await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(user.Id);
+                    if (parentProfile != null)
+                    {
+                        var parentDto = _mapper.Map<ParentProfileDto>(parentProfile);
+                        var currentPlan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(parentProfile.SubscriptionPlanId);
+                        if (currentPlan != null)
+                        {
+                            if (currentPlan.Code == "ProPlan") parentDto.CurrentPlan = "Pro";
+                            else if (currentPlan.Code == "PlusPlan") parentDto.CurrentPlan = "Plus";
+                            else if (currentPlan.Code == "FreePlan") parentDto.CurrentPlan = "Free";
+                        }
+                        profileDto.ParentProfile = parentDto;
+                    }
+                }
+                else if (profileDto.Role == "Child")
+                {
+                    var childProfile = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(user.Id);
+                    if (childProfile != null)
+                    {
+                        profileDto.ChildProfile = _mapper.Map<ChildProfileDto>(childProfile);
+                    }
+                }
+
+                result.Add(profileDto);
+            }
+
+            return result;
+        }
+
+        // HÀM TIỆN ÍCH: XÁC ĐỊNH PRIMARY ROLE CỦA USER
+        private async Task<string> GetUserPrimaryRoleAsync(User user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var r in roles)
+            {
+                if (r.Equals("admin", StringComparison.OrdinalIgnoreCase)) return "Admin";
+                if (r.Equals("content manager", StringComparison.OrdinalIgnoreCase) || r.Equals("contentmanager", StringComparison.OrdinalIgnoreCase)) return "ContentManager";
+                if (r.Equals("parent", StringComparison.OrdinalIgnoreCase)) return "Parent";
+                if (r.Equals("child", StringComparison.OrdinalIgnoreCase)) return "Child";
+            }
+            return roles.FirstOrDefault() ?? "User";
+        }
+
+        // 16. LẤY CHI TIẾT NGƯỜI DÙNG THEO ID
+        public async Task<UserProfileDto> GetUserByIdAsync(Guid userId)
+        {
+            return await GetProfileAsync(userId);
+        }
+
+        // 17. ADMIN CHỦ ĐỘNG TẠO TÀI KHOẢN (NHÂN SỰ HOẶC USER MỚI)
+        public async Task<UserProfileDto> AdminCreateUserAsync(AdminCreateUserDto dto, Guid? adminId)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Username))
+            {
+                throw new ArgumentException("Username không được để trống.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 6)
+            {
+                throw new ArgumentException("Mật khẩu phải từ 6 ký tự trở lên.");
+            }
+
+            var normalizedUsername = dto.Username.Trim();
+            var existingUserByName = await _userManager.FindByNameAsync(normalizedUsername);
+            if (existingUserByName != null)
+            {
+                throw new InvalidOperationException($"Username '{normalizedUsername}' đã tồn tại trong hệ thống. Vui lòng chọn username khác.");
+            }
+
+            string? normalizedEmail = null;
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                normalizedEmail = dto.Email.Trim();
+                var existingUserByEmail = await _userManager.FindByEmailAsync(normalizedEmail);
+                if (existingUserByEmail != null)
+                {
+                    throw new InvalidOperationException($"Email '{normalizedEmail}' đã được sử dụng bởi một tài khoản khác.");
+                }
+            }
+
+            // Kiểm tra role hợp lệ
+            var targetRole = await ResolveRoleNameAsync(dto.Role?.Trim() ?? string.Empty);
+            if (string.IsNullOrEmpty(targetRole))
+            {
+                throw new ArgumentException($"Role '{dto.Role}' không hợp lệ. Các role hợp lệ: Admin, ContentManager, Parent, Child.");
+            }
+
+            var now = DateTime.UtcNow.AddHours(7);
+            var newUser = new User
+            {
+                UserName = normalizedUsername,
+                Email = normalizedEmail,
+                EmailConfirmed = dto.EmailConfirmed,
+                FirstName = dto.FirstName?.Trim(),
+                LastName = dto.LastName?.Trim(),
+                DOB = dto.DOB,
+                Gender = dto.Gender,
+                PhoneNumber = dto.PhoneNumber?.Trim(),
+                CreatedAt = now,
+                CreateBy = adminId ?? Guid.Empty,
+                LockoutEnabled = true
+            };
+
+            var createResult = await _userManager.CreateAsync(newUser, dto.Password);
+            if (!createResult.Succeeded)
+            {
+                var errors = FormatIdentityErrors(createResult.Errors);
+                throw new InvalidOperationException($"Tạo tài khoản thất bại: {errors}");
+            }
+
+            // Gán Role
+            var roleResult = await _userManager.AddToRoleAsync(newUser, targetRole);
+            if (!roleResult.Succeeded)
+            {
+                var errors = FormatIdentityErrors(roleResult.Errors);
+                throw new InvalidOperationException($"Gán role thất bại: {errors}");
+            }
+
+            // Nếu role là Parent -> Tự động khởi tạo ParentProfile mặc định
+            if (targetRole.Equals("Parent", StringComparison.OrdinalIgnoreCase))
+            {
+                var parentProfile = CreateDefaultParentProfile(newUser.Id);
+                parentProfile.CreateBy = adminId ?? newUser.Id;
+                await _unitOfWork.ParentProfileRepository.AddAsync(parentProfile);
+                await _unitOfWork.CompleteAsync();
+            }
+
+            return await GetProfileAsync(newUser.Id);
+        }
+
+        // 18. ADMIN CẬP NHẬT THÔNG TIN USER
+        public async Task<UserProfileDto> AdminUpdateUserAsync(Guid userId, AdminUpdateUserDto dto, Guid? adminId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                throw new KeyNotFoundException("Không tìm thấy người dùng với Id được cung cấp.");
+            }
+
+            if (dto.FirstName != null) user.FirstName = dto.FirstName.Trim();
+            if (dto.LastName != null) user.LastName = dto.LastName.Trim();
+            if (dto.PhoneNumber != null) user.PhoneNumber = dto.PhoneNumber.Trim();
+            if (dto.DOB.HasValue) user.DOB = dto.DOB;
+            if (dto.Gender.HasValue) user.Gender = dto.Gender;
+
+            // Cập nhật Email nếu có thay đổi
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                var trimmedEmail = dto.Email.Trim();
+                if (!trimmedEmail.Equals(user.Email, StringComparison.OrdinalIgnoreCase))
+                {
+                    var existingWithEmail = await _userManager.FindByEmailAsync(trimmedEmail);
+                    if (existingWithEmail != null && existingWithEmail.Id != user.Id)
+                    {
+                        throw new InvalidOperationException($"Email '{trimmedEmail}' đã thuộc về một tài khoản khác.");
+                    }
+                    user.Email = trimmedEmail;
+                    user.NormalizedEmail = trimmedEmail.ToUpperInvariant();
+                }
+            }
+
+            // Cập nhật Role nếu có cung cấp
+            if (!string.IsNullOrWhiteSpace(dto.Role))
+            {
+                var targetRole = await ResolveRoleNameAsync(dto.Role.Trim());
+                if (string.IsNullOrEmpty(targetRole))
+                {
+                    throw new ArgumentException($"Role '{dto.Role}' không hợp lệ.");
+                }
+
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                bool hasSameRole = false;
+                foreach (var r in currentRoles)
+                {
+                    if (r.Equals(targetRole, StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasSameRole = true;
+                        break;
+                    }
+                }
+
+                if (!hasSameRole)
+                {
+                    if (currentRoles.Count > 0)
+                    {
+                        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                    }
+                    await _userManager.AddToRoleAsync(user, targetRole);
+                }
+            }
+
+            user.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            if (adminId.HasValue)
+            {
+                user.UpdateBy = adminId.Value;
+            }
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                var errors = FormatIdentityErrors(updateResult.Errors);
+                throw new InvalidOperationException($"Cập nhật thông tin thất bại: {errors}");
+            }
+
+            return await GetProfileAsync(user.Id);
+        }
+
+        // 19. KHÓA HOẶC MỞ KHÓA TÀI KHOẢN (BAN / UNBAN)
+        public async Task<bool> UpdateUserStatusAsync(Guid userId, UpdateUserStatusDto dto, Guid? adminId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                throw new KeyNotFoundException("Không tìm thấy người dùng với Id được cung cấp.");
+            }
+
+            // Không cho phép admin tự khóa chính mình
+            if (adminId.HasValue && adminId.Value == user.Id && dto.IsLocked)
+            {
+                throw new InvalidOperationException("Không thể tự khóa tài khoản Admin đang thực hiện thao tác.");
+            }
+
+            if (dto.IsLocked)
+            {
+                // Khóa tài khoản
+                await _userManager.SetLockoutEnabledAsync(user, true);
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+            }
+            else
+            {
+                // Mở khóa tài khoản
+                await _userManager.SetLockoutEndDateAsync(user, null);
+                await _userManager.ResetAccessFailedCountAsync(user);
+            }
+
+            user.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            if (adminId.HasValue)
+            {
+                user.UpdateBy = adminId.Value;
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
+
         // hàm tiện ích: Chuẩn hóa role name từ input của admin (loại bỏ khoảng trắng, không phân biệt hoa thường)
         private async Task<string?> ResolveRoleNameAsync(string roleName)
         {
