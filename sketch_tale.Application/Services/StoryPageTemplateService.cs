@@ -52,7 +52,7 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         entity.Id = Guid.NewGuid();
         entity.StoryTemplateId = storyId;
 
-        // Tự động tăng và gán số trang tiếp theo
+        // tăng và gán số trang tiếp theo
         story.TotalPageNumbers += 1;
         entity.PageNumber = story.TotalPageNumbers;
 
@@ -108,13 +108,71 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         if (story != null && story.TotalPageNumbers > 0)
         {
             story.TotalPageNumbers -= 1;
+            story.UpdatedAt = DateTime.UtcNow.AddHours(7);
             _unitOfWork.StoryTemplateRepository.Update(story);
         }
 
         page.Status = Domain.Enums.CommonStatus.Inactive;
         page.UpdatedAt = DateTime.UtcNow.AddHours(7);
-
         _unitOfWork.StoryPageTemplateRepository.Update(page);
+
+        // Cập nhật lại số trang đứng sau trang vừa xóa
+        var remainingPages = await _unitOfWork.StoryPageTemplateRepository.GetPagesByStoryIdAsync(page.StoryTemplateId);
+        var laterPages = remainingPages.Where(p => p.Id != page.Id && p.PageNumber > page.PageNumber);
+        foreach (var p in laterPages)
+        {
+            p.PageNumber -= 1;
+            p.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            _unitOfWork.StoryPageTemplateRepository.Update(p);
+        }
+
+        await _unitOfWork.CompleteAsync();
+        return true;
+    }
+
+    public async Task<bool> ReorderPagesAsync(Guid storyId, ReorderStoryPagesDto dto)
+    {
+        var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
+        if (story == null || story.Status == CommonStatus.Inactive)
+        {
+            throw new KeyNotFoundException($"Story template with id {storyId} was not found.");
+        }
+
+        var pages = (await _unitOfWork.StoryPageTemplateRepository.GetPagesByStoryIdAsync(storyId)).ToList();
+        if (!pages.Any())
+        {
+            throw new InvalidOperationException("Câu chuyện chưa có trang nào để sắp xếp.");
+        }
+
+        if (dto.OrderedPageIds == null || dto.OrderedPageIds.Count != pages.Count)
+        {
+            throw new ArgumentException($"Số lượng trang gửi lên ({dto.OrderedPageIds?.Count ?? 0}) không khớp với số lượng trang hiện tại ({pages.Count}).");
+        }
+
+        if (dto.OrderedPageIds.Distinct().Count() != dto.OrderedPageIds.Count)
+        {
+            throw new ArgumentException("Danh sách trang gửi lên chứa Id bị trùng lặp.");
+        }
+
+        var pageDict = pages.ToDictionary(p => p.Id);
+
+        for (int i = 0; i < dto.OrderedPageIds.Count; i++)
+        {
+            var pageId = dto.OrderedPageIds[i];
+            if (!pageDict.TryGetValue(pageId, out var page))
+            {
+                throw new ArgumentException($"Trang với Id {pageId} không tồn tại hoặc không thuộc câu chuyện này.");
+            }
+
+            page.PageNumber = i + 1;
+            page.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            _unitOfWork.StoryPageTemplateRepository.Update(page);
+        }
+
+        story.TotalPageNumbers = pages.Count;
+        story.UpdatedAt = DateTime.UtcNow.AddHours(7);
+        _unitOfWork.StoryTemplateRepository.Update(story);
+
         await _unitOfWork.CompleteAsync();
         return true;
     }

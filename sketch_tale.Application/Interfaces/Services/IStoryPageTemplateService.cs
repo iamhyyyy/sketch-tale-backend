@@ -12,4 +12,5 @@ public interface IStoryPageTemplateService
     Task<StoryPageTemplateDto> CreatePageAsync(Guid storyId, CreateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null);
     Task<bool> UpdatePageAsync(Guid pageId, UpdateStoryPageTemplateDto dto, IFormFile? imageFile = null, IFormFile? audioFile = null);
     Task<bool> DeletePageAsync(Guid pageId);
+    Task<bool> ReorderPagesAsync(Guid storyId, ReorderStoryPagesDto dto);
 }

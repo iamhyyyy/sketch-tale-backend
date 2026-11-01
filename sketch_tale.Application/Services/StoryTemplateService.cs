@@ -50,14 +50,11 @@ public class StoryTemplateService : IStoryTemplateService
     public async Task<StoryTemplateDto> CreateAsync(CreateStoryTemplateDto dto, IFormFile? file)
     {
         var entity = _mapper.Map<StoryTemplate>(dto);
-        entity.Id = Guid.NewGuid();
-        entity.Status = Domain.Enums.CommonStatus.Pending;
+        entity.Status = Domain.Enums.CommonStatus.Draft;
         if (file != null)
             entity.CoverImageUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/cover-image");
         await _unitOfWork.StoryTemplateRepository.AddAsync(entity);
         await _unitOfWork.CompleteAsync();
-
-        // 5. Map Entity vừa tạo → DTO trả về cho Controller
         return _mapper.Map<StoryTemplateDto>(entity);
     }
 

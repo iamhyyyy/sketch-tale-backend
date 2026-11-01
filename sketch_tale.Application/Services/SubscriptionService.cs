@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
@@ -79,18 +79,23 @@ namespace sketch_tale.Application.Services
             var item = await _unitOfWork.SubscriptionRepository.GetByIdAsync(id);
             if (item == null) return false;
 
-            if(item.Status == SubscriptionStatus.PendingPayment && status == SubscriptionStatus.Active)
+            if (item.Status == SubscriptionStatus.PendingPayment && status == SubscriptionStatus.Active)
             {
                 item.Status = status;
-                if (!(GetDate(item.StartDate) == UtcDate()))
-                {
-                    var plan = await GetPlanBySubs(item);
-                    SetSubscriptionDate(item, plan.DurationDays);
-                    var parentProfile = await GetParentBySubs(item);
-                    parentProfile.SubscriptionPlanId = plan.Id;
-                }
+                var plan = await GetPlanBySubs(item);
+                SetSubscriptionDate(item, plan.DurationDays);
 
+                var parentProfile = await _unitOfWork.ParentProfileRepository.GetByIdWithDetailsAsync(item.ParentProfileId)
+                    ?? await GetParentBySubs(item);
+
+                parentProfile.SubscriptionPlanId = plan.Id;
+                var existingChildCount = parentProfile.ChildProfiles?.Count ?? 0;
+                parentProfile.RemainingChildProfile = Math.Max(0, plan.ChildProfileLimit - existingChildCount);
+                parentProfile.RemainingMonthlyCredit = plan.MonthlyCreditLimit;
+
+                _unitOfWork.ParentProfileRepository.Update(parentProfile);
             }
+
             _unitOfWork.SubscriptionRepository.Update(item);
             await _unitOfWork.CompleteAsync();
             return true;
@@ -143,10 +148,14 @@ namespace sketch_tale.Application.Services
                 var freePlan = await _unitOfWork.SubscriptionPlanRepository.GetPlanByCode("FreePlan");
                 if (freePlan != null)
                 {
-                    var parentProfile = await GetParentBySubs(item);
+                    var parentProfile = await _unitOfWork.ParentProfileRepository.GetByIdWithDetailsAsync(item.ParentProfileId)
+                        ?? await GetParentBySubs(item);
                     parentProfile.SubscriptionPlanId = freePlan.Id;
+                    var existingChildCount = parentProfile.ChildProfiles?.Count ?? 0;
+                    parentProfile.RemainingChildProfile = Math.Max(0, freePlan.ChildProfileLimit - existingChildCount);
+                    parentProfile.RemainingMonthlyCredit = freePlan.MonthlyCreditLimit;
+                    _unitOfWork.ParentProfileRepository.Update(parentProfile);
                 }
-
             }
 
             await _unitOfWork.CompleteAsync();
