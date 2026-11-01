@@ -1,0 +1,141 @@
+<mxfile host="app.diagrams.net" modified="2026-10-27T12:00:00.000Z" agent="Antigravity" version="21.0.0" type="device">
+  <diagram id="sketch_tale_package_diagram" name="SketchTale Package Diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Root Container Package -->
+        <mxCell id="root_package" value="&lt;b&gt;sketch_tale&lt;/b&gt;" style="shape=folder;fontStyle=1;tabWidth=200;tabHeight=35;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#EBF3FA;strokeColor=#7EA6E0;strokeWidth=2;align=center;verticalAlign=top;spacingTop=8;fontSize=15;fontColor=#1A365D;" vertex="1" parent="1">
+          <mxGeometry x="50" y="40" width="980" height="740" as="geometry" />
+        </mxCell>
+
+        <!-- 1. sketch_tale.API -->
+        <mxCell id="pkg_api" value="&lt;b&gt;sketch_tale.API&lt;/b&gt;" style="shape=folder;fontStyle=0;tabWidth=160;tabHeight=25;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#FFF2CC;strokeColor=#D6B656;strokeWidth=1.5;verticalAlign=top;spacingTop=4;fontSize=13;fontColor=#2D3748;" vertex="1" parent="1">
+          <mxGeometry x="90" y="100" width="370" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_ctrl" value="Controllers" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="150" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_mid" value="Middlewares" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="150" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_mod" value="Configurations" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="230" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_utils" value="Filters &amp;amp; Utils" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="230" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- 2. Common & DTOs -->
+        <mxCell id="pkg_common" value="&lt;b&gt;Common &amp;amp; DTOs&lt;/b&gt;" style="shape=folder;fontStyle=0;tabWidth=160;tabHeight=25;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#FFF2CC;strokeColor=#D6B656;strokeWidth=1.5;verticalAlign=top;spacingTop=4;fontSize=13;fontColor=#2D3748;" vertex="1" parent="1">
+          <mxGeometry x="590" y="100" width="390" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_ex" value="Exceptions" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="610" y="150" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_dto" value="DTOs" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="790" y="150" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_com_utils" value="Common" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="230" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- 3. sketch_tale.Application -->
+        <mxCell id="pkg_app" value="&lt;b&gt;sketch_tale.Application&lt;/b&gt;" style="shape=folder;fontStyle=0;tabWidth=200;tabHeight=25;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#FFF2CC;strokeColor=#D6B656;strokeWidth=1.5;verticalAlign=top;spacingTop=4;fontSize=13;fontColor=#2D3748;" vertex="1" parent="1">
+          <mxGeometry x="460" y="340" width="360" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_app_impl" value="Services" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="390" width="150" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_app_intf" value="Interfaces/Services" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="650" y="390" width="150" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_repo_contracts" value="Interfaces/Repositories" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=11;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="480" y="460" width="150" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- 4. sketch_tale.Domain -->
+        <mxCell id="pkg_domain" value="&lt;b&gt;sketch_tale.Domain&lt;/b&gt;" style="shape=folder;fontStyle=0;tabWidth=170;tabHeight=25;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#FFF2CC;strokeColor=#D6B656;strokeWidth=1.5;verticalAlign=top;spacingTop=4;fontSize=13;fontColor=#2D3748;" vertex="1" parent="1">
+          <mxGeometry x="90" y="550" width="370" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_entities" value="Entities" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="600" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_enums" value="Enums" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="600" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_models" value="Common (BaseEntity)" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=11;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="680" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_mappings" value="Mappings" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="680" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- 5. sketch_tale.Infrastructure -->
+        <mxCell id="pkg_infra" value="&lt;b&gt;sketch_tale.Infrastructure&lt;/b&gt;" style="shape=folder;fontStyle=0;tabWidth=200;tabHeight=25;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#FFF2CC;strokeColor=#D6B656;strokeWidth=1.5;verticalAlign=top;spacingTop=4;fontSize=13;fontColor=#2D3748;" vertex="1" parent="1">
+          <mxGeometry x="570" y="550" width="400" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_repo_impl" value="Repositories" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=12;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="600" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_data_impl" value="Data (AppDbContext)" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=11;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="780" y="600" width="170" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sub_seed" value="Migrations &amp;amp; Services" style="shape=folder;tabWidth=35;tabHeight=12;html=1;whiteSpace=wrap;fillColor=#FFFDF5;strokeColor=#E0C16A;fontSize=11;align=center;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="680" width="170" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Incoming External Arrows -->
+        <mxCell id="edge_in1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;strokeColor=#2D3748;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="10" y="180" as="sourcePoint" />
+            <mxPoint x="90" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_in2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;strokeColor=#2D3748;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="10" y="260" as="sourcePoint" />
+            <mxPoint x="90" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Dependencies between packages -->
+        <!-- API -> Common -->
+        <mxCell id="edge_api_common" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;strokeColor=#2D3748;" edge="1" parent="1" source="pkg_api" target="pkg_common">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API -> App -->
+        <mxCell id="edge_api_app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;strokeColor=#2D3748;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="pkg_api" target="pkg_app">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="275" y="435" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- App -> Domain -->
+        <mxCell id="edge_app_domain" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;strokeColor=#2D3748;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="pkg_app" target="pkg_domain">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="532" y="540" />
+              <mxPoint x="275" y="540" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- App -> Infra -->
+        <mxCell id="edge_app_infra" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;strokeColor=#2D3748;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="pkg_app" target="pkg_infra">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Infra -> Domain -->
+        <mxCell id="edge_infra_domain" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeWidth=1.5;strokeColor=#2D3748;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="pkg_infra" target="pkg_domain">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

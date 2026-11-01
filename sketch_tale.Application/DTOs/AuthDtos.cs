@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -96,6 +97,8 @@ namespace sketch_tale.Application.DTOs
         public bool? Gender { get; set; }
         public string Role { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public DateTime? LastLoginAt { get; set; }
+        public bool IsLockedOut { get; set; }
 
         public ParentProfileDto? ParentProfile { get; set; }
         public ChildProfileDto? ChildProfile { get; set; }
@@ -109,5 +112,60 @@ namespace sketch_tale.Application.DTOs
     public class LogoutRequestDto
     {
         public string? Token { get; set; }
+    }
+
+    // --- CẬP NHẬT ROLE (DÀNH CHO ADMIN) ---
+    public class UpdateRoleDto
+    {
+        public Guid UserId { get; set; }
+        
+        private string _role = string.Empty;
+        public string Role
+        {
+            get => _role;
+            set => _role = value;
+        }
+    }
+
+    // --- ADMIN QUẢN LÝ NGƯỜI DÙNG ---
+
+    public class AdminCreateUserDto
+    {
+        [Required(ErrorMessage = "Username không được để trống.")]
+        public string Username { get; set; } = string.Empty;
+
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Mật khẩu không được để trống.")]
+        [MinLength(6, ErrorMessage = "Mật khẩu phải từ 6 ký tự trở lên.")]
+        public string Password { get; set; } = string.Empty;
+
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public DateOnly? DOB { get; set; }
+        public bool? Gender { get; set; }
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Role không được để trống.")]
+        public string Role { get; set; } = "Parent"; // "Admin", "ContentManager", "Parent", "Child"
+
+        public bool EmailConfirmed { get; set; } = true;
+    }
+
+    public class AdminUpdateUserDto
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public DateOnly? DOB { get; set; }
+        public bool? Gender { get; set; }
+        public string? Role { get; set; }
+    }
+
+    public class UpdateUserStatusDto
+    {
+        public bool IsLocked { get; set; } // true: Khóa (Ban), false: Mở khóa (Unban)
+        public string? Reason { get; set; }
     }
 }

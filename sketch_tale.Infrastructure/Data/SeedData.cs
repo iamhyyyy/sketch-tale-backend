@@ -143,6 +143,7 @@ public class SeedData
                 MonthlyCreditLimit = 500,
                 AccessFullStories = false,
                 CanExportStory = false,
+                HaveParentProfileSub = false,
 
                 DurationDays = 9999,
                 CreateBy = SystemUserId
@@ -151,13 +152,14 @@ public class SeedData
             {
                 Id = Guid.Parse("77777777-7777-7777-7777-777777777777"),
                 Name = "Plus",
-                Price = 49,
+                Price = 49000,
                 Code = "PlusPlan",
 
                 ChildProfileLimit = 3,
                 MonthlyCreditLimit = 4000,
                 AccessFullStories = true,
                 CanExportStory = true,
+                HaveParentProfileSub = true,
 
 
                 DurationDays = 30,
@@ -168,13 +170,14 @@ public class SeedData
             {
                 Id = Guid.Parse("88888888-8888-8888-8888-888888888888"),
                 Name = "Pro",
-                Price = 99,
+                Price = 99000,
                 Code = "ProPlan",
 
                 ChildProfileLimit = 5,
                 MonthlyCreditLimit = 10000,
                 AccessFullStories = true,
                 CanExportStory = true,
+                HaveParentProfileSub = true,
 
                 DurationDays = 30,
                 FreeTrialDays = 0,

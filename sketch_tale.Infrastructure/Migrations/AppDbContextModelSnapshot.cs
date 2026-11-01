@@ -1382,6 +1382,9 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<int>("FreeTrialDays")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("HaveParentProfileSub")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 

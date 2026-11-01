@@ -11,6 +11,7 @@ public class SubscriptionPlanDto : BaseFieldDto
     public int MonthlyCreditLimit { get; set; }
     public bool AccessFullStories { get; set; }
     public bool CanExportStory { get; set; }
+    public bool HaveParentProfileSub { get; set; }
     public int? DurationDays { get; set; }
     public int? FreeTrialDays { get; set; }
     public bool IsActive { get; set; }
@@ -25,6 +26,7 @@ public class CreateSubscriptionPlanDto
     public int MonthlyCreditLimit { get; set; }
     public bool AccessFullStories { get; set; }
     public bool CanExportStory { get; set; }
+    public bool HaveParentProfileSub { get; set; }
     public int? DurationDays { get; set; }
     public int? FreeTrialDays { get; set; }
     public bool IsActive { get; set; }
@@ -33,12 +35,12 @@ public class CreateSubscriptionPlanDto
 public class UpdateSubscriptionPlanDto
 {
     public string Name { get; set; } = string.Empty;
-    public string Code { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public int ChildProfileLimit { get; set; }
     public int MonthlyCreditLimit { get; set; }
     public bool AccessFullStories { get; set; }
     public bool CanExportStory { get; set; }
+    public bool HaveParentProfileSub { get; set; }
     public int? DurationDays { get; set; }
     public int? FreeTrialDays { get; set; }
     public bool IsActive { get; set; }

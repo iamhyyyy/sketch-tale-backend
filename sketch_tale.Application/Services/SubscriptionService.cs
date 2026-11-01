@@ -6,7 +6,7 @@ using sketch_tale.Domain.Entities;
 using sketch_tale.Domain.Enums;
 using System.Numerics;
 
-namespace SmartCarWash.Application.Services
+namespace sketch_tale.Application.Services
 {
     public class SubscriptionService : ISubscriptionService
     {
