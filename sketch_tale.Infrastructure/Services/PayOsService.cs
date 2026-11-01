@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using PayOS;
 using PayOS.Models.V2.PaymentRequests;
@@ -10,6 +11,7 @@ using sketch_tale.Domain.Entities;
 using sketch_tale.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -38,10 +40,8 @@ namespace sketch_tale.Infrastructure.Services
             );
         }
 
-        // ─── API 1: Tạo link thanh toán mua gói cước Subscription ───────────────────
         public async Task<string> CreatePaymentLinkAsync(Guid parentProfileId, CreatePaymentDto dto)
         {
-            // 1. Kiểm tra gói Plan có tồn tại và đang hoạt động không
             var plan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(dto.SubscriptionPlanId);
             if (plan == null || !plan.IsActive)
                 throw new Exception("Gói đăng ký không tồn tại hoặc đã ngừng kích hoạt.");
@@ -53,14 +53,12 @@ namespace sketch_tale.Infrastructure.Services
 
             parentProfileId = parent.Id;
 
-            // Hủy các Subscription PendingPayment cũ của phụ huynh để tránh rác DB
             var existingSubs = await _unitOfWork.SubscriptionRepository.GetByParentProfileId(parentProfileId);
             foreach (var pendingSub in existingSubs.Where(s => s.Status == SubscriptionStatus.PendingPayment))
             {
                 await _subscriptionService.Delete(pendingSub.Id);
             }
 
-            // 2. Tạo bản ghi Subscription ở trạng thái PendingPayment
             var now = DateTime.UtcNow.AddHours(7);
             var subscription = new Subscription
             {
@@ -73,11 +71,9 @@ namespace sketch_tale.Infrastructure.Services
             };
             await _unitOfWork.SubscriptionRepository.AddAsync(subscription);
 
-            // 3. Tạo orderCode duy nhất (long) = timestamp ms * 10 + random digit
             var random = new Random();
             long orderCode = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() * 10 + random.Next(0, 10);
 
-            // 4. Tạo PaymentTransaction lưu vết thanh toán
             var transaction = new sketch_tale.Domain.Entities.PaymentTransaction
             {
                 Id = Guid.NewGuid(),
@@ -91,20 +87,18 @@ namespace sketch_tale.Infrastructure.Services
             await _unitOfWork.PaymentTransactionRepository.AddAsync(transaction);
             await _unitOfWork.CompleteAsync();
 
-            // 5. Build description: PayOS giới hạn 25 ký tự, không dấu tiếng Việt
             var description = RemoveDiacritics(dto.Description ?? $"Mua {plan.Name}");
             if (description.Length > 25) description = description[..25];
 
             var amount = (int)plan.Price;
 
-            // 6. Build request theo PayOS SDK
             var request = new CreatePaymentLinkRequest
             {
                 OrderCode   = orderCode,
                 Amount      = amount,
                 Description = description,
-                CancelUrl   = _configuration["PayOS:CancelUrl"] ?? "http://localhost:5173/payment/cancel",
-                ReturnUrl   = _configuration["PayOS:ReturnUrl"] ?? "http://localhost:5173/payment/success",
+                CancelUrl   = _configuration["PayOS:CancelUrl"],
+                ReturnUrl   = _configuration["PayOS:ReturnUrl"],
                 BuyerName   = dto.BuyerName,
                 BuyerEmail  = dto.BuyerEmail,
                 Items       = new List<PaymentLinkItem>
@@ -117,18 +111,14 @@ namespace sketch_tale.Infrastructure.Services
                     }
                 }
             };
-
-            // 7. Gọi PayOS API lấy checkoutUrl
             var result = await _payOS.PaymentRequests.CreateAsync(request);
             return result.CheckoutUrl;
         }
 
-        // ─── API 2: Xử lý Webhook (Server-to-Server từ PayOS) ────────────────────────
         public async Task<bool> ProcessWebhookAsync(string jsonBody)
         {
             try
             {
-                // Bước 1: Deserialize JSON body
                 var webhookPayload = JsonSerializer.Deserialize<Webhook>(jsonBody, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -136,19 +126,15 @@ namespace sketch_tale.Infrastructure.Services
 
                 if (webhookPayload == null) return false;
 
-                // Bước 2: Verify chữ ký HMAC
                 var data = await _payOS.Webhooks.VerifyAsync(webhookPayload);
                 if (data == null) return false;
 
-                // Bước 3: Tìm PaymentTransaction theo orderCode (đã lưu trong TxnRef)
                 var transaction = await _unitOfWork.PaymentTransactionRepository.GetByOrderCodeAsync(data.OrderCode.ToString());
                 if (transaction == null) return false;
 
-                // Nếu giao dịch đã hoàn tất trước đó thì bỏ qua (Idempotency)
                 if (transaction.Status == PaymentStatus.Success) return true;
 
-                // Bước 4: Kiểm tra mã kết quả PayOS
-                if (data.Code == "00") // Thanh toán thành công
+                if (data.Code == "00") 
                 {
                     transaction.Status = PaymentStatus.Success;
                     transaction.ResponseCode = data.Code;
@@ -156,13 +142,12 @@ namespace sketch_tale.Infrastructure.Services
                     transaction.PayDate = DateTime.UtcNow.AddHours(7);
                     transaction.RawIpnResponse = jsonBody;
 
-                    // KÍCH HOẠT SUBSCRIPTION VÀ CẬP NHẬT QUYỀN LỢI CHO PHỤ HUYNH
                     await _subscriptionService.UpdateSubscriptionForSuccessPayment(
                         transaction.SubscriptionId, 
                         SubscriptionStatus.Active
                     );
                 }
-                else // Thanh toán thất bại hoặc hủy
+                else
                 {
                     transaction.Status = PaymentStatus.Failed;
                     transaction.ResponseCode = data.Code;
@@ -182,19 +167,12 @@ namespace sketch_tale.Infrastructure.Services
             }
         }
 
-        // ─── API 3: Query trạng thái giao dịch ───────────────────────────────────────
-        public async Task<object> GetPaymentInfoAsync(long orderCode)
-        {
-            return await _payOS.PaymentRequests.GetAsync(orderCode);
-        }
-
-        // ─── API 4: Hủy payment link ─────────────────────────────────────────────────
         public async Task<object> CancelPaymentAsync(long orderCode)
         {
+
             return await _payOS.PaymentRequests.CancelAsync(orderCode);
         }
 
-        // ─── Helper: Xóa dấu tiếng Việt (chuẩn PayOS) ────────────────────────────────
         private static string RemoveDiacritics(string text)
         {
             var map = new Dictionary<string, string>
