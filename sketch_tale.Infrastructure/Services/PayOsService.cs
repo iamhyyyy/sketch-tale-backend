@@ -53,6 +53,13 @@ namespace sketch_tale.Infrastructure.Services
 
             parentProfileId = parent.Id;
 
+            // Hủy các Subscription PendingPayment cũ của phụ huynh để tránh rác DB
+            var existingSubs = await _unitOfWork.SubscriptionRepository.GetByParentProfileId(parentProfileId);
+            foreach (var pendingSub in existingSubs.Where(s => s.Status == SubscriptionStatus.PendingPayment))
+            {
+                await _subscriptionService.Delete(pendingSub.Id);
+            }
+
             // 2. Tạo bản ghi Subscription ở trạng thái PendingPayment
             var now = DateTime.UtcNow.AddHours(7);
             var subscription = new Subscription
@@ -160,6 +167,9 @@ namespace sketch_tale.Infrastructure.Services
                     transaction.Status = PaymentStatus.Failed;
                     transaction.ResponseCode = data.Code;
                     transaction.RawIpnResponse = jsonBody;
+                    transaction.PayDate = DateTime.UtcNow.AddHours(7);
+
+                    await _subscriptionService.Delete(transaction.SubscriptionId);
                 }
 
                 _unitOfWork.PaymentTransactionRepository.Update(transaction);

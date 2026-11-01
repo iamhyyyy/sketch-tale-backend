@@ -4,6 +4,7 @@ using sketch_tale.Domain.Entities;
 using sketch_tale.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace sketch_tale.Infrastructure.Repositories
@@ -19,7 +20,17 @@ namespace sketch_tale.Infrastructure.Repositories
             return await _dbSet
                 .Include(p => p.Subscription)
                     .ThenInclude(s => s.Plan)
+                .Include(p => p.ParentProfile)
                 .FirstOrDefaultAsync(p => p.TxnRef == orderCode);
+        }
+
+        public async Task<PaymentTransaction?> GetByIdWithDetailsAsync(Guid id)
+        {
+            return await _dbSet
+                .Include(p => p.Subscription)
+                    .ThenInclude(s => s.Plan)
+                .Include(p => p.ParentProfile)
+                .FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<List<PaymentTransaction>> GetByParentProfileIdAsync(Guid parentProfileId)
@@ -43,4 +54,3 @@ namespace sketch_tale.Infrastructure.Repositories
         }
     }
 }
-

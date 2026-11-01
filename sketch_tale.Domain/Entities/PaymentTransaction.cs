@@ -1,4 +1,4 @@
-﻿using sketch_tale.Domain.Common;
+using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,4 +19,11 @@ public class PaymentTransaction : BaseEntity
     public string ResponseCode { get; set; } = string.Empty;         
     public DateTime? PayDate { get; set; }      
     public string RawIpnResponse { get; set; } = string.Empty;       
+
+    // Navigation
+    [ForeignKey(nameof(SubscriptionId))]
+    public Subscription? Subscription { get; set; }
+
+    [ForeignKey(nameof(ParentProfileId))]
+    public ParentProfile? ParentProfile { get; set; }
 }
