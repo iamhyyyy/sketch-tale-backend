@@ -991,6 +991,8 @@ namespace sketch_tale.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ParentProfileId");
+
                     b.HasIndex("SubscriptionId");
 
                     b.ToTable("PaymentTransactions");
@@ -1809,11 +1811,21 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.PaymentTransaction", b =>
                 {
-                    b.HasOne("sketch_tale.Domain.Entities.Subscription", null)
+                    b.HasOne("sketch_tale.Domain.Entities.ParentProfile", "ParentProfile")
+                        .WithMany("PaymentTransactions")
+                        .HasForeignKey("ParentProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("sketch_tale.Domain.Entities.Subscription", "Subscription")
                         .WithMany("PaymentTransactions")
                         .HasForeignKey("SubscriptionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ParentProfile");
+
+                    b.Navigation("Subscription");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.StoryPageTemplate", b =>
@@ -1929,6 +1941,8 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Navigation("ChildProfiles");
 
                     b.Navigation("ParentProfileSub");
+
+                    b.Navigation("PaymentTransactions");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ReadingLog", b =>
