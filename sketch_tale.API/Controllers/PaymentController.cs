@@ -21,20 +21,13 @@ namespace sketch_tale.API.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPayOsService _payOsService;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ISubscriptionService _subscriptionService;
-        private readonly UserManager<User> _userManager;
-
+        private readonly IPaymentTransactionService _paymentService;
         public PaymentController(
             IPayOsService payOsService,
-            IUnitOfWork unitOfWork,
-            ISubscriptionService subscriptionService,
-            UserManager<User> userManager)
+            IPaymentTransactionService paymentService)
         {
             _payOsService = payOsService;
-            _unitOfWork = unitOfWork;
-            _subscriptionService = subscriptionService;
-            _userManager = userManager;
+            _paymentService = paymentService;
         }
 
         [HttpPost("create-checkout")]
@@ -70,49 +63,19 @@ namespace sketch_tale.API.Controllers
         }
 
 
-        [HttpDelete("{orderCode}")]
+        [HttpPatch("cancel-paymentlink")]
         [Authorize]
-        public async Task<IActionResult> CancelPayment(long orderCode)
+        public async Task<IActionResult> CancelPayment([FromBody] CancelPaymentDto dto)
         {
             try
             {
-                var transaction = await _unitOfWork.PaymentTransactionRepository
-                    .GetByOrderCodeAsync(orderCode.ToString());
-
-                if (transaction == null)
-                    return NotFound(new { message = $"Không tìm thấy giao dịch với mã đơn hàng {orderCode}." });
-
-                var isAdmin = User.IsInRole("admin") || User.IsInRole("Admin");
-                if (!isAdmin)
+                var transaction = await _paymentService.CancelPayment(dto.orderCode, dto.code);
+                if(transaction)
                 {
-                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
-                        ?? User.FindFirstValue("sub")
-                        ?? User.FindFirstValue("nameid");
+                    return Ok(new { message = "Đã hủy giao dịch thành công." });
 
-                    if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-                    var parent = await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(Guid.Parse(userId));
-                    if (parent == null || parent.Id != transaction.ParentProfileId)
-                    {
-                        return StatusCode(StatusCodes.Status403Forbidden, new { message = "Bạn không có quyền hủy giao dịch này." });
-                    }
                 }
-
-                var result = await _payOsService.CancelPaymentAsync(orderCode);
-
-                if (transaction.Status == PaymentStatus.Pending)
-                {
-                    transaction.Status = PaymentStatus.Failed;
-                    transaction.ResponseCode = "CANCELLED";
-                    transaction.PayDate = DateTime.UtcNow.AddHours(7);
-                    _unitOfWork.PaymentTransactionRepository.Update(transaction);
-
-                    await _subscriptionService.Delete(transaction.SubscriptionId);
-
-                    await _unitOfWork.CompleteAsync();
-                }
-
-                return Ok(new { message = "Đã hủy thanh toán thành công.", data = result });
+                return BadRequest(new { message = "Không thể hủy giao dịch." });
             }
             catch (Exception ex)
             {

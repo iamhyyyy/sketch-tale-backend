@@ -7,6 +7,7 @@ using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
+using sketch_tale.Application.Services;
 using sketch_tale.Domain.Entities;
 using sketch_tale.Domain.Enums;
 using System;
@@ -22,16 +23,13 @@ namespace sketch_tale.Infrastructure.Services
         private readonly PayOSClient _payOS;
         private readonly IConfiguration _configuration;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ISubscriptionService _subscriptionService;
 
         public PayOsService(
             IConfiguration configuration,
-            IUnitOfWork unitOfWork,
-            ISubscriptionService subscriptionService)
+            IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _unitOfWork = unitOfWork;
-            _subscriptionService = subscriptionService;
 
             _payOS = new PayOSClient(
                 clientId:    configuration["PayOS:ClientId"] ?? string.Empty,
@@ -52,11 +50,21 @@ namespace sketch_tale.Infrastructure.Services
                 throw new Exception("Không tìm thấy thông tin tài khoản phụ huynh.");
 
             parentProfileId = parent.Id;
-
             var existingSubs = await _unitOfWork.SubscriptionRepository.GetByParentProfileId(parentProfileId);
             foreach (var pendingSub in existingSubs.Where(s => s.Status == SubscriptionStatus.PendingPayment))
             {
-                await _subscriptionService.Delete(pendingSub.Id);
+                pendingSub.Status = SubscriptionStatus.Cancelled;
+                _unitOfWork.SubscriptionRepository.Update(pendingSub);
+            }
+
+            var existingPayment = await _unitOfWork.PaymentTransactionRepository.GetByParentProfileIdAsync(parentProfileId);
+            foreach (var pendingPayment in existingPayment.Where(s => s.Status == PaymentStatus.Pending))
+            {
+                if (await CancelPaymentAsync(long.Parse(pendingPayment.TxnRef)))
+                {
+                    pendingPayment.Status = PaymentStatus.Failed;
+                    _unitOfWork.PaymentTransactionRepository.Update(pendingPayment);
+                }
             }
 
             var now = DateTime.UtcNow.AddHours(7);
@@ -134,6 +142,8 @@ namespace sketch_tale.Infrastructure.Services
 
                 if (transaction.Status == PaymentStatus.Success) return true;
 
+                var subription = await _unitOfWork.SubscriptionRepository.GetByIdAsync(transaction.SubscriptionId);
+
                 if (data.Code == "00") 
                 {
                     transaction.Status = PaymentStatus.Success;
@@ -142,10 +152,8 @@ namespace sketch_tale.Infrastructure.Services
                     transaction.PayDate = DateTime.UtcNow.AddHours(7);
                     transaction.RawIpnResponse = jsonBody;
 
-                    await _subscriptionService.UpdateSubscriptionForSuccessPayment(
-                        transaction.SubscriptionId, 
-                        SubscriptionStatus.Active
-                    );
+                    subription.Status = SubscriptionStatus.Active;
+                    
                 }
                 else
                 {
@@ -154,10 +162,11 @@ namespace sketch_tale.Infrastructure.Services
                     transaction.RawIpnResponse = jsonBody;
                     transaction.PayDate = DateTime.UtcNow.AddHours(7);
 
-                    await _subscriptionService.Delete(transaction.SubscriptionId);
+                    subription.Status = SubscriptionStatus.Cancelled;
                 }
 
                 _unitOfWork.PaymentTransactionRepository.Update(transaction);
+                _unitOfWork.SubscriptionRepository.Update(subription);
                 await _unitOfWork.CompleteAsync();
                 return true;
             }
@@ -167,10 +176,21 @@ namespace sketch_tale.Infrastructure.Services
             }
         }
 
-        public async Task<object> CancelPaymentAsync(long orderCode)
+        public async Task<bool> CancelPaymentAsync(long orderCode)
         {
-
-            return await _payOS.PaymentRequests.CancelAsync(orderCode);
+            try
+            {
+                var paymentLink = await _payOS.PaymentRequests.CancelAsync(orderCode);
+                if (paymentLink != null && paymentLink.Status.Equals("CANCELLED"))
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"PayOS Error: {ex.Message}", ex);
+            }
         }
 
         private static string RemoveDiacritics(string text)

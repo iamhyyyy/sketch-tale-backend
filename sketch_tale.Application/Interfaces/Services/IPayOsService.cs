@@ -8,6 +8,6 @@ namespace sketch_tale.Application.Interfaces.Services
     {
         Task<string> CreatePaymentLinkAsync(Guid parentProfileId, CreatePaymentDto dto);
         Task<bool> ProcessWebhookAsync(string jsonBody);
-        Task<object> CancelPaymentAsync(long orderCode);
+        Task<bool> CancelPaymentAsync(long orderCode);
     }
 }
