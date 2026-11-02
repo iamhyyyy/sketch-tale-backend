@@ -127,6 +127,7 @@ public class Program
         builder.Services.AddScoped<IVocabularyTemplateRepository, VocabularyTemplateRepository>();
         builder.Services.AddScoped<IParentProfileRepository, ParentProfileRepository>();
         builder.Services.AddScoped<IChildProfileRepository, ChildProfileRepository>();
+        builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
@@ -135,6 +136,7 @@ public class Program
         builder.Services.AddScoped<ICreditCostService, CreditCostService>();
         builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
         builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+        builder.Services.AddScoped<IPayOsService, PayOsService>();
         builder.Services.AddScoped<IAuditLogService, AuditLogService>();
         builder.Services.AddScoped<IRestrictedKeywordService, RestrictedKeywordService>();
         builder.Services.AddScoped<IProhibitedThemeService, ProhibitedThemeService>();

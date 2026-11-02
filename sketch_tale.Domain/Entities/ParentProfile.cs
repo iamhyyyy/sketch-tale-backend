@@ -1,4 +1,4 @@
-﻿using sketch_tale.Domain.Common;
+using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,4 +17,5 @@ public class ParentProfile : BaseEntity
     public ParentProfileSub? ParentProfileSub { get; set; }
     public SubscriptionPlan SubscriptionPlan { get; set; } = null!;
     public ICollection<ChildProfile> ChildProfiles { get; set; } = new List<ChildProfile>();
+    public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 }

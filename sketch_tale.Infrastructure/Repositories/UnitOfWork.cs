@@ -31,6 +31,7 @@ public class UnitOfWork : IUnitOfWork
     private IVocabularyTemplateRepository _vocabularyTemplateRepository = null!;
     private IParentProfileRepository _parentProfileRepository = null!;
     private IChildProfileRepository _childProfileRepository = null!;
+    private IPaymentTransactionRepository _paymentTransactionRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -77,6 +78,7 @@ public class UnitOfWork : IUnitOfWork
     public IVocabularyTemplateRepository VocabularyTemplateRepository => _vocabularyTemplateRepository ??= new VocabularyTemplateRepository(_context);
 
     public IStoryQuizTemplateRepository StoryQuizTemplateRepository => _storyQuizTemplateRepository ??= new StoryQuizTemplateRepository(_context);
+    public IPaymentTransactionRepository PaymentTransactionRepository => _paymentTransactionRepository ??= new PaymentTransactionRepository(_context);
 
     public async Task<int> CompleteAsync()
     {

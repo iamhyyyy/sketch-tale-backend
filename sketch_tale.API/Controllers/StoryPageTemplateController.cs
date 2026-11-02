@@ -25,10 +25,12 @@ public class StoryPageTemplateController : ControllerBase
         return Ok(pages);
     }
 
-    [HttpGet("pages/{id}")]
-    public async Task<ActionResult<IEnumerable<StoryPageTemplateDto>>> GetPageById(Guid pageId)
+    [HttpGet("page/{id}")]
+    public async Task<ActionResult<StoryPageTemplateDto>> GetPageById(Guid id)
     {
-        var page = await _storyPageTemplateService.GetPageByIdAsync(pageId);
+        var page = await _storyPageTemplateService.GetPageByIdAsync(id);
+        if (page == null)
+            return NotFound(new { message = $"Trang với Id {id} không tồn tại." });
         return Ok(page);
     }
 
@@ -100,5 +102,35 @@ public class StoryPageTemplateController : ControllerBase
             return NotFound(new { message = $"Trang với Id {id} không tồn tại." });
 
         return NoContent();
+    }
+
+    [HttpPut("{storyId}/reorder-pages")]
+    [Authorize(Roles = "ContentManager,content manager")]
+    public async Task<IActionResult> ReorderPages(Guid storyId, [FromBody] ReorderStoryPagesDto dto)
+    {
+        try
+        {
+            var success = await _storyPageTemplateService.ReorderPagesAsync(storyId, dto);
+            if (!success)
+                return NotFound(new { message = "Không tìm thấy trang nào để sắp xếp." });
+
+            return Ok(new { message = "Cập nhật thứ tự các trang thành công." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }

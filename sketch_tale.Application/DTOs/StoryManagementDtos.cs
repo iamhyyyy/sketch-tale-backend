@@ -61,6 +61,10 @@ namespace sketch_tale.Application.DTOs
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdateBy { get; set; }
     }
+    public class ReorderStoryPagesDto
+    {
+        public List<Guid> OrderedPageIds { get; set; } = new();
+    }
     //STORY ROLE TEMPLATE
     public class StoryRoleTemplateDto : BaseFieldDto
     {
