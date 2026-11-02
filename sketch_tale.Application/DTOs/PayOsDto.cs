@@ -11,6 +11,11 @@ namespace sketch_tale.Application.DTOs
         public string? BuyerEmail { get; set; }
         public string? Description { get; set; }
     }
+    public class CancelPaymentDto
+    {
+        public long orderCode { get; set; }
+        public long code { get; set; }
+    }
 
     public class PaymentTransactionDto
     {
