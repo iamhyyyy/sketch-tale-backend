@@ -55,8 +55,8 @@ namespace sketch_tale.Infrastructure.Services
             {
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddMinutes(expiryMinutes),
-                Issuer = jwtSettings["Issuer"],
-                Audience = jwtSettings["Audience"],
+                Issuer = jwtSettings["Issuer"] ?? "SketchTaleAPI",
+                Audience = jwtSettings["Audience"] ?? "SketchTaleClient",
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

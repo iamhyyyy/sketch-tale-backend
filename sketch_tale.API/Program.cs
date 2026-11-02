@@ -231,8 +231,10 @@ public class Program
             options.MapInboundClaims = false;
             options.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = false, // Vì JwtSettings của bạn không cấu hình Issuer/Audience riêng
-                ValidateAudience = false,
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings["Issuer"] ?? "SketchTaleAPI",
+                ValidateAudience = true,
+                ValidAudience = jwtSettings["Audience"] ?? "SketchTaleClient",
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey ?? string.Empty)),
