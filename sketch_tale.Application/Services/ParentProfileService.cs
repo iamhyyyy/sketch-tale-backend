@@ -58,7 +58,11 @@ namespace sketch_tale.Application.Services
 
             return true;
         }
-
+        public async Task<IEnumerable<ChildProfileDto>> GetChildProfilesByParentIdAsync(Guid parentId)
+        {
+            var childProfiles = await _unitOfWork.ParentProfileRepository.GetChildProfilesByParentIdAsync(parentId);
+            return _mapper.Map<IEnumerable<ChildProfileDto>>(childProfiles);
+        }
         public async Task<bool> MarkTrialPlanUsedAsync(Guid id)
         {
             var profile = await _unitOfWork.ParentProfileRepository.GetByIdAsync(id);

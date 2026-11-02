@@ -39,6 +39,18 @@ namespace sketch_tale.API.Controllers
             }
             return Ok(profile);
         }
+        // GET: api/parent-profiles/child
+
+        [HttpGet("child")]
+        public async Task<IActionResult> GetChildProfileByParentId([FromQuery] Guid parentId)
+        {
+            var profile = await _parentProfileService.GetChildProfilesByParentIdAsync(parentId);
+            if (profile == null)
+            {
+                return NotFound(new { message = "Không tìm thấy hồ sơ phụ huynh." });
+            }
+            return Ok(profile);
+        }
 
         /// <summary>
         /// Cập nhật gói dịch vụ (Subscription Plan) cho tài khoản phụ huynh - Chỉ dành cho Admin
@@ -72,6 +84,7 @@ namespace sketch_tale.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
         // PATCH (hoặc PUT): api/parent-profiles/{id}/mark-trial-plan-used
         [HttpPatch("{id}/mark-trial-plan-used")]

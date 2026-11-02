@@ -38,5 +38,13 @@ namespace sketch_tale.Infrastructure.Repositories
                 .Include(c => c.SubscriptionPlan)
                 .FirstOrDefaultAsync(p => p.UserId == userId);
         }
+
+        public Task<IEnumerable<ChildProfile>> GetChildProfilesByParentIdAsync(Guid parentId)
+        {
+            return Task.FromResult(_dbSet
+                .Where(p => p.Id == parentId)
+                .SelectMany(p => p.ChildProfiles)
+                .AsEnumerable());
+        }
     }
 }

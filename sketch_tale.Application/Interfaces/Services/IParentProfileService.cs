@@ -1,4 +1,5 @@
 ﻿using sketch_tale.Application.DTOs;
+using sketch_tale.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,8 @@ namespace sketch_tale.Application.Interfaces.Services
         Task<ParentProfileDto?> GetByIdAsync(Guid id);
         
         Task<bool> UpdateAsync(Guid id, UpdateParentProfileDto dto);
-        
+        Task<IEnumerable<ChildProfileDto>> GetChildProfilesByParentIdAsync(Guid parentId);
+
 
         // Các hàm nghiệp vụ riêng của Parent
         //Task<bool> UpdateProfileForSubscriptionAsync(Guid id, int childProfileLimit, int monthlyCreditLimit, bool canExportStory, bool accessFullStories);
