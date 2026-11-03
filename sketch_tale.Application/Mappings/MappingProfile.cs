@@ -137,5 +137,10 @@ public class MappingProfile : Profile
 
         CreateMap<UpdateParentProfileDto, ParentProfile>()
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+
+        //ChildQuizAnswer
+        CreateMap<CreateChildQuizAnswerDto, ChildQuizAnswer>();
+        CreateMap<ChildQuizAnswer, ChildQuizAnswerDto>().ReverseMap();
+        CreateMap<ChildQuizAnswer, SubmitQuizAnswerResponseDto>().ReverseMap();
     }
 }
