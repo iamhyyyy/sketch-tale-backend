@@ -48,10 +48,29 @@ namespace sketch_tale.Infrastructure.Services
             if (parent == null)
                 throw new Exception("Không tìm thấy thông tin tài khoản phụ huynh.");
 
+            parentProfileId = parent.Id;
+            var existingSubs = await _unitOfWork.SubscriptionRepository.GetByParentProfileId(parentProfileId);
+            foreach (var pendingSub in existingSubs.Where(s => s.Status == SubscriptionStatus.PendingPayment))
+            {
+                pendingSub.Status = SubscriptionStatus.Cancelled;
+                _unitOfWork.SubscriptionRepository.Update(pendingSub);
+            }
+
+            var existingPayment = await _unitOfWork.PaymentTransactionRepository.GetByParentProfileIdAsync(parentProfileId);
+            foreach (var pendingPayment in existingPayment.Where(s => s.Status == PaymentStatus.Pending))
+            {
+                if (await CancelPaymentAsync(long.Parse(pendingPayment.TxnRef)))
+                {
+                    pendingPayment.Status = PaymentStatus.Failed;
+                    _unitOfWork.PaymentTransactionRepository.Update(pendingPayment);
+                }
+            }
+
             var now = DateTime.UtcNow.AddHours(7);
             var subscription = new Subscription
             {
-                ParentProfileId = parent.Id,
+                Id = Guid.NewGuid(),
+                ParentProfileId = parentProfileId,
                 SubscriptionPlanId = plan.Id,
                 Status = SubscriptionStatus.PendingPayment,
                 StartDate = now,
@@ -66,7 +85,7 @@ namespace sketch_tale.Infrastructure.Services
             {
                 Id = Guid.NewGuid(),
                 SubscriptionId = subscription.Id,
-                ParentProfileId = parent.Id,
+                ParentProfileId = parentProfileId,
                 Amount = plan.Price,
                 Status = PaymentStatus.Pending,
                 PaymentProvider = "PayOS",
@@ -82,14 +101,14 @@ namespace sketch_tale.Infrastructure.Services
 
             var request = new CreatePaymentLinkRequest
             {
-                OrderCode   = orderCode,
-                Amount      = amount,
+                OrderCode = orderCode,
+                Amount = amount,
                 Description = description,
-                CancelUrl   = _configuration["PayOS:CancelUrl"],
-                ReturnUrl   = _configuration["PayOS:ReturnUrl"],
-                BuyerName   = dto.BuyerName,
-                BuyerEmail  = dto.BuyerEmail,
-                Items       = new List<PaymentLinkItem>
+                CancelUrl = _configuration["PayOS:CancelUrl"],
+                ReturnUrl = _configuration["PayOS:ReturnUrl"],
+                BuyerName = dto.BuyerName,
+                BuyerEmail = dto.BuyerEmail,
+                Items = new List<PaymentLinkItem>
                 {
                     new PaymentLinkItem
                     {
