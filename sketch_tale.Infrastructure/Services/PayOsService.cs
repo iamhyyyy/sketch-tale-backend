@@ -44,15 +44,14 @@ namespace sketch_tale.Infrastructure.Services
             if (plan == null || !plan.IsActive)
                 throw new Exception("Gói đăng ký không tồn tại hoặc đã ngừng kích hoạt.");
 
-            var parent = await _unitOfWork.ParentProfileRepository.GetByIdAsync(parentProfileId)
-                ?? await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(parentProfileId);
+            var parent = await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(parentProfileId);
             if (parent == null)
                 throw new Exception("Không tìm thấy thông tin tài khoản phụ huynh.");
 
             var now = DateTime.UtcNow.AddHours(7);
             var subscription = new Subscription
             {
-                ParentProfileId = parentProfileId,
+                ParentProfileId = parent.Id,
                 SubscriptionPlanId = plan.Id,
                 Status = SubscriptionStatus.PendingPayment,
                 StartDate = now,
@@ -67,7 +66,7 @@ namespace sketch_tale.Infrastructure.Services
             {
                 Id = Guid.NewGuid(),
                 SubscriptionId = subscription.Id,
-                ParentProfileId = parentProfileId,
+                ParentProfileId = parent.Id,
                 Amount = plan.Price,
                 Status = PaymentStatus.Pending,
                 PaymentProvider = "PayOS",
