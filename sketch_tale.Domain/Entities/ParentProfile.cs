@@ -10,7 +10,7 @@ public class ParentProfile : BaseEntity
 {
     public Guid UserId { get; set; }
     public Guid SubscriptionPlanId { get; set; } = Guid.Parse("66666666-6666-6666-6666-666666666666");
-    public int RemainingChildProfile { get; set; } = 1;
+    public int ChildProfile { get; set; } = 0;
     public int RemainingMonthlyCredit { get; set; } = 500;
     public bool TrialPlusPlan { get; set; } = false;
 

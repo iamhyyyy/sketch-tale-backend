@@ -30,10 +30,10 @@ namespace sketch_tale.WebApi.Controllers
             return Ok(item);
         }
 
-        [HttpGet("code/{plan-code}")]
-        public async Task<ActionResult<SubscriptionPlanDto>> GetByPlanCode(string planCode)
+        [HttpGet("plan-code/{code}")]
+        public async Task<ActionResult<SubscriptionPlanDto>> GetByPlanCode(string code)
         {
-            var item = await _subscriptionPlanService.GetPlanByCode(planCode);
+            var item = await _subscriptionPlanService.GetPlanByCode(code);
             if (item == null) return NotFound();
             return Ok(item);
         }

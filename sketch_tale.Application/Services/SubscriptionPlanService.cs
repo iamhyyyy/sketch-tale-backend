@@ -41,7 +41,8 @@ namespace sketch_tale.Application.Services
         public async Task<SubscriptionPlanDto> AddAsync(CreateSubscriptionPlanDto dto)
         {
             var item = _mapper.Map<SubscriptionPlan>(dto);
-            
+            item.Code = item.Name.ToUpper().Replace(" ", "_");
+
             await _unitOfWork.SubscriptionPlanRepository.AddAsync(item);
             await _unitOfWork.CompleteAsync();
 

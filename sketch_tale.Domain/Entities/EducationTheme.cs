@@ -6,6 +6,6 @@ namespace sketch_tale.Domain.Entities;
 public class EducationTheme : BaseEntity
 {
     public string Name { get; set; } = null!;
-    public string Description { get; set; } = string.Empty;
+    public string? Description { get; set; }
     public CommonStatus Status { get; set; }
 }

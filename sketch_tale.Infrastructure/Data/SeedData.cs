@@ -135,53 +135,36 @@ public class SeedData
             new SubscriptionPlan
             {
                 Id = Guid.Parse("66666666-6666-6666-6666-666666666666"),
-                Name = "Free",
-                Price = 0,
-                Code = "FreePlan",
 
-                ChildProfileLimit = 1,
-                MonthlyCreditLimit = 500,
-                AccessFullStories = false,
-                CanExportStory = false,
-                HaveParentProfileSub = false,
+                Name = "Free", Price = 0, Code = "FREEPLAN",
 
-                DurationDays = 9999,
-                CreateBy = SystemUserId
+                ChildProfileLimit = 1, MonthlyCreditLimit = 500,
+
+                DurationDays = 30, CreateBy = SystemUserId
             },
             new SubscriptionPlan
             {
                 Id = Guid.Parse("77777777-7777-7777-7777-777777777777"),
-                Name = "Plus",
-                Price = 49000,
-                Code = "PlusPlan",
 
-                ChildProfileLimit = 3,
-                MonthlyCreditLimit = 4000,
-                AccessFullStories = true,
-                CanExportStory = true,
-                HaveParentProfileSub = true,
+                Name = "Plus", Price = 49000, Code = "PLUSPLAN",
 
+                ChildProfileLimit = 3, MonthlyCreditLimit = 4000, 
 
-                DurationDays = 30,
-                FreeTrialDays = 7,
-                CreateBy = SystemUserId
+                AccessFullStories = true, CanExportStory = true, HaveParentProfileSub = true,
+
+                DurationDays = 30, FreeTrialDays = 7, CreateBy = SystemUserId
             },
             new SubscriptionPlan
             {
                 Id = Guid.Parse("88888888-8888-8888-8888-888888888888"),
-                Name = "Pro",
-                Price = 99000,
-                Code = "ProPlan",
 
-                ChildProfileLimit = 5,
-                MonthlyCreditLimit = 10000,
-                AccessFullStories = true,
-                CanExportStory = true,
-                HaveParentProfileSub = true,
+                Name = "Pro", Price = 99000, Code = "PROPLAN",
 
-                DurationDays = 30,
-                FreeTrialDays = 0,
-                CreateBy = SystemUserId
+                ChildProfileLimit = 5, MonthlyCreditLimit = 10000,
+
+                AccessFullStories = true, CanExportStory = true, HaveParentProfileSub = true,
+
+                DurationDays = 30, CreateBy = SystemUserId
             }
         );
 
@@ -201,8 +184,6 @@ public class SeedData
                 Cost = 30,
                 FeatureNameVi = "Phân loại hình ảnh",
                 FeatureNameEn = "Image Classification",
-
-                IsActive = true,
                 CreateBy = SystemUserId
             },
             new CreditCost
@@ -211,8 +192,6 @@ public class SeedData
                 Cost = 150,
                 FeatureNameVi = "Tạo nhân vật",
                 FeatureNameEn = "Character Generation",
-
-                IsActive = true,
                 CreateBy = SystemUserId
             },
             new CreditCost
@@ -221,8 +200,14 @@ public class SeedData
                 Cost = 50,
                 FeatureNameVi = "Tạo lại nhân vật",
                 FeatureNameEn = "Character Regeneration",
-
-                IsActive = true,
+                CreateBy = SystemUserId
+            },
+            new CreditCost
+            {
+                FeatureKey = "AssignCharacter",
+                Cost = 20,
+                FeatureNameVi = "Gán nhân vật vô truyện",
+                FeatureNameEn = "Assign Character",
                 CreateBy = SystemUserId
             },
             new CreditCost
@@ -231,8 +216,6 @@ public class SeedData
                 Cost = 200,
                 FeatureNameVi = "Xuất câu truyện",
                 FeatureNameEn = "Export Story",
-
-                IsActive = true,
                 CreateBy = SystemUserId
             }
         );
@@ -250,30 +233,30 @@ public class SeedData
     {
         if (await context.CharTypes.AnyAsync()) return;
 
-        context.CharTypes.AddRange(
-            new CharType
-            {
-                Name = "Animal",
-                Description = "Friendly animal characters from children's drawings.",
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            },
-            new CharType
-            {
-                Name = "Human",
-                Description = "Kid heroes and everyday people.",
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            },
-            new CharType
-            {
-                Name = "Fantasy",
-                Description = "Dragons, fairies and imaginary friends.",
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            }
-        );
+        var charTypeNames = new[]
+        {
+            "máy bay", "thiên thần", "kiến", "dơi", "gấu", "ong", "chim", "xe buýt", "bướm",
+            "xương rồng", "lạc đà", "nến", "ô tô", "cà rốt", "lâu đài", "mèo", "bò", "cua",
+            "cá sấu", "chó", "cá heo", "rồng", "vịt", "voi", "cá", "chim hồng hạc", "hoa",
+            "ếch", "hươu cao cổ", "dê", "nhím", "ngựa", "chuột túi", "sư tử", "tôm hùm",
+            "nàng tiên cá", "khỉ", "mặt trăng", "muỗi", "chuột", "nấm", "bạch tuộc", "hành tây",
+            "cú", "gấu trúc", "vẹt", "đậu phộng", "quả lê", "đậu hà lan", "bút chì", "chim cánh cụt",
+            "lợn", "dứa", "khoai tây", "thỏ", "gấu mèo", "cầu vồng", "tê giác", "thuyền buồm",
+            "bọ cạp", "rùa biển", "cá mập", "cừu", "tòa nhà chọc trời", "ốc sên", "rắn", "bông tuyết",
+            "người tuyết", "nhện", "nét vẽ nguệch ngoạc", "sóc", "ngôi sao", "dâu tây", "mặt trời",
+            "thiên nga", "gấu bông", "hổ", "tàu hỏa", "cây", "xe tải", "ô", "bình hoa",
+            "dưa hấu", "cá voi", "ngựa vằn"
+        };
 
+        var charTypes = charTypeNames.Select(name => new CharType
+        {
+            Name = name,
+            Description = $"Kiểu nhân vật {name}",
+            Status = CommonStatus.Active,
+            CreateBy = SystemUserId
+        });
+
+        await context.CharTypes.AddRangeAsync(charTypes);
         await context.SaveChangesAsync();
     }
 
@@ -281,30 +264,39 @@ public class SeedData
     {
         if (await context.EducationThemes.AnyAsync()) return;
 
-        context.EducationThemes.AddRange(
-            new EducationTheme
-            {
-                Name = "Kindness",
-                Description = "Stories about sharing, empathy and helping others.",
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            },
-            new EducationTheme
-            {
-                Name = "Courage",
-                Description = "Stories that help children try new things and face fears.",
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            },
-            new EducationTheme
-            {
-                Name = "Nature",
-                Description = "Stories about animals, plants and taking care of Earth.",
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            }
-        );
+        var themes = new[]
+        {
+            new { Name = "Quản lý cảm xúc", Desc = "Nhận diện và xử lý các cảm xúc tiêu cực như tức giận, sợ hãi, buồn rầu, ghen tị." },
+            new { Name = "Tự tin", Desc = "Tin tưởng vào năng lực của bản thân, tự hào về điểm riêng biệt của mình, không rụt rè." },
+            new { Name = "Lòng dũng cảm", Desc = "Dũng cảm đối mặt với bóng tối, thử thách mới, dám nhận lỗi và sửa sai." },
+            new { Name = "Tính kiên trì", Desc = "Học cách vượt qua thất bại, kiên trì luyện tập để đạt mục tiêu." },
+            new { Name = "Tính tự lập", Desc = "Tự dọn dẹp đồ chơi, tự vệ sinh cá nhân, chịu trách nhiệm về hành động của mình." },
+            new { Name = "Lòng tốt", Desc = "Biết nhường nhịn đồ chơi, giúp đỡ người khác, lan tỏa sự ấm áp." },
+            new { Name = "Lòng trung thực", Desc = "Không nói dối, không gian dối, trả lại đồ nhặt được, dũng cảm nhận lỗi." },
+            new { Name = "Lòng biết ơn", Desc = "Biết ơn cha mẹ, thầy cô, thức ăn hàng ngày và những điều nhỏ bé xung quanh." },
+            new { Name = "Tôn trọng sự khác biệt", Desc = "Không phân biệt đối xử với bạn bè có ngoại hình, hoàn cảnh hoặc tính cách khác biệt." },
+            new { Name = "Khiêm tốn", Desc = "Không kiêu ngạo khi chiến thắng, biết lắng nghe và học hỏi từ người khác." },
+            new { Name = "Tình bạn", Desc = "Học cách kết bạn, hợp tác giải quyết vấn đề, tôn trọng ý kiến đồng đội." },
+            new { Name = "An toàn cá nhân", Desc = "Cảnh giác với người lạ, an toàn giao thông, an toàn khi ở nhà, quy tắc bảo vệ cơ thể." },
+            new { Name = "Thói quen lành mạnh", Desc = "Ăn nhiều rau củ, đi ngủ đúng giờ, tập thể dục, hạn chế xem màn hình điện tử." },
+            new { Name = "Quản lý tài chính nhỏ", Desc = "Hiểu giá trị của lao động, thói quen tiết kiệm tiền heo đất, phân biệt 'muốn' và 'cần'." },
+            new { Name = "Ứng xử", Desc = "Nói lời 'cảm ơn', 'xin lỗi', thưa gửi người lớn, không ngắt lời người khác." },
+            new { Name = "Bảo vệ môi trường", Desc = "Phân loại rác, tiết kiệm nước/điện, yêu thương và bảo vệ động vật, trồng cây xanh." },
+            new { Name = "Tư duy sáng tạo", Desc = "Khuyến khích đặt câu hỏi 'Tại sao?', tìm nhiều cách giải quyết cho một bài toán/tình huống." },
+            new { Name = "Khoa học & Vũ trụ", Desc = "Sự tò mò về thế giới xung quanh, các hiện tượng tự nhiên (mưa, nắng, cầu vồng, các hành tinh)." },
+            new { Name = "Tình yêu gia đình", Desc = "Vấn đề hòa thuận giữa anh chị em trong nhà, tình cảm ông bà, cha mẹ." },
 
+        };
+
+        var seedEntities = themes.Select(t => new EducationTheme
+        {
+            Name = t.Name,
+            Description = t.Desc,
+            Status = CommonStatus.Active,
+            CreateBy = SystemUserId
+        });
+
+        await context.EducationThemes.AddRangeAsync(seedEntities);
         await context.SaveChangesAsync();
     }
 
@@ -312,39 +304,44 @@ public class SeedData
     {
         if (await context.RestrictedKeywords.AnyAsync()) return;
 
-        context.RestrictedKeywords.AddRange(
-            new RestrictedKeyword
-            {
-                Keyword = "violence",
-                Description = "Block violent wording in generated content.",
-                MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
-                SeverityLevel = SeverityLevel.High,
-                Action = ModerationAction.Reject,
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            },
-            new RestrictedKeyword
-            {
-                Keyword = "weapon",
-                Description = "Flag weapon-related terms for review.",
-                MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
-                SeverityLevel = SeverityLevel.Medium,
-                Action = ModerationAction.FlagForReview,
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            },
-            new RestrictedKeyword
-            {
-                Keyword = "kill",
-                Description = "Immediately block harmful action verbs.",
-                MatchType = sketch_tale.Domain.Enums.MatchType.Exact,
-                SeverityLevel = SeverityLevel.BlockImmediately,
-                Action = ModerationAction.Reject,
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
-            }
-        );
+        var keywords = new[]
+        {
+            // Bạo lực & Giết chóc
+            new { Kw = "giết", Desc = "Từ ngữ bạo lực gây sợ hãi cho trẻ", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.BlockImmediately, Act = ModerationAction.Reject },
+            new { Kw = "máu me", Desc = "Miêu tả hình ảnh bạo lực", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject },
+            new { Kw = "tự tử", Desc = "Hành vi tự hại", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.BlockImmediately, Act = ModerationAction.Reject },
+            new { Kw = "tự sát", Desc = "Hành vi tự hại", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.BlockImmediately, Act = ModerationAction.Reject },
+            new { Kw = "chém giết", Desc = "Hành vi bạo lực", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject },
 
+            // Chất cấm & Tệ nạn
+            new { Kw = "ma túy", Desc = "Chất gây nghiện bất hợp pháp", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject },
+            new { Kw = "thuốc lá", Desc = "Chất kích thích", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.Medium, Act = ModerationAction.FlagForReview },
+            new { Kw = "rượu bia", Desc = "Đồ uống có cồn", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.Low, Act = ModerationAction.FlagForReview },
+            new { Kw = "cờ bạc", Desc = "Hành vi tệ nạn xã hội", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject },
+
+            // Tình dục & Nhạy cảm
+            new { Kw = "sex", Desc = "Nội dung người lớn", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.BlockImmediately, Act = ModerationAction.Reject },
+            new { Kw = "khiêu dâm", Desc = "Nội dung người lớn", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.BlockImmediately, Act = ModerationAction.Reject },
+            new { Kw = "khêu gợi", Desc = "Nội dung không phù hợp lứa tuổi", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject },
+
+            // Thông tin cá nhân (Bảo vệ an toàn cho trẻ)
+            new { Kw = "số điện thoại", Desc = "Thu thập thông tin cá nhân", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.Medium, Act = ModerationAction.Mask },
+            new { Kw = "mật khẩu", Desc = "Thông tin nhạy cảm", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Mask },
+            new { Kw = "địa chỉ nhà", Desc = "Thu thập thông tin cá nhân", Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.Medium, Act = ModerationAction.FlagForReview }
+        };
+
+        var seedEntities = keywords.Select(k => new RestrictedKeyword
+        {
+            Keyword = k.Kw,
+            Description = k.Desc,
+            MatchType = k.Match,
+            SeverityLevel = k.Severity,
+            Action = k.Act,
+            Status = CommonStatus.Active,
+            CreateBy = SystemUserId
+        });
+
+        await context.RestrictedKeywords.AddRangeAsync(seedEntities);
         await context.SaveChangesAsync();
     }
 
@@ -352,39 +349,64 @@ public class SeedData
     {
         if (await context.ProhibitedThemes.AnyAsync()) return;
 
-        context.ProhibitedThemes.AddRange(
-            new ProhibitedTheme
+        var themes = new[]
+        {
+            new
             {
-                Name = "Horror",
-                Description = "Scary or nightmare themes are not allowed.",
-                MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
-                SeverityLevel = SeverityLevel.High,
-                Action = ModerationAction.Reject,
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
+                Name = "Kinh dị & Ma quái quá đà",
+                Desc = "Các câu chuyện chứa yếu tố hù dọa mạnh, ma quỷ máu me, quái vật ghê rợn gây ám ảnh tâm lý cho trẻ.",
+                Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject
             },
-            new ProhibitedTheme
+            new
             {
-                Name = "Gambling",
-                Description = "Gambling or betting topics are prohibited.",
-                MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
-                SeverityLevel = SeverityLevel.Medium,
-                Action = ModerationAction.FlagForReview,
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
+                Name = "Bạo lực & Xung đột vũ trang",
+                Desc = "Cốt truyện cổ xúy đánh nhau, chiến tranh tàn khốc, sử dụng vũ khí nguy hiểm (súng, dao, chất nổ).",
+                Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject
             },
-            new ProhibitedTheme
+            new
             {
-                Name = "Adult content",
-                Description = "Any adult-only theme must be blocked immediately.",
-                MatchType = sketch_tale.Domain.Enums.MatchType.Contains,
-                SeverityLevel = SeverityLevel.BlockImmediately,
-                Action = ModerationAction.Reject,
-                Status = CommonStatus.Active,
-                CreateBy = SystemUserId
+                Name = "Nội dung người lớn & Nhạy cảm",
+                Desc = "Các chủ đề liên quan đến tình dục, mối quan hệ yêu đương không phù hợp lứa tuổi thiếu nhi.",
+                Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.BlockImmediately, Act = ModerationAction.Reject
+            },
+            new
+            {
+                Name = "Hành vi tự hại & Tự tử",
+                Desc = "Các chủ đề đề cập, khuyến khích hoặc miêu tả hành vi tự làm tổn thương bản thân.",
+                Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.BlockImmediately, Act = ModerationAction.Reject
+            },
+            new
+            {
+                Name = "Bắt nạt & Kỳ thị xã hội",
+                Desc = "Chủ đề dung dưỡng cho hành vi miệt thị ngoại hình, phân biệt chủng tộc, giới tính hoặc cô lập bạn bè.",
+                Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.Medium, Act = ModerationAction.FlagForReview
+            },
+            new
+            {
+                Name = "Sử dụng chất kích thích & Tệ nạn",
+                Desc = "Miêu tả việc sử dụng thuốc lá, rượu bia, ma túy hoặc tham gia cá cược, cờ bạc.",
+                Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.High, Act = ModerationAction.Reject
+            },
+            new
+            {
+                Name = "Mê tín dị đoan & Cực đoan",
+                Desc = "Tuyên truyền các hủ tục độc hại, tà giáo hoặc tư tưởng mê tín gây lệch lạc nhận thức.",
+                Match = Domain.Enums.MatchType.Contains, Severity = SeverityLevel.Medium, Act = ModerationAction.FlagForReview
             }
-        );
+        };
 
+        var seedEntities = themes.Select(t => new ProhibitedTheme
+        {
+            Name = t.Name,
+            Description = t.Desc,
+            MatchType = t.Match,
+            SeverityLevel = t.Severity,
+            Action = t.Act,
+            Status = CommonStatus.Active,
+            CreateBy = SystemUserId
+        });
+
+        await context.ProhibitedThemes.AddRangeAsync(seedEntities);
         await context.SaveChangesAsync();
     }
 
@@ -400,7 +422,6 @@ public class SeedData
             new ParentProfile
             {
                 UserId = parent.Id,
-                RemainingChildProfile = 2,
                 RemainingMonthlyCredit = 3720,
                 TrialPlusPlan = true,
                 CreateBy = SystemUserId
@@ -408,7 +429,6 @@ public class SeedData
             new ParentProfile
             {
                 UserId = parent2.Id,
-                RemainingChildProfile = 0,
                 RemainingMonthlyCredit = 470,
                 TrialPlusPlan = false,
                 CreateBy = SystemUserId

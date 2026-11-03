@@ -1,7 +1,6 @@
 ﻿using sketch_tale.Domain.Common;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace sketch_tale.Domain.Entities;
 
