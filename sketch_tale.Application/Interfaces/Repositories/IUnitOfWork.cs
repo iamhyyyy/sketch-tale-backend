@@ -27,4 +27,6 @@ public interface IUnitOfWork : IDisposable
     IChildProfileRepository ChildProfileRepository { get; }
     IParentProfileRepository ParentProfileRepository { get; }
     IPaymentTransactionRepository PaymentTransactionRepository { get; }
+    IChildQuizAnswerRepository ChildQuizAnswerRepository { get; }
+    IReadingLogRepository ReadingLogRepository { get; }
 }
