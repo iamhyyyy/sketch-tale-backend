@@ -57,7 +57,6 @@ public class SeedData
             await SeedChildQuizAnswersAsync(context);
             await SeedContentReportsAsync(context);
             await SeedAIUsageLogsAsync(context);
-            await SeedAuditLogsAsync(context);
 
             Console.WriteLine("All Seed Completed successfully!");
         }
@@ -1360,51 +1359,6 @@ public class SeedData
                 ActionType = AIActionType.CharacterGenerate,
                 TokenUsed = 1500,
                 CostAmount = 0.062f,
-                CreateBy = SystemUserId
-            }
-        );
-
-        await context.SaveChangesAsync();
-    }
-
-    private static async Task SeedAuditLogsAsync(AppDbContext context)
-    {
-        if (await context.AuditLogs.AnyAsync()) return;
-
-        var child = await context.ChildProfiles.OrderBy(c => c.NickName).FirstOrDefaultAsync();
-        var character = await context.Characters.OrderBy(c => c.Name).FirstOrDefaultAsync();
-        var story = await context.GeneratedStories.OrderBy(s => s.CreatedAt).FirstOrDefaultAsync();
-        if (child is null || character is null || story is null) return;
-
-        context.AuditLogs.AddRange(
-            new AuditLog
-            {
-                AuditAction = "Create",
-                EntityName = nameof(ChildProfile),
-                PrimaryKey = child.Id,
-                OldValues = null,
-                NewValues = $"{{\"NickName\":\"{child.NickName}\"}}",
-                ChangedColumns = "NickName",
-                CreateBy = SystemUserId
-            },
-            new AuditLog
-            {
-                AuditAction = "Update",
-                EntityName = nameof(Character),
-                PrimaryKey = character.Id,
-                OldValues = "{\"Status\":\"Pending\"}",
-                NewValues = "{\"Status\":\"Approved\"}",
-                ChangedColumns = "Status",
-                CreateBy = SystemUserId
-            },
-            new AuditLog
-            {
-                AuditAction = "Create",
-                EntityName = nameof(GeneratedStory),
-                PrimaryKey = story.Id,
-                OldValues = null,
-                NewValues = $"{{\"Status\":\"{story.Status}\"}}",
-                ChangedColumns = "Status",
                 CreateBy = SystemUserId
             }
         );
