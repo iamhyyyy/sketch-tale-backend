@@ -179,12 +179,10 @@ namespace sketch_tale.Infrastructure.Services
         {
             try
             {
-                var paymentLink = await _payOS.PaymentRequests.CancelAsync(orderCode);
-                if (paymentLink != null && paymentLink.Status.Equals("CANCELLED"))
-                {
-                    return true;
-                }
-                return false;
+                var paymentLink =
+                    await _payOS.PaymentRequests.CancelAsync(orderCode);
+
+                return paymentLink != null && paymentLink.Status.ToString().Equals("CANCELLED", StringComparison.OrdinalIgnoreCase) == true;
             }
             catch (Exception ex)
             {
