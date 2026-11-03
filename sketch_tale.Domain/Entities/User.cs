@@ -7,7 +7,7 @@ public class User : IdentityUser<Guid>
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public DateOnly? DOB { get; set; }
-    public Boolean? Gender { get; set; }
+    public bool? Gender { get; set; }
     public DateTime? LastLoginAt { get; set; }
 
     //base entity

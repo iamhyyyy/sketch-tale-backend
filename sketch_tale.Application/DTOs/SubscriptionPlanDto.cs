@@ -20,7 +20,6 @@ public class SubscriptionPlanDto : BaseFieldDto
 public class CreateSubscriptionPlanDto
 {
     public required string Name { get; set; }
-    public required string Code { get; set; }
     public decimal Price { get; set; }
     public int ChildProfileLimit { get; set; }
     public int MonthlyCreditLimit { get; set; }

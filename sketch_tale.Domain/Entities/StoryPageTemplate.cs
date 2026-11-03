@@ -11,6 +11,7 @@ public class StoryPageTemplate : BaseEntity
     public string RawText { get; set; } = string.Empty;
     public string BackgroundUrl { get; set; } = string.Empty;
     public string? AudioNarrationUrl { get; set; }
+    public string? CompositionJson { get; set; }
     public CommonStatus Status { get; set; }
 
     // Navigation Properties

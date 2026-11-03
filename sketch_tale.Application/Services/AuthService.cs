@@ -257,7 +257,7 @@ namespace sketch_tale.Application.Services
                 await _unitOfWork.CompleteAsync();
             }
 
-            if (parentProfile.RemainingChildProfile <= 0)
+            if (parentProfile.ChildProfile >= parentProfile.SubscriptionPlan.ChildProfileLimit)
             {
                 throw new InvalidOperationException($"Phụ huynh đã đạt giới hạn tối đa hồ sơ trẻ em của gói hiện tại ({parentProfile.SubscriptionPlan.ChildProfileLimit} bé)! Vui lòng nâng cấp gói để tiếp tục tạo tài khoản cho con.");
             }
@@ -295,7 +295,7 @@ namespace sketch_tale.Application.Services
             await _unitOfWork.ChildProfileRepository.AddAsync(childProfile);
 
             // Trừ đi 1 lượt tạo con của phụ huynh
-            parentProfile.RemainingChildProfile -= 1;
+            parentProfile.ChildProfile += 1;
             parentProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
             parentProfile.UpdateBy = parentUserId;
 
@@ -1308,9 +1308,9 @@ namespace sketch_tale.Application.Services
             return new ParentProfile
             {
                 UserId = userId,
-                RemainingChildProfile = 1,
-                RemainingMonthlyCredit = 500,
-                TrialPlusPlan = false,
+                //ChildProfile = 0,
+                //RemainingMonthlyCredit = 500,
+                //TrialPlusPlan = false,
                 CreateBy = userId
             };
         }

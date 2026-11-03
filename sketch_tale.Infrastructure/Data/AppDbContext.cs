@@ -20,6 +20,7 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
     public DbSet<ChildProfile> ChildProfiles => Set<ChildProfile>();
     public DbSet<ParentProfile> ParentProfiles => Set<ParentProfile>();
     public DbSet<ParentProfileSub> ParentProfileSubs => Set<ParentProfileSub>();
+    public DbSet<ContentManagerProfile> ContentManagerProfiles => Set<ContentManagerProfile>();
 
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<Subscription> Subscriptions => Set<Subscription>();

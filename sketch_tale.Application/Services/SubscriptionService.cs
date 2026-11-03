@@ -89,8 +89,8 @@ namespace sketch_tale.Application.Services
                     ?? await GetParentBySubs(item);
 
                 parentProfile.SubscriptionPlanId = plan.Id;
-                var existingChildCount = parentProfile.ChildProfiles?.Count ?? 0;
-                parentProfile.RemainingChildProfile = Math.Max(0, plan.ChildProfileLimit - existingChildCount);
+                //var existingChildCount = parentProfile.ChildProfiles?.Count ?? 0;
+                //parentProfile.RemainingChildProfile = Math.Max(0, plan.ChildProfileLimit - existingChildCount);
                 parentProfile.RemainingMonthlyCredit = plan.MonthlyCreditLimit;
 
                 _unitOfWork.ParentProfileRepository.Update(parentProfile);
@@ -145,14 +145,13 @@ namespace sketch_tale.Application.Services
             {
                 item.Status = SubscriptionStatus.Expired;
                 _unitOfWork.SubscriptionRepository.Update(item);
-                var freePlan = await _unitOfWork.SubscriptionPlanRepository.GetPlanByCode("FreePlan");
+                var freePlan = await _unitOfWork.SubscriptionPlanRepository.GetPlanByCode("FREEPLAN");
                 if (freePlan != null)
                 {
-                    var parentProfile = await _unitOfWork.ParentProfileRepository.GetByIdWithDetailsAsync(item.ParentProfileId)
-                        ?? await GetParentBySubs(item);
+                    var parentProfile = await _unitOfWork.ParentProfileRepository.GetByIdWithDetailsAsync(item.ParentProfileId) ?? await GetParentBySubs(item);
                     parentProfile.SubscriptionPlanId = freePlan.Id;
-                    var existingChildCount = parentProfile.ChildProfiles?.Count ?? 0;
-                    parentProfile.RemainingChildProfile = Math.Max(0, freePlan.ChildProfileLimit - existingChildCount);
+                    //var existingChildCount = parentProfile.ChildProfiles?.Count ?? 0;
+                    //parentProfile.RemainingChildProfile = Math.Max(0, freePlan.ChildProfileLimit - existingChildCount);
                     parentProfile.RemainingMonthlyCredit = freePlan.MonthlyCreditLimit;
                     _unitOfWork.ParentProfileRepository.Update(parentProfile);
                 }
