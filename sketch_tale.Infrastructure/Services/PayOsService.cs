@@ -58,14 +58,18 @@ namespace sketch_tale.Infrastructure.Services
             }
 
             var existingPayment = await _unitOfWork.PaymentTransactionRepository.GetByParentProfileIdAsync(parentProfileId);
-            foreach (var pendingPayment in existingPayment.Where(s => s.Status == PaymentStatus.Pending))
+            if(existingPayment != null)
             {
-                if (await CancelPaymentAsync(long.Parse(pendingPayment.TxnRef)))
+                foreach (var pendingPayment in existingPayment.Where(s => s.Status == PaymentStatus.Pending))
                 {
-                    pendingPayment.Status = PaymentStatus.Failed;
-                    _unitOfWork.PaymentTransactionRepository.Update(pendingPayment);
+                    if (await CancelPaymentAsync(long.Parse(pendingPayment.TxnRef)))
+                    {
+                        pendingPayment.Status = PaymentStatus.Failed;
+                        _unitOfWork.PaymentTransactionRepository.Update(pendingPayment);
+                    }
                 }
             }
+            
 
             var now = DateTime.UtcNow.AddHours(7);
             var subscription = new Subscription
