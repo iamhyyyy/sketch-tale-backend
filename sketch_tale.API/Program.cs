@@ -151,6 +151,7 @@ public class Program
         builder.Services.AddScoped<IVocabularyTemplateService, VocabularyTemplateService>();
         builder.Services.AddScoped<IParentProfileService, ParentProfileService>();
         builder.Services.AddScoped<IChildProfileService, ChildProfileService>();
+        builder.Services.AddScoped<IPaymentTransactionService, PaymentTransactionService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
