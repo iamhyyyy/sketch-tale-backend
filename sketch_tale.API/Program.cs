@@ -12,6 +12,7 @@ using sketch_tale.Application.Mappings;
 using sketch_tale.Application.Services;
 using sketch_tale.Domain.Entities;
 using sketch_tale.Domain.Interfaces;
+using sketch_tale.Infrastructure.Auditing;
 using sketch_tale.Infrastructure.Data;
 using sketch_tale.Infrastructure.Repositories;
 using sketch_tale.Infrastructure.Services;
@@ -29,81 +30,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         //dùng để lưu log
-        Audit.Core.Configuration.DataProvider = new Audit.EntityFramework.Providers.EntityFrameworkDataProvider
-        {
-            // Cần thiết: Ánh xạ mọi entity thay đổi sang AuditLog (trừ chính AuditLog)
-            AuditTypeMapper = (entityType, entry) =>
-                entityType == typeof(AuditLog) ? null : typeof(AuditLog),
-
-            AuditEntityAction = (evt, entry, auditEntity) =>
-            {
-                if (auditEntity is AuditLog auditLog)
-                {
-                    auditLog.Id = Guid.NewGuid();
-
-                    auditLog.CreatedAt = DateTime.UtcNow.AddHours(7);
-                    auditLog.CreateBy = Guid.Empty; // Để Guid.Empty để SaveChangesAsync tự gán currentUserId
-                    auditLog.UpdatedAt = null;      // Bản ghi Log mới tạo không có UpdateAt
-                    auditLog.UpdateBy = null;       // Bản ghi Log mới tạo không có UpdateBy
-
-                    auditLog.AuditAction = entry.Action; // "Insert", "Update", "Delete"
-                    auditLog.EntityName = entry.EntityType.Name;
-
-                    var pk = entry.PrimaryKey.Values.FirstOrDefault();
-                    auditLog.PrimaryKey = pk != null && Guid.TryParse(pk.ToString(), out var parsedPk)
-                        ? parsedPk
-                        : Guid.Empty;
-
-                    if (entry.Changes != null && entry.Changes.Count > 0)
-                    {
-                        bool AreValuesEqual(object val1, object val2)
-                        {
-                            if (val1 == null && val2 == null) return true;
-                            if (val1 == null || val2 == null) return false;
-
-                            // So sánh chuỗi representation đề phòng khác kiểu dữ liệu nhưng cùng giá trị (vd: int vs long, DateTime formatting)
-                            return Equals(val1, val2) || string.Equals(val1.ToString(), val2.ToString());
-                        }
-
-                        // Danh sách các cột muốn bỏ qua không audit (nếu cần)
-                        var ignoredColumns = new HashSet<string> { "UpdatedAt", "UpdatedBy" };
-
-                        // Lọc riêng từng cột: Chỉ lấy những cột mà OriginalValue KHÁC NewValue
-                        var realChanges = entry.Changes
-                            .Where(c => !ignoredColumns.Contains(c.ColumnName))
-                            .Where(c => !AreValuesEqual(c.OriginalValue, c.NewValue))
-                            .ToList();
-
-                        if (realChanges.Count > 0)
-                        {
-                            var oldValuesDict = realChanges.ToDictionary(c => c.ColumnName, c => c.OriginalValue);
-                            var newValuesDict = realChanges.ToDictionary(c => c.ColumnName, c => c.NewValue);
-
-                            auditLog.OldValues = System.Text.Json.JsonSerializer.Serialize(oldValuesDict);
-                            auditLog.NewValues = System.Text.Json.JsonSerializer.Serialize(newValuesDict);
-                            auditLog.ChangedColumns = string.Join(", ", realChanges.Select(c => c.ColumnName));
-                        }
-                        else
-                        {
-                            // Nếu sau khi lọc không có cột nào thực sự đổi value
-                            auditLog.OldValues = null;
-                            auditLog.NewValues = null;
-                            auditLog.ChangedColumns = null;
-                        }
-                    }
-                    else
-                    {
-                        // Xử lý Insert / Delete
-                        auditLog.OldValues = entry.Action == "Delete" ? entry.ToJson() : null;
-                        auditLog.NewValues = entry.Action == "Insert" ? entry.ToJson() : null;
-                        auditLog.ChangedColumns = null;
-                    }
-                }
-
-                return Task.FromResult(true);
-            }
-        };
-
+        builder.Services.AddAuditLogging();
 
         // Đăng ký Unit of Work
         builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
