@@ -128,6 +128,8 @@ public class Program
         builder.Services.AddScoped<IParentProfileRepository, ParentProfileRepository>();
         builder.Services.AddScoped<IChildProfileRepository, ChildProfileRepository>();
         builder.Services.AddScoped<IPaymentTransactionRepository, PaymentTransactionRepository>();
+        builder.Services.AddScoped<IChildQuizAnswerRepository, ChildQuizAnswerRepository>();
+        builder.Services.AddScoped<IReadingLogRepository, ReadingLogRepository>();
 
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
@@ -152,6 +154,7 @@ public class Program
         builder.Services.AddScoped<IParentProfileService, ParentProfileService>();
         builder.Services.AddScoped<IChildProfileService, ChildProfileService>();
         builder.Services.AddScoped<IPaymentTransactionService, PaymentTransactionService>();
+        builder.Services.AddScoped<IChildQuizAnswerService, ChildQuizAnswerService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 

@@ -32,6 +32,8 @@ public class UnitOfWork : IUnitOfWork
     private IParentProfileRepository _parentProfileRepository = null!;
     private IChildProfileRepository _childProfileRepository = null!;
     private IPaymentTransactionRepository _paymentTransactionRepository = null!;
+    private IChildQuizAnswerRepository _childQuizAnswerRepository = null!;
+    private IReadingLogRepository _readingLogRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -79,6 +81,8 @@ public class UnitOfWork : IUnitOfWork
 
     public IStoryQuizTemplateRepository StoryQuizTemplateRepository => _storyQuizTemplateRepository ??= new StoryQuizTemplateRepository(_context);
     public IPaymentTransactionRepository PaymentTransactionRepository => _paymentTransactionRepository ??= new PaymentTransactionRepository(_context);
+    public IChildQuizAnswerRepository ChildQuizAnswerRepository => _childQuizAnswerRepository ??= new ChildQuizAnswerRepository(_context);
+    public IReadingLogRepository ReadingLogRepository => _readingLogRepository ??= new ReadingLogRepository(_context);
 
     public async Task<int> CompleteAsync()
     {
