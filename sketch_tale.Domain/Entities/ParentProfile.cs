@@ -6,7 +6,7 @@ using System.Text;
 
 namespace sketch_tale.Domain.Entities;
 
-public class ParentProfile : BaseEntity
+public class ParentProfile : BaseEntityWithoutId
 {
     [Key]
     [ForeignKey(nameof(User))]

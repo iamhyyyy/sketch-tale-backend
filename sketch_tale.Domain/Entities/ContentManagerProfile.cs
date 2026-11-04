@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sketch_tale.Domain.Entities;
 
-public class ContentManagerProfile : BaseEntity
+public class ContentManagerProfile : BaseEntityWithoutId
 {
     [Key]
     [ForeignKey(nameof(User))]

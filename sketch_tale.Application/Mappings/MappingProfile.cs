@@ -70,7 +70,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
             .ForMember(dest => dest.Role, opt => opt.Ignore())
             .ForMember(dest => dest.ParentProfile, opt => opt.Ignore())
-            .ForMember(dest => dest.ChildProfile, opt => opt.Ignore());
+            .ForMember(dest => dest.ChildProfile, opt => opt.Ignore())
+            .ForMember(dest => dest.ContentManagerProfile, opt => opt.Ignore());
+
+        CreateMap<ContentManagerProfile, ContentManagerProfileDto>().ReverseMap();
 
         // ParentProfile & ChildProfile
         CreateMap<ParentProfile, ParentProfileDto>()

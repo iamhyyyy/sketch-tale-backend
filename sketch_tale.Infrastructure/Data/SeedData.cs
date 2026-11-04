@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using sketch_tale.Domain.Entities;
@@ -35,6 +35,7 @@ public class SeedData
             await SeedRestrictedKeywordsAsync(context);
             await SeedProhibitedThemesAsync(context);
             await SeedParentProfilesAsync(context, userManager);
+            await SeedContentManagerProfilesAsync(context, userManager);
             await SeedParentProfileSubsAsync(context);
             await SeedChildProfilesAsync(context, userManager);
             await SeedSubscriptionsAsync(context);
@@ -420,16 +421,35 @@ public class SeedData
         context.ParentProfiles.AddRange(
             new ParentProfile
             {
-                UserId = parent.Id,
+                ParentProfileId = parent.Id,
                 RemainingMonthlyCredit = 3720,
                 TrialPlusPlan = true,
                 CreateBy = SystemUserId
             },
             new ParentProfile
             {
-                UserId = parent2.Id,
+                ParentProfileId = parent2.Id,
                 RemainingMonthlyCredit = 470,
                 TrialPlusPlan = false,
+                CreateBy = SystemUserId
+            }
+        );
+
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedContentManagerProfilesAsync(AppDbContext context, UserManager<User> userManager)
+    {
+        if (await context.ContentManagerProfiles.AnyAsync()) return;
+
+        var manager = await userManager.FindByNameAsync("manager");
+        if (manager is null) return;
+
+        context.ContentManagerProfiles.Add(
+            new ContentManagerProfile
+            {
+                ContentManagerProfileId = manager.Id,
+                UploadImageUrl = new List<string>(),
                 CreateBy = SystemUserId
             }
         );
@@ -447,15 +467,15 @@ public class SeedData
         context.ParentProfileSubs.AddRange(
             new ParentProfileSub
             {
-                ParentProfileId = parents[0].Id,
-                UserId = parents[0].UserId,
+                ParentProfileSubId = parents[0].ParentProfileId,
+                ParentProfileId = parents[0].ParentProfileId,
                 ParentProfile = parents[0],
                 CreateBy = SystemUserId
             },
             new ParentProfileSub
             {
-                ParentProfileId = parents[1].Id,
-                UserId = parents[1].UserId,
+                ParentProfileSubId = parents[1].ParentProfileId,
+                ParentProfileId = parents[1].ParentProfileId,
                 ParentProfile = parents[1],
                 CreateBy = SystemUserId
             }
@@ -481,8 +501,8 @@ public class SeedData
         context.ChildProfiles.AddRange(
             new ChildProfile
             {
-                UserId = child.Id,
-                ParentProfileId = parents[0].Id,
+                ChildProfileId = child.Id,
+                ParentProfileId = parents[0].ParentProfileId,
                 NickName = "Little Artist",
                 TargetAgeGroup = TargetAgeGroup.Ag6to7,
                 ReadingLevel = ReadingLevel.Beginner,
@@ -493,8 +513,8 @@ public class SeedData
             },
             new ChildProfile
             {
-                UserId = child2.Id,
-                ParentProfileId = parents[1].Id,
+                ChildProfileId = child2.Id,
+                ParentProfileId = parents[1].ParentProfileId,
                 NickName = "Little Dreamer",
                 TargetAgeGroup = TargetAgeGroup.Age8to10,
                 ReadingLevel = ReadingLevel.Intermediate,
@@ -521,7 +541,7 @@ public class SeedData
         context.Subscriptions.AddRange(
             new Subscription
             {
-                ParentProfileId = parents[0].Id,
+                ParentProfileId = parents[0].ParentProfileId,
                 SubscriptionPlanId = plusPlan.Id,
                 Status = SubscriptionStatus.Active,
                 StartDate = now.AddDays(-10),
@@ -530,7 +550,7 @@ public class SeedData
             },
             new Subscription
             {
-                ParentProfileId = parents[1].Id,
+                ParentProfileId = parents[1].ParentProfileId,
                 SubscriptionPlanId = freePlan.Id,
                 Status = SubscriptionStatus.Active,
                 StartDate = now.AddDays(-30),
@@ -596,7 +616,7 @@ public class SeedData
         context.CreditTransactionLogs.AddRange(
             new CreditTransactionLog
             {
-                ParentProfileId = parents[0].Id,
+                ParentProfileId = parents[0].ParentProfileId,
                 Amount = -30,
                 ActionType = CreditActionType.ImageClassification,
                 Description = "Classify a child's drawing.",
@@ -604,7 +624,7 @@ public class SeedData
             },
             new CreditTransactionLog
             {
-                ParentProfileId = parents[0].Id,
+                ParentProfileId = parents[0].ParentProfileId,
                 Amount = -150,
                 ActionType = CreditActionType.CharacterGeneration,
                 Description = "Generate a character from drawing.",
@@ -612,7 +632,7 @@ public class SeedData
             },
             new CreditTransactionLog
             {
-                ParentProfileId = parents[0].Id,
+                ParentProfileId = parents[0].ParentProfileId,
                 Amount = -50,
                 ActionType = CreditActionType.CharacterRegeneration,
                 Description = "Regenerate character preview.",
@@ -908,21 +928,21 @@ public class SeedData
         context.Drawings.AddRange(
             new Drawing
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 OriginalImageUrl = "/seed/drawings/fox.png",
                 DrawingType = DrawingType.Canvas,
                 CreateBy = SystemUserId
             },
             new Drawing
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 OriginalImageUrl = "/seed/drawings/buddy.png",
                 DrawingType = DrawingType.Uploaded,
                 CreateBy = SystemUserId
             },
             new Drawing
             {
-                ChildProfileId = children[1].Id,
+                ChildProfileId = children[1].ChildProfileId,
                 OriginalImageUrl = "/seed/drawings/explorer.png",
                 DrawingType = DrawingType.Canvas,
                 CreateBy = SystemUserId
@@ -939,14 +959,14 @@ public class SeedData
         var children = await context.ChildProfiles.OrderBy(c => c.NickName).ToListAsync();
         var drawings = await context.Drawings.OrderBy(d => d.CreatedAt).ToListAsync();
         var charTypes = await context.CharTypes.OrderBy(t => t.Name).ToListAsync();
-        var child0Drawings = drawings.Where(d => d.ChildProfileId == children[0].Id).ToList();
-        var child1Drawings = drawings.Where(d => d.ChildProfileId == children[1].Id).ToList();
+        var child0Drawings = drawings.Where(d => d.ChildProfileId == children[0].ChildProfileId).ToList();
+        var child1Drawings = drawings.Where(d => d.ChildProfileId == children[1].ChildProfileId).ToList();
         if (children.Count < 2 || child0Drawings.Count < 2 || child1Drawings.Count < 1 || charTypes.Count < 3) return;
 
         context.AICharacterGenerates.AddRange(
             new AICharacterGenerate
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 DrawingId = child0Drawings[0].Id,
                 CharTypeId = charTypes[0].Id,
                 AIPromptUsed = "Turn this drawing into a friendly fox hero, child-safe, bright colors.",
@@ -957,7 +977,7 @@ public class SeedData
             },
             new AICharacterGenerate
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 DrawingId = child0Drawings[1].Id,
                 CharTypeId = charTypes[2].Id,
                 AIPromptUsed = "Turn this drawing into a cheerful companion animal.",
@@ -968,7 +988,7 @@ public class SeedData
             },
             new AICharacterGenerate
             {
-                ChildProfileId = children[1].Id,
+                ChildProfileId = children[1].ChildProfileId,
                 DrawingId = child1Drawings[0].Id,
                 CharTypeId = charTypes[1].Id,
                 AIPromptUsed = "Turn this drawing into a curious child explorer.",
@@ -1039,7 +1059,7 @@ public class SeedData
         context.GeneratedStories.AddRange(
             new GeneratedStory
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 StoryTemplateId = stories[0].Id,
                 IsFavorite = true,
                 Status = GeneratedStoryStatus.Completed,
@@ -1048,7 +1068,7 @@ public class SeedData
             },
             new GeneratedStory
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 StoryTemplateId = stories[1].Id,
                 IsFavorite = false,
                 Status = GeneratedStoryStatus.InProgress,
@@ -1057,7 +1077,7 @@ public class SeedData
             },
             new GeneratedStory
             {
-                ChildProfileId = children[1].Id,
+                ChildProfileId = children[1].ChildProfileId,
                 StoryTemplateId = stories[1].Id,
                 IsFavorite = true,
                 Status = GeneratedStoryStatus.InProgress,
@@ -1139,7 +1159,7 @@ public class SeedData
         context.ChildVocabularyProgresses.AddRange(
             new ChildVocabularyProgress
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 VocabularyTemplateId = vocab[0].Id,
                 TotalListenCount = 4,
                 TotalQuizAttempts = 2,
@@ -1149,7 +1169,7 @@ public class SeedData
             },
             new ChildVocabularyProgress
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 VocabularyTemplateId = vocab[1].Id,
                 TotalListenCount = 3,
                 TotalQuizAttempts = 2,
@@ -1159,7 +1179,7 @@ public class SeedData
             },
             new ChildVocabularyProgress
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 VocabularyTemplateId = vocab[2].Id,
                 TotalListenCount = 1,
                 TotalQuizAttempts = 1,
@@ -1212,7 +1232,7 @@ public class SeedData
         context.ChildDailyUsageLogs.AddRange(
             new ChildDailyUsageLog
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 LogDate = today,
                 DurationSecond = 900,
                 CharacterCreatedCount = 1,
@@ -1221,7 +1241,7 @@ public class SeedData
             },
             new ChildDailyUsageLog
             {
-                ChildProfileId = children[0].Id,
+                ChildProfileId = children[0].ChildProfileId,
                 LogDate = today.AddDays(-1),
                 DurationSecond = 600,
                 CharacterCreatedCount = 1,
@@ -1230,7 +1250,7 @@ public class SeedData
             },
             new ChildDailyUsageLog
             {
-                ChildProfileId = children[1].Id,
+                ChildProfileId = children[1].ChildProfileId,
                 LogDate = today,
                 DurationSecond = 480,
                 CharacterCreatedCount = 1,

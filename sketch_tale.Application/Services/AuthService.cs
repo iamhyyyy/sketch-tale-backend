@@ -287,8 +287,8 @@ namespace sketch_tale.Application.Services
 
             // Dùng AutoMapper để tạo bản ghi ChildProfile liên kết ngược lại với ParentProfile của phụ huynh
             var childProfile = _mapper.Map<ChildProfile>(dto);
-            childProfile.UserId = childUser.Id;
-            childProfile.ParentProfileId = parentProfile.Id;
+            childProfile.ChildProfileId = childUser.Id;
+            childProfile.ParentProfileId = parentProfile.ParentProfileId;
             childProfile.CreatedAt = DateTime.UtcNow.AddHours(7);
             childProfile.CreateBy = parentUserId;
 
@@ -534,6 +534,14 @@ namespace sketch_tale.Application.Services
                 if (childProfile != null)
                 {
                     profileDto.ChildProfile = _mapper.Map<ChildProfileDto>(childProfile);
+                }
+            }
+            else if (primaryRole == "ContentManager")
+            {
+                var contentManagerProfile = await _unitOfWork.Repository<ContentManagerProfile>().GetByIdAsync(user.Id);
+                if (contentManagerProfile != null)
+                {
+                    profileDto.ContentManagerProfile = _mapper.Map<ContentManagerProfileDto>(contentManagerProfile);
                 }
             }
 
@@ -951,6 +959,14 @@ namespace sketch_tale.Application.Services
                         profileDto.ChildProfile = _mapper.Map<ChildProfileDto>(childProfile);
                     }
                 }
+                else if (profileDto.Role == "ContentManager")
+                {
+                    var contentManagerProfile = await _unitOfWork.Repository<ContentManagerProfile>().GetByIdAsync(user.Id);
+                    if (contentManagerProfile != null)
+                    {
+                        profileDto.ContentManagerProfile = _mapper.Map<ContentManagerProfileDto>(contentManagerProfile);
+                    }
+                }
 
                 result.Add(profileDto);
             }
@@ -1053,6 +1069,16 @@ namespace sketch_tale.Application.Services
                 var parentProfile = CreateDefaultParentProfile(newUser.Id);
                 parentProfile.CreateBy = adminId ?? newUser.Id;
                 await _unitOfWork.ParentProfileRepository.AddAsync(parentProfile);
+                await _unitOfWork.CompleteAsync();
+            }
+            else if (targetRole.Equals("content manager", StringComparison.OrdinalIgnoreCase) || targetRole.Equals("contentmanager", StringComparison.OrdinalIgnoreCase))
+            {
+                var contentManagerProfile = new ContentManagerProfile
+                {
+                    ContentManagerProfileId = newUser.Id,
+                    CreateBy = adminId ?? newUser.Id
+                };
+                await _unitOfWork.Repository<ContentManagerProfile>().AddAsync(contentManagerProfile);
                 await _unitOfWork.CompleteAsync();
             }
 
@@ -1307,7 +1333,7 @@ namespace sketch_tale.Application.Services
         {
             return new ParentProfile
             {
-                UserId = userId,
+                ParentProfileId = userId,
                 //ChildProfile = 0,
                 //RemainingMonthlyCredit = 500,
                 //TrialPlusPlan = false,

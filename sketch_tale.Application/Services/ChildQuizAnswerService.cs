@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
@@ -41,10 +41,10 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
             var currentChild = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(loggedInUserId);
             if (currentChild != null)
             {
-                childProfileId = currentChild.Id;
+                childProfileId = currentChild.ChildProfileId;
 
                 // Kiểm tra xem bé đang đăng nhập có đúng là người sở hữu phiên đọc này không
-                if (readingLog.ChildProfileId != currentChild.Id)
+                if (readingLog.ChildProfileId != currentChild.ChildProfileId)
                 {
                     throw new UnauthorizedAccessException("Bé chỉ có thể làm bài kiểm tra trong phiên đọc truyện của chính mình!");
                 }
@@ -179,7 +179,7 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
         if (Guid.TryParse(_currentUserService.UserId, out var loggedInUserId))
         {
             var currentChild = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(loggedInUserId);
-            if (currentChild != null && readingLog.ChildProfileId != currentChild.Id)
+            if (currentChild != null && readingLog.ChildProfileId != currentChild.ChildProfileId)
             {
                 throw new UnauthorizedAccessException("Bạn không có quyền xem kết quả bài kiểm tra của bé khác!");
             }
@@ -300,7 +300,7 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
     //    if (Guid.TryParse(_currentUserService.UserId, out var loggedInUserId))
     //    {
     //        var currentChild = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(loggedInUserId);
-    //        if (currentChild != null && currentChild.Id != childProfileId)
+    //        if (currentChild != null && currentChild.ChildProfileId != childProfileId)
     //        {
     //            throw new UnauthorizedAccessException("Ban khong co quyen xem ket qua bai kiem tra cua be khac!");
     //        }
@@ -347,7 +347,7 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
             if (currentChild != null)
             {
                 // Neu la tai khoan be dang dang nhap: chi duoc xem ket qua cua chinh minh
-                if (currentChild.Id != childProfileId)
+                if (currentChild.ChildProfileId != childProfileId)
                 {
                     throw new UnauthorizedAccessException("Ban khong co quyen xem ket qua bai kiem tra cua be khac!");
                 }
