@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sketch_tale.Application.DTOs
 {
-    public class ParentProfileDto : BaseFieldDto
+    public class ParentProfileDto : BaseFieldWithoutIdDto
     {
-        public Guid UserId { get; set; }
+        public Guid ParentProfileId { get; set; }
         public Guid SubscriptionPlanId { get; set; }
 
-        public int RemainingChildProfile { get; set; }
+        public int ChildProfile { get; set; }
         public int RemainingMonthlyCredit { get; set; }
         public bool TrialPlusPlan { get; set; }
 

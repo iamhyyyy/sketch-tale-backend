@@ -369,9 +369,6 @@ namespace sketch_tale.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("DrawingId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("FinalImageUrl")
                         .IsRequired()
                         .HasColumnType("text");
@@ -397,8 +394,6 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.HasIndex("AICharacterGenerateId");
 
                     b.HasIndex("ChildProfileId");
-
-                    b.HasIndex("DrawingId");
 
                     b.ToTable("Characters");
                 });
@@ -493,8 +488,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ChildProfile", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ChildProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CreateBy")
@@ -534,10 +528,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("ChildProfileId");
 
                     b.HasIndex("ParentProfileId");
 
@@ -641,8 +632,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ContentManagerProfile", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ContentManagerProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CreateBy")
@@ -661,10 +651,7 @@ namespace sketch_tale.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("ContentManagerProfileId");
 
                     b.ToTable("ContentManagerProfiles");
                 });
@@ -899,8 +886,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfile", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("ParentProfileId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("ChildProfile")
@@ -927,10 +913,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("ParentProfileId");
 
                     b.HasIndex("SubscriptionPlanId");
 
@@ -939,7 +922,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfileSub", b =>
                 {
-                    b.Property<Guid>("ParentProfileId")
+                    b.Property<Guid>("ParentProfileSubId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CreateBy")
@@ -948,16 +931,19 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("ParentProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("UpdateBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
+                    b.HasKey("ParentProfileSubId");
 
-                    b.HasKey("ParentProfileId");
+                    b.HasIndex("ParentProfileId")
+                        .IsUnique();
 
                     b.ToTable("ParentProfileSubs");
                 });
@@ -1669,7 +1655,7 @@ namespace sketch_tale.Infrastructure.Migrations
             modelBuilder.Entity("sketch_tale.Domain.Entities.AICharacterGenerate", b =>
                 {
                     b.HasOne("sketch_tale.Domain.Entities.Drawing", "Drawing")
-                        .WithMany()
+                        .WithMany("AICharacterGenerates")
                         .HasForeignKey("DrawingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1685,19 +1671,13 @@ namespace sketch_tale.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", "Child")
+                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
                         .WithMany("Characters")
                         .HasForeignKey("ChildProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("sketch_tale.Domain.Entities.Drawing", null)
-                        .WithMany("Characters")
-                        .HasForeignKey("DrawingId");
-
                     b.Navigation("AICharacterGenerate");
-
-                    b.Navigation("Child");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.CharacterSlotTemplate", b =>
@@ -1732,11 +1712,19 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ChildProfile", b =>
                 {
+                    b.HasOne("sketch_tale.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("ChildProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("sketch_tale.Domain.Entities.ParentProfile", null)
                         .WithMany("ChildProfiles")
                         .HasForeignKey("ParentProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ChildQuizAnswer", b =>
@@ -1785,15 +1773,24 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Navigation("Vocabulary");
                 });
 
+            modelBuilder.Entity("sketch_tale.Domain.Entities.ContentManagerProfile", b =>
+                {
+                    b.HasOne("sketch_tale.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("ContentManagerProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("sketch_tale.Domain.Entities.Drawing", b =>
                 {
-                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", "Child")
+                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
                         .WithMany("Drawings")
                         .HasForeignKey("ChildProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Child");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.EducationTheme", b =>
@@ -1822,6 +1819,12 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfile", b =>
                 {
+                    b.HasOne("sketch_tale.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("ParentProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("sketch_tale.Domain.Entities.SubscriptionPlan", "SubscriptionPlan")
                         .WithMany()
                         .HasForeignKey("SubscriptionPlanId")
@@ -1829,6 +1832,8 @@ namespace sketch_tale.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("SubscriptionPlan");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfileSub", b =>
@@ -1839,7 +1844,15 @@ namespace sketch_tale.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("sketch_tale.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("ParentProfileSubId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("ParentProfile");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.PaymentTransaction", b =>
@@ -1961,7 +1974,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.Drawing", b =>
                 {
-                    b.Navigation("Characters");
+                    b.Navigation("AICharacterGenerates");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.GeneratedStory", b =>

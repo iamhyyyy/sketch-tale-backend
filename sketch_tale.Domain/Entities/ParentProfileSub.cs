@@ -6,12 +6,14 @@ namespace sketch_tale.Domain.Entities;
 
 public class ParentProfileSub : BaseEntityWithoutId
 {
-    public Guid UserId { get; set; }
-
     [Key]
+    [ForeignKey(nameof(User))]
+    public Guid ParentProfileSubId { get; set; }
+
+    
     [ForeignKey(nameof(ParentProfile))]
     public Guid ParentProfileId { get; set; }
 
-    // Bắt buộc phải gắn với 1 ParentProfile
+    public virtual User User { get; set; } = null!;
     public ParentProfile ParentProfile { get; set; } = null!;
 }

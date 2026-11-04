@@ -19,7 +19,7 @@ namespace sketch_tale.Infrastructure.Repositories
 
         public async Task<ChildProfile?> GetByUserIdAsync(Guid userId)
         {
-            return await _dbSet.FirstOrDefaultAsync(c => c.UserId == userId);
+            return await _dbSet.FirstOrDefaultAsync(c => c.ChildProfileId == userId);
         }
     }
 }

@@ -102,6 +102,13 @@ namespace sketch_tale.Application.DTOs
 
         public ParentProfileDto? ParentProfile { get; set; }
         public ChildProfileDto? ChildProfile { get; set; }
+        public ContentManagerProfileDto? ContentManagerProfile { get; set; }
+    }
+
+    public class ContentManagerProfileDto : BaseFieldWithoutIdDto
+    {
+        public Guid ContentManagerProfileId { get; set; }
+        public List<string> UploadImageUrl { get; set; } = new List<string>();
     }
 
     public class RefreshTokenDto

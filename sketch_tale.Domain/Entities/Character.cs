@@ -16,6 +16,5 @@ public class Character : BaseEntity
     public bool IsFavorite { get; set; } = false;
 
     // Navigation Properties
-    public ChildProfile Child { get; set; } = null!;
     public AICharacterGenerate AICharacterGenerate { get; set; } = null!;
 }
