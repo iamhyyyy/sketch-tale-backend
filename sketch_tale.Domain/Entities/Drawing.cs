@@ -10,6 +10,5 @@ public class Drawing : BaseEntity
     public DrawingType DrawingType { get; set; }
 
     // Navigation Properties
-    public ChildProfile Child { get; set; } = null!;
-    public ICollection<Character> Characters { get; set; } = new List<Character>();
+    public ICollection<AICharacterGenerate> AICharacterGenerates { get; set; } = new List<AICharacterGenerate>();
 }
