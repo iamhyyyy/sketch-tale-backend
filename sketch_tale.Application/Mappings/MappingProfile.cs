@@ -47,6 +47,11 @@ public class MappingProfile : Profile
         CreateMap<CreateContentReportDto, ContentReport>();
         CreateMap<UpdateContentReportDto, ContentReport>();
 
+        // CreditTransactionLog
+        CreateMap<CreditTransactionLog, CreditTransactionLogDto>().ReverseMap();
+        CreateMap<CreateCreditTransactionLogDto, CreditTransactionLog>();
+        CreateMap<UpdateCreditTransactionLogDto, CreditTransactionLog>();
+
         // CharType
         CreateMap<CharType, CharTypeDto>().ReverseMap();
         CreateMap<CreateCharTypeDto, CharType>();
