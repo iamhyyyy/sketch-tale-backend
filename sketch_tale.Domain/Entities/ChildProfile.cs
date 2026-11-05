@@ -7,9 +7,8 @@ namespace sketch_tale.Domain.Entities;
 
 public class ChildProfile : BaseEntityWithoutId
 {
-    [Key]
     [ForeignKey(nameof(User))]
-    public Guid ChildProfileId { get; set; }
+    public Guid Id { get; set; }
     public Guid ParentProfileId { get; set; }
 
     public string NickName { get; set; } = string.Empty;

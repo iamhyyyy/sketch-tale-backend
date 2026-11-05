@@ -8,7 +8,11 @@ public class CreditTransactionLog : BaseEntity
 {
     public Guid ParentProfileId { get; set; }
 
+    public ActionType ActionType { get; set; }
+    public string? FeatureKey { get; set; }
     public int Amount { get; set; }
-    public CreditActionType ActionType { get; set; }
+    public int CreditBefore { get; set; }
+    public int CreditAfter { get; set; }
+    
     public string Description { get; set; } = string.Empty;
 }
