@@ -6,7 +6,10 @@ public class VocabularyTemplate : BaseEntity
 {
     public Guid StoryPageTemplateId { get; set; }
 
-    public string Word { get; set; } = null!;
+    public string WordVi { get; set; } = null!;
+    public string WordEn { get; set; } = string.Empty;
     public string Meaning { get; set; } = null!;
-    public string AudioUrl { get; set; } = string.Empty;
+    public string IPA { get; set; } = string.Empty;
+    public string AudioUrlVi { get; set; } = string.Empty;
+    public string AudioUrlEn { get; set; } = string.Empty;
 }

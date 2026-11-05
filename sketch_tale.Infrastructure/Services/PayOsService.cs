@@ -48,7 +48,7 @@ namespace sketch_tale.Infrastructure.Services
             if (parent == null)
                 throw new Exception("Không tìm thấy thông tin tài khoản phụ huynh.");
 
-            parentProfileId = parent.ParentProfileId;
+            parentProfileId = parent.Id;
             var existingSubs = await _unitOfWork.SubscriptionRepository.GetByParentProfileId(parentProfileId);
             foreach (var pendingSub in existingSubs.Where(s => s.Status == SubscriptionStatus.PendingPayment))
             {

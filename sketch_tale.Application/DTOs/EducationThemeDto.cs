@@ -4,21 +4,24 @@ namespace sketch_tale.Application.DTOs;
 
 public class EducationThemeDto : BaseFieldDto
 {
-    public string Name { get; set; } = null!;
+    public string NameEn { get; set; } = null!;
+    public string NameVi { get; set; } = null!;
     public string? Description { get; set; }
     public CommonStatus Status { get; set; }
 }
 
 public class CreateEducationThemeDto
 {
-    public required string Name { get; set; }
+    public string NameEn { get; set; } = null!;
+    public string NameVi { get; set; } = null!;
     public string? Description { get; set; }
     public CommonStatus Status { get; set; }
 }
 
 public class UpdateEducationThemeDto
 {
-    public string Name { get; set; } = string.Empty;
+    public string NameEn { get; set; } = null!;
+    public string NameVi { get; set; } = null!;
     public string? Description { get; set; }
     public CommonStatus Status { get; set; }
 }

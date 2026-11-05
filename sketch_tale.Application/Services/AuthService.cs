@@ -287,8 +287,8 @@ namespace sketch_tale.Application.Services
 
             // Dùng AutoMapper để tạo bản ghi ChildProfile liên kết ngược lại với ParentProfile của phụ huynh
             var childProfile = _mapper.Map<ChildProfile>(dto);
-            childProfile.ChildProfileId = childUser.Id;
-            childProfile.ParentProfileId = parentProfile.ParentProfileId;
+            childProfile.Id = childUser.Id;
+            childProfile.ParentProfileId = parentProfile.Id;
             childProfile.CreatedAt = DateTime.UtcNow.AddHours(7);
             childProfile.CreateBy = parentUserId;
 
@@ -1075,7 +1075,7 @@ namespace sketch_tale.Application.Services
             {
                 var contentManagerProfile = new ContentManagerProfile
                 {
-                    ContentManagerProfileId = newUser.Id,
+                    Id = newUser.Id,
                     CreateBy = adminId ?? newUser.Id
                 };
                 await _unitOfWork.Repository<ContentManagerProfile>().AddAsync(contentManagerProfile);
@@ -1333,7 +1333,7 @@ namespace sketch_tale.Application.Services
         {
             return new ParentProfile
             {
-                ParentProfileId = userId,
+                Id = userId,
                 //ChildProfile = 0,
                 //RemainingMonthlyCredit = 500,
                 //TrialPlusPlan = false,

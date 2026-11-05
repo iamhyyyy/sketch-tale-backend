@@ -10,7 +10,10 @@ public class StoryRoleTemplate : BaseEntity
     public StoryRoleType StoryRoleType { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public bool AllowCustomCharacter { get; set; } = true;
+    public bool AllowCustomCharacter { get; set; } = false;
+    public CharTypeCategory Category { get; set; }
+    public bool CanFly { get; set; } = false;
+    public bool CanSwim { get; set; } = false;
     public bool RequiresParentApproval { get; set; } = false;
     public string? DefaultAssetUrl { get; set; }
     public CommonStatus Status { get; set; }

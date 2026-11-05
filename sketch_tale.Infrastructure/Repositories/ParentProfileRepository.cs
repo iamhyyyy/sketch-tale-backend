@@ -29,7 +29,7 @@ namespace sketch_tale.Infrastructure.Repositories
             return await _dbSet
                 .Include(c => c.ChildProfiles)
                 .Include(c => c.SubscriptionPlan)
-                .FirstOrDefaultAsync(c => c.ParentProfileId == id);
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task<ParentProfile?> GetByUserIdAsync(Guid userId)
@@ -37,13 +37,13 @@ namespace sketch_tale.Infrastructure.Repositories
             return await _dbSet
                 .Include(c => c.ChildProfiles)
                 .Include(c => c.SubscriptionPlan)
-                .FirstOrDefaultAsync(p => p.ParentProfileId == userId);
+                .FirstOrDefaultAsync(p => p.Id == userId);
         }
 
         public Task<IEnumerable<ChildProfile>> GetChildProfilesByParentIdAsync(Guid parentId)
         {
             return Task.FromResult(_dbSet
-                .Where(p => p.ParentProfileId == parentId)
+                .Where(p => p.Id == parentId)
                 .SelectMany(p => p.ChildProfiles)
                 .AsEnumerable());
         }
