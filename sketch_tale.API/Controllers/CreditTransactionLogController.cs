@@ -30,17 +30,17 @@ namespace sketch_tale.WebApi.Controllers
             return Ok(item);
         }
 
-        [HttpGet("users/{Id}")]
-        public async Task<ActionResult<List<CreditTransactionLogDto>>> GetByUserIdAsync(Guid Id)
+        [HttpGet("users/{id}")]
+        public async Task<ActionResult<List<CreditTransactionLogDto>>> GetByUserIdAsync(Guid id)
         {
-            var items = await _creditTransactionLogService.GetByUserIdAsync(Id);
+            var items = await _creditTransactionLogService.GetByUserIdAsync(id);
             return Ok(items);
         }
 
-        [HttpGet("parent-profile/{Id}")]
-        public async Task<ActionResult<List<CreditTransactionLogDto>>> GetByParentIdAsync(Guid Id)
+        [HttpGet("parent-profile/{id}")]
+        public async Task<ActionResult<List<CreditTransactionLogDto>>> GetByParentIdAsync(Guid id)
         {
-            var items = await _creditTransactionLogService.GetByParentIdAsync(Id);
+            var items = await _creditTransactionLogService.GetByParentIdAsync(id);
             return Ok(items);
         }
 
