@@ -58,6 +58,15 @@ public class Program
         builder.Services.AddScoped<IChildQuizAnswerRepository, ChildQuizAnswerRepository>();
         builder.Services.AddScoped<IReadingLogRepository, ReadingLogRepository>();
 
+
+        // Đăng ký HttpClient cho GeminiAiCharacterService để gọi API Google
+        builder.Services.AddHttpClient<IAiCharacterService, GeminiAiCharacterService>();
+
+        // Đăng ký các Service và Repository
+        builder.Services.AddScoped<IDrawingCharacterService, DrawingCharacterService>();
+        builder.Services.AddScoped<IDrawingRepository, DrawingRepository>();
+        builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();

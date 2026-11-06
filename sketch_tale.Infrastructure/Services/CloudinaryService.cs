@@ -13,7 +13,6 @@ namespace sketch_tale.Infrastructure.Services
 
         public CloudinaryService(IConfiguration configuration)
         {
-            // 1. Cấu hình Cloudinary cho Ảnh
             var cloudName = configuration["Cloudinary:CloudName"];
             var apiKey    = configuration["Cloudinary:ApiKey"];
             var apiSecret = configuration["Cloudinary:ApiSecret"];
