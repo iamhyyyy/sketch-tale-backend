@@ -320,16 +320,29 @@ namespace sketch_tale.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("CanFly")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanSwim")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("CreateBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameVi")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -488,7 +501,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ChildProfile", b =>
                 {
-                    b.Property<Guid>("ChildProfileId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CreateBy")
@@ -528,7 +541,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("ChildProfileId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ParentProfileId");
 
@@ -632,7 +645,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ContentManagerProfile", b =>
                 {
-                    b.Property<Guid>("ContentManagerProfileId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CreateBy")
@@ -651,7 +664,7 @@ namespace sketch_tale.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
-                    b.HasKey("ContentManagerProfileId");
+                    b.HasKey("Id");
 
                     b.ToTable("ContentManagerProfiles");
                 });
@@ -751,8 +764,17 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("CreditAfter")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CreditBefore")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FeatureKey")
                         .HasColumnType("text");
 
                     b.Property<Guid>("ParentProfileId")
@@ -822,7 +844,11 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NameVi")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -886,7 +912,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfile", b =>
                 {
-                    b.Property<Guid>("ParentProfileId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
                     b.Property<int>("ChildProfile")
@@ -913,7 +939,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("ParentProfileId");
+                    b.HasKey("Id");
 
                     b.HasIndex("SubscriptionPlanId");
 
@@ -922,7 +948,7 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfileSub", b =>
                 {
-                    b.Property<Guid>("ParentProfileSubId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("CreateBy")
@@ -940,7 +966,7 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("ParentProfileSubId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ParentProfileId")
                         .IsUnique();
@@ -1237,6 +1263,15 @@ namespace sketch_tale.Infrastructure.Migrations
 
                     b.Property<bool>("AllowCustomCharacter")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("CanFly")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanSwim")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("CreateBy")
                         .HasColumnType("uuid");
@@ -1567,7 +1602,11 @@ namespace sketch_tale.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("AudioUrl")
+                    b.Property<string>("AudioUrlEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("AudioUrlVi")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -1576,6 +1615,10 @@ namespace sketch_tale.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IPA")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Meaning")
                         .IsRequired()
@@ -1590,7 +1633,11 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Word")
+                    b.Property<string>("WordEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("WordVi")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -1714,7 +1761,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     b.HasOne("sketch_tale.Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("ChildProfileId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1777,7 +1824,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     b.HasOne("sketch_tale.Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("ContentManagerProfileId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1821,7 +1868,7 @@ namespace sketch_tale.Infrastructure.Migrations
                 {
                     b.HasOne("sketch_tale.Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("ParentProfileId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1838,15 +1885,15 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ParentProfileSub", b =>
                 {
-                    b.HasOne("sketch_tale.Domain.Entities.ParentProfile", "ParentProfile")
-                        .WithOne("ParentProfileSub")
-                        .HasForeignKey("sketch_tale.Domain.Entities.ParentProfileSub", "ParentProfileId")
+                    b.HasOne("sketch_tale.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("sketch_tale.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("ParentProfileSubId")
+                    b.HasOne("sketch_tale.Domain.Entities.ParentProfile", "ParentProfile")
+                        .WithOne("ParentProfileSub")
+                        .HasForeignKey("sketch_tale.Domain.Entities.ParentProfileSub", "ParentProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

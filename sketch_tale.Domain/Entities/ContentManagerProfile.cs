@@ -6,9 +6,8 @@ namespace sketch_tale.Domain.Entities;
 
 public class ContentManagerProfile : BaseEntityWithoutId
 {
-    [Key]
     [ForeignKey(nameof(User))]
-    public Guid ContentManagerProfileId { get; set; }
+    public Guid Id { get; set; }
     public List<string> UploadImageUrl { get; set; } = new List<string>();
 
     public virtual User User { get; set; } = null!;

@@ -65,7 +65,7 @@ public class VocabularyTemplateService : IVocabularyTemplateService
         var entity = _mapper.Map<VocabularyTemplate>(dto);
         entity.Id = Guid.NewGuid();
         entity.StoryPageTemplateId = pageId;
-        entity.Word = trimmedWord;
+        entity.WordVi = trimmedWord;
         entity.Meaning = dto.Meaning.Trim();
         entity.CreatedAt = DateTime.UtcNow;
 
@@ -83,14 +83,14 @@ public class VocabularyTemplateService : IVocabularyTemplateService
         if (!string.IsNullOrWhiteSpace(dto.Word))
         {
             var trimmedWord = dto.Word.Trim();
-            if (!string.Equals(vocab.Word, trimmedWord, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(vocab.WordVi, trimmedWord, StringComparison.OrdinalIgnoreCase))
             {
                 var existing = await _unitOfWork.VocabularyTemplateRepository.GetByPageAndWordAsync(vocab.StoryPageTemplateId, trimmedWord);
                 if (existing != null && existing.Id != vocabId)
                 {
                     throw new InvalidOperationException($"Từ vựng '{trimmedWord}' đã tồn tại trên trang này.");
                 }
-                vocab.Word = trimmedWord;
+                vocab.WordVi = trimmedWord;
             }
         }
 
@@ -101,7 +101,7 @@ public class VocabularyTemplateService : IVocabularyTemplateService
 
         if (dto.AudioUrl != null)
         {
-            vocab.AudioUrl = dto.AudioUrl;
+            vocab.AudioUrlVi = dto.AudioUrl;
         }
 
         vocab.UpdatedAt = DateTime.UtcNow;

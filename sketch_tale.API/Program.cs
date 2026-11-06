@@ -44,6 +44,7 @@ public class Program
         builder.Services.AddScoped<IRestrictedKeywordRepository, RestrictedKeywordRepository>();
         builder.Services.AddScoped<IProhibitedThemeRepository, ProhibitedThemeRepository>();
         builder.Services.AddScoped<IContentReportRepository, ContentReportRepository>();
+        builder.Services.AddScoped<ICreditTransactionLogRepository, CreditTransactionLogRepository>();
         builder.Services.AddScoped<ICharTypeRepository, CharTypeRepository>();
         builder.Services.AddScoped<IUserStoryCharacterMappingRepository, UserStoryCharacterMappingRepository>();
         builder.Services.AddScoped<IStoryTemplateRepository, StoryTemplateRepository>();
@@ -79,6 +80,7 @@ public class Program
         builder.Services.AddScoped<IRestrictedKeywordService, RestrictedKeywordService>();
         builder.Services.AddScoped<IProhibitedThemeService, ProhibitedThemeService>();
         builder.Services.AddScoped<IContentReportService, ContentReportService>();
+        builder.Services.AddScoped<ICreditTransactionLogService, CreditTransactionLogService>();
         builder.Services.AddScoped<ICharTypeService, CharTypeService>();
         builder.Services.AddScoped<IUserStoryCharacterMappingService, UserStoryCharacterMappingService>();
         builder.Services.AddScoped<IStoryTemplateService, StoryTemplateService>();

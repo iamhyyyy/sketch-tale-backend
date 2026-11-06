@@ -132,10 +132,19 @@ public enum AIActionType
     CharacterGenerate
 }
 
-public enum CreditActionType
+public enum ActionType
 {
-    ImageClassification,
-    CharacterGeneration, 
-    CharacterRegeneration,
-    StoryExport
+    TopUp,
+    Spend,
+    Refund, 
+    Expire
+}
+
+public enum CharTypeCategory
+{
+    Animal,          
+    Vehicle,      
+    Human,   
+    Fantasy,     
+    NatureAndObject
 }

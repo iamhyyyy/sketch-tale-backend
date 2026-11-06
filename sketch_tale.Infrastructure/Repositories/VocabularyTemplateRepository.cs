@@ -21,6 +21,6 @@ public class VocabularyTemplateRepository : GenericRepository<VocabularyTemplate
     public async Task<VocabularyTemplate?> GetByPageAndWordAsync(Guid pageId, string word)
     {
         return await _dbSet
-            .FirstOrDefaultAsync(v => v.StoryPageTemplateId == pageId && v.Word.ToLower() == word.Trim().ToLower());
+            .FirstOrDefaultAsync(v => v.StoryPageTemplateId == pageId && v.WordVi.ToLower() == word.Trim().ToLower());
     }
 }
