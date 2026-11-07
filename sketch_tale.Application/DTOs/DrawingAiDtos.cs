@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using sketch_tale.Domain.Enums;
 
 namespace sketch_tale.Application.DTOs
@@ -32,6 +32,8 @@ namespace sketch_tale.Application.DTOs
         public List<AiAllowedCharTypeDto> SuggestedCharTypes { get; set; } = new();
         public List<string>? DetectedTags { get; set; }
         public string? StandardizedPrompt { get; set; }
+        public int? RemainingParentCredits { get; set; }
+        public int? RemainingDailyCharacterLimit { get; set; }
     }
 
     public class GenerateCharacterRequest
@@ -47,7 +49,14 @@ namespace sketch_tale.Application.DTOs
     public class GenerateCharacterResponse
     {
         public Guid AiCharacterGenerateId { get; set; }
+        public Guid CharacterId { get; set; }
+        public Guid DrawingId { get; set; }
+        public Guid CharTypeId { get; set; }
         public string GenerateImageUrl { get; set; } = string.Empty;
         public string AiPromptUsed { get; set; } = string.Empty;
+        public string AiGenStatus { get; set; } = string.Empty;
+        public string CharacterStatus { get; set; } = string.Empty;
+        public int? RemainingParentCredits { get; set; }
+        public int? RemainingDailyCharacterLimit { get; set; }
     }
 }

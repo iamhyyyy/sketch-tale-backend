@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using sketch_tale.Application.DTOs;
+using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Services;
 using System.Text;
 using System.Text.Json;
@@ -9,14 +11,23 @@ namespace sketch_tale.Infrastructure.Services
     public class GeminiAiCharacterService : IAiCharacterService
     {
         private readonly HttpClient _httpClient;
+        private readonly ICloudinaryService _cloudinary;
         private readonly string _apiKey;
+        private readonly string _visionModel;
+        private readonly string _imageModel;
 
-        public GeminiAiCharacterService(HttpClient httpClient, IConfiguration configuration)
+        public GeminiAiCharacterService(
+            HttpClient httpClient,
+            IConfiguration configuration,
+            ICloudinaryService cloudinary)
         {
             _httpClient = httpClient;
+            _cloudinary = cloudinary;
             _apiKey = configuration["GeminiSettings:ApiKey"] ?? throw new InvalidOperationException(
                 "Gemini API Key chưa được cấu hình."
             );
+            _visionModel = configuration["GeminiSettings:VisionModel"] ?? "gemini-2.5-flash-lite";
+            _imageModel = configuration["GeminiSettings:ImageGenerationModel"] ?? "gemini-2.5-flash-image";
         }
 
         public async Task<AiAnalyzeResultDto> AnalyzeImageAsync(string imageUrl, IReadOnlyCollection<AiAllowedCharTypeDto> allowedCharTypes)
@@ -105,7 +116,8 @@ namespace sketch_tale.Infrastructure.Services
             };
 
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            string apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent";
+            // string apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent";
+            string apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{_visionModel}:generateContent";
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
 
@@ -211,9 +223,163 @@ namespace sketch_tale.Infrastructure.Services
             };
         }
 
-        public Task<string> GenerateImageAsync(string finalPrompt, string originalImageUrl)
+        public async Task<string> GenerateImageAsync(string finalPrompt, string originalImageUrl)
         {
-            throw new NotImplementedException();
+            var originalImage = await GetBase64FromUrlAsync(originalImageUrl);
+
+            var payload = new
+            {
+                contents = new[]
+                {
+                    new
+                    {
+                        parts = new object[]
+                        {
+                            new { text = finalPrompt },
+                            new
+                            {
+                                inlineData = new
+                                {
+                                    mimeType = originalImage.MimeType,
+                                    data = originalImage.Base64
+                                }
+                            }
+                        }
+                    }
+                },
+                generationConfig = new
+                {
+                    responseModalities = new[] { "TEXT", "IMAGE" }
+                }
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            string apiUrl = $"https://generativelanguage.googleapis.com/v1beta/models/{_imageModel}:generateContent";
+
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+            httpRequest.Headers.Add("x-goog-api-key", _apiKey);
+            httpRequest.Content = content;
+
+            using var response = await _httpClient.SendAsync(httpRequest);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var statusCode = (int)response.StatusCode;
+                // Nếu tài khoản Gemini đang ở gói Free Tier (bị giới hạn 429/403/404 khi gọi model tạo ảnh),
+                // tự động chuyển sang cơ chế Fallback sinh ảnh miễn phí (Pollinations Flux) rồi upload lên Cloudinary
+                if (statusCode == 404 || statusCode == 429 || statusCode == 403 || statusCode == 400)
+                {
+                    return await GenerateImageFallbackAsync(finalPrompt);
+                }
+
+                throw new HttpRequestException(
+                    $"Gemini Image Generation API lỗi: {statusCode} - {responseString}"
+                );
+            }
+
+            using var document = JsonDocument.Parse(responseString);
+            var root = document.RootElement;
+
+            if (!root.TryGetProperty("candidates", out var candidates) ||
+                candidates.ValueKind != JsonValueKind.Array ||
+                candidates.GetArrayLength() == 0)
+            {
+                var blockReason = "Không xác định";
+                if (root.TryGetProperty("promptFeedback", out var feedback) &&
+                    feedback.TryGetProperty("blockReason", out var reason))
+                {
+                    blockReason = reason.GetString() ?? blockReason;
+                }
+
+                throw new InvalidOperationException(
+                    $"Gemini không trả về ảnh nhân vật. Block reason: {blockReason}"
+                );
+            }
+
+            var candidate = candidates[0];
+            if (!candidate.TryGetProperty("content", out var candidateContent) ||
+                !candidateContent.TryGetProperty("parts", out var parts) ||
+                parts.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException(
+                    "Gemini không trả về dữ liệu content/parts cho ảnh nhân vật."
+                );
+            }
+
+            string? generatedBase64 = null;
+            string generatedMimeType = "image/png";
+
+            foreach (var part in parts.EnumerateArray())
+            {
+                if (part.TryGetProperty("inlineData", out var inlineData) &&
+                    inlineData.ValueKind == JsonValueKind.Object)
+                {
+                    if (inlineData.TryGetProperty("data", out var dataElement) &&
+                        dataElement.ValueKind == JsonValueKind.String)
+                    {
+                        generatedBase64 = dataElement.GetString();
+                    }
+
+                    if (inlineData.TryGetProperty("mimeType", out var mimeElement) &&
+                        mimeElement.ValueKind == JsonValueKind.String &&
+                        !string.IsNullOrWhiteSpace(mimeElement.GetString()))
+                    {
+                        generatedMimeType = mimeElement.GetString()!;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(generatedBase64))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(generatedBase64))
+            {
+                throw new InvalidOperationException(
+                    "Gemini không trả về dữ liệu hình ảnh (inlineData) trong phản hồi."
+                );
+            }
+
+            var imageBytes = Convert.FromBase64String(generatedBase64);
+            return await UploadBytesToCloudinaryAsync(imageBytes, generatedMimeType);
+        }
+
+        private async Task<string> GenerateImageFallbackAsync(string finalPrompt)
+        {
+            var encodedPrompt = Uri.EscapeDataString(finalPrompt);
+            var seed = Random.Shared.Next(1, 999999);
+            var fallbackUrl = $"https://image.pollinations.ai/prompt/{encodedPrompt}?width=768&height=768&seed={seed}&nologo=true&model=flux";
+
+            using var fallbackResponse = await _httpClient.GetAsync(fallbackUrl);
+            fallbackResponse.EnsureSuccessStatusCode();
+
+            var imageBytes = await fallbackResponse.Content.ReadAsByteArrayAsync();
+            if (imageBytes.Length == 0)
+            {
+                throw new InvalidOperationException("Không thể sinh ảnh nhân vật từ dịch vụ AI.");
+            }
+
+            var mimeType = fallbackResponse.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+            return await UploadBytesToCloudinaryAsync(imageBytes, mimeType);
+        }
+
+        private async Task<string> UploadBytesToCloudinaryAsync(byte[] imageBytes, string mimeType)
+        {
+            var extension = mimeType.Contains("jpeg", StringComparison.OrdinalIgnoreCase) ? ".jpg"
+                : mimeType.Contains("webp", StringComparison.OrdinalIgnoreCase) ? ".webp"
+                : ".png";
+            var fileName = $"character_{Guid.NewGuid():N}{extension}";
+
+            await using var memoryStream = new MemoryStream(imageBytes);
+            var formFile = new FormFile(memoryStream, 0, imageBytes.Length, "File", fileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = mimeType
+            };
+
+            return await _cloudinary.UploadImageAsync(formFile, "CharacterGenerated");
         }
 
         private async Task<(string Base64, string MimeType)> GetBase64FromUrlAsync(string url)
