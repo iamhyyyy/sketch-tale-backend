@@ -1,14 +1,9 @@
-﻿using AutoMapper;
+using AutoMapper;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
 using sketch_tale.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace sketch_tale.Application.Services
 {
@@ -101,28 +96,25 @@ namespace sketch_tale.Application.Services
                 .Take(3)
                 .ToList();
 
-            // 9. Xác định có cần Fallback hay không
-            var needsFallback = validSuggestedIds.Count == 0;
-
-            // 10. Lấy tối đa 3 CharType theo danh sách Gemini đề xuất
+            // 9. Lấy tối đa 3 CharType theo danh sách Gemini đề xuất
             var charTypesToReturn = validSuggestedIds
                 .Select(id => activeCharTypesById[id])
                 .ToList();
 
-            // 11. Mapping sang DTO trả về Frontend
+            // 10. Mapping sang DTO trả về Frontend
             var suggestedTypes = _mapper.Map<List<AiAllowedCharTypeDto>>(
                 charTypesToReturn
             );
 
-            // 12. Trả kết quả
+            // 11. Trả kết quả theo đúng TH1 (HappyCase) và TH2 (BadCase)
             return new AnalyzeDrawingResponse
             {
                 DrawingId = drawing.Id,
                 OriginalImageUrl = originalUrl,
                 IsRecognized = aiResult.IsRecognized,
-                StandardizedPrompt = aiResult.Prompt,
+                StandardizedPrompt = aiResult.IsRecognized ? aiResult.Prompt : null,
                 SuggestedCharTypes = suggestedTypes,
-                DetectedTags = aiResult.DetectedTags
+                DetectedTags = aiResult.IsRecognized ? (aiResult.DetectedTags ?? new List<string>()) : null
             };
         }
 

@@ -1,42 +1,39 @@
 ﻿using Microsoft.AspNetCore.Http;
 using sketch_tale.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace sketch_tale.Application.DTOs
 {
     public class AnalyzeDrawingRequest
     {
-        public IFormFile File { get; set; }
+        public IFormFile File { get; set; } = null!;
         public DrawingType DrawingType { get; set; }
         public Guid ChildProfileId { get; set; }
     }
+
     public class AiAnalyzeResultDto
     {
         public bool IsRecognized { get; set; }
-        public string Prompt { get; set; } = string.Empty;
-        public List<string> DetectedTags { get; set; } = new();
+        public string? Prompt { get; set; }
+        public List<string>? DetectedTags { get; set; }
         public List<Guid> SuggestedCharTypeIds { get; set; } = new();
     }
+
     public class AiAllowedCharTypeDto
     {
         public Guid Id { get; set; }
-
         public string NameEn { get; set; } = string.Empty;
     }
 
     public class AnalyzeDrawingResponse
     {
         public Guid DrawingId { get; set; }
-        public string OriginalImageUrl { get; set; }
+        public string OriginalImageUrl { get; set; } = string.Empty;
         public bool IsRecognized { get; set; }
-        public List<AiAllowedCharTypeDto> SuggestedCharTypes { get; set; }
-        public List<string> DetectedTags { get; set; }
-        public string StandardizedPrompt { get; set; }
+        public List<AiAllowedCharTypeDto> SuggestedCharTypes { get; set; } = new();
+        public List<string>? DetectedTags { get; set; }
+        public string? StandardizedPrompt { get; set; }
     }
+
     public class GenerateCharacterRequest
     {
         public Guid DrawingId { get; set; }
@@ -50,7 +47,7 @@ namespace sketch_tale.Application.DTOs
     public class GenerateCharacterResponse
     {
         public Guid AiCharacterGenerateId { get; set; }
-        public string GenerateImageUrl { get; set; }
-        public string AiPromptUsed { get; set; }
+        public string GenerateImageUrl { get; set; } = string.Empty;
+        public string AiPromptUsed { get; set; } = string.Empty;
     }
 }

@@ -1,13 +1,8 @@
-﻿using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Configuration;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace sketch_tale.Infrastructure.Services
 {
@@ -27,16 +22,18 @@ namespace sketch_tale.Infrastructure.Services
         public async Task<AiAnalyzeResultDto> AnalyzeImageAsync(string imageUrl, IReadOnlyCollection<AiAllowedCharTypeDto> allowedCharTypes)
         {
             var image = await GetBase64FromUrlAsync(imageUrl);
-            var charTypesJson = JsonSerializer.Serialize(allowedCharTypes.
-                                                        Select(c => new{id = c.Id,nameEn = c.NameEn}));
+            var charTypesJson = JsonSerializer.Serialize(
+                allowedCharTypes.Select(c => new { id = c.Id, nameEn = c.NameEn })
+            );
+
             var analysisPrompt =
                 $$"""
                 You are an AI classification and visual description assistant for Sketch Tale, a children's drawing application.
 
                 YOUR MAIN TASK:
-                1. Analyze the child's drawing to determine if it depicts a identifiable CHARACTER (e.g., Human, Animal, Monster, Mythical Creature, Robot, or Animated Object with living traits).
-                2. If a valid character is detected, generate a detailed visual description prompt for image generation models (Midjourney, Flux, Stable Diffusion).
-                3. Compare the detected character against the provided CharType list from the database.
+                1. Analyze the child's drawing to determine if it depicts an identifiable CHARACTER (e.g., Human, Animal, Monster, Mythical Creature, Robot, or Animated Object with living traits).
+                2. If a valid character is detected, generate a detailed visual description prompt for image generation models (Midjourney, Flux, Stable Diffusion) and extract descriptive visual tags.
+                3. Compare the drawing against the provided ALLOWED CHARACTER TYPES list from the database and suggest up to 3 most related CharType IDs.
 
                 ALLOWED CHARACTER TYPES:
                 {{charTypesJson}}
@@ -45,24 +42,21 @@ namespace sketch_tale.Infrastructure.Services
 
                 CASE 1: THE DRAWING IS RECOGNIZABLE (isRecognized = true)
                 - Describe the drawing clearly, vividly, and objectively (subject, actions, colors, style, key features) to form a prompt for image generation models. Put this in "prompt".
-                - Find the EXACT matching CharType from the provided ALLOWED CHARACTER TYPES list.
-                - Set "suggestedCharTypeId" to the exact matching ID from the list.
-                - If NO CharType in the allowed list matches the drawing, set "suggestedCharTypeId" to null. Do NOT invent new IDs or choose an incorrect type.
-                - Set "fallbackSuggestedCharTypeIds" to an empty array [].
+                - Select up to 3 most related CharType IDs from the provided ALLOWED CHARACTER TYPES list (ranked from most relevant to least relevant) and put them in "suggestedCharTypeIds".
+                - Extract short descriptive English tags (e.g., colors, facial expression, posture, key features) and put them in "detectedTags".
 
                 CASE 2: THE DRAWING IS UNCLEAR OR UNRECOGNIZABLE (isRecognized = false)
-                - Set "prompt" to a message stating the image could not be clearly recognized (e.g., "The drawing is unclear or unidentifiable.").
-                - Set "suggestedCharTypeId" to null.
+                - Set "prompt" to null.
+                - Set "detectedTags" to null.
                 - Analyze the visible visual features (shapes, colors, lines, body parts, structures).
-                - Based on these visual features, suggest up to 3 closest matching CharType IDs from the provided list and put them in "fallbackSuggestedCharTypeIds".
-                - Rank the fallback suggestions from most relevant to least relevant.
-                - Return fewer than 3 only when fewer relevant CharTypes are available in the list.
+                - Based on these visual features, suggest up to 3 closest matching CharType IDs from the provided ALLOWED CHARACTER TYPES list and put them in "suggestedCharTypeIds" (ranked from most relevant to least relevant).
 
                 CRITICAL CONSTRAINTS:
-                - Only return exact IDs that exist in ALLOWED CHARACTER TYPES.
+                - Only return exact IDs that exist in ALLOWED CHARACTER TYPES (maximum 3 IDs).
                 - Never make up or hallucinate IDs.
                 - Follow the JSON output schema strictly.
                 """;
+
             var payload = new
             {
                 contents = new[]
@@ -72,7 +66,8 @@ namespace sketch_tale.Infrastructure.Services
                         parts = new object[]
                         {
                             new { text = analysisPrompt },
-                            new{
+                            new
+                            {
                                 inlineData = new
                                 {
                                     mimeType = image.MimeType,
@@ -92,14 +87,19 @@ namespace sketch_tale.Infrastructure.Services
                         {
                             isRecognized = new { type = "BOOLEAN" },
                             prompt = new { type = "STRING", nullable = true },
-                            suggestedCharTypeId = new { type = "STRING", nullable = true },
-                            fallbackSuggestedCharTypeIds = new
+                            suggestedCharTypeIds = new
                             {
                                 type = "ARRAY",
                                 items = new { type = "STRING" }
+                            },
+                            detectedTags = new
+                            {
+                                type = "ARRAY",
+                                nullable = true,
+                                items = new { type = "STRING" }
                             }
                         },
-                        required = new[] { "isRecognized", "prompt", "fallbackSuggestedCharTypeIds" }
+                        required = new[] { "isRecognized", "prompt", "suggestedCharTypeIds", "detectedTags" }
                     }
                 }
             };
@@ -107,12 +107,12 @@ namespace sketch_tale.Infrastructure.Services
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
             string apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent";
 
-           using var httpRequest = new HttpRequestMessage(HttpMethod.Post,apiUrl);
+            using var httpRequest = new HttpRequestMessage(HttpMethod.Post, apiUrl);
 
             httpRequest.Headers.Add("x-goog-api-key", _apiKey);
             httpRequest.Content = content;
 
-           using var response = await _httpClient.SendAsync(httpRequest);
+            using var response = await _httpClient.SendAsync(httpRequest);
             var responseString = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
