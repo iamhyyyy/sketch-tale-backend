@@ -150,5 +150,8 @@ public class MappingProfile : Profile
         CreateMap<CreateChildQuizAnswerDto, ChildQuizAnswer>();
         CreateMap<ChildQuizAnswer, ChildQuizAnswerDto>().ReverseMap();
         CreateMap<ChildQuizAnswer, SubmitQuizAnswerResponseDto>().ReverseMap();
+
+
+        CreateMap<CharType, AiAllowedCharTypeDto>();
     }
 }

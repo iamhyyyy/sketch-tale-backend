@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using sketch_tale.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,21 @@ namespace sketch_tale.Application.DTOs
     public class AnalyzeDrawingRequest
     {
         public IFormFile File { get; set; }
-        public int DrawingType { get; set; }
+        public DrawingType DrawingType { get; set; }
+        public Guid ChildProfileId { get; set; }
+    }
+    public class AiAnalyzeResultDto
+    {
+        public bool IsRecognized { get; set; }
+        public string Prompt { get; set; } = string.Empty;
+        public List<string> DetectedTags { get; set; } = new();
+        public List<Guid> SuggestedCharTypeIds { get; set; } = new();
+    }
+    public class AiAllowedCharTypeDto
+    {
+        public Guid Id { get; set; }
+
+        public string NameEn { get; set; } = string.Empty;
     }
 
     public class AnalyzeDrawingResponse
@@ -18,7 +33,7 @@ namespace sketch_tale.Application.DTOs
         public Guid DrawingId { get; set; }
         public string OriginalImageUrl { get; set; }
         public bool IsRecognized { get; set; }
-        public List<CharTypeDto> SuggestedCharTypes { get; set; }
+        public List<AiAllowedCharTypeDto> SuggestedCharTypes { get; set; }
         public List<string> DetectedTags { get; set; }
         public string StandardizedPrompt { get; set; }
     }

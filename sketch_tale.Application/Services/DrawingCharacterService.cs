@@ -1,4 +1,5 @@
-﻿using sketch_tale.Application.DTOs;
+﻿using AutoMapper;
+using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
@@ -14,63 +15,120 @@ namespace sketch_tale.Application.Services
     public class DrawingCharacterService : IDrawingCharacterService
     {
         private readonly IAiCharacterService _aiService;
-        private readonly IDrawingRepository _drawingRepo;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
         private readonly ICloudinaryService _cloudinary;
 
-        public DrawingCharacterService(IAiCharacterService aiService, IDrawingRepository drawingRepo, ICloudinaryService cloudinary)
+        public DrawingCharacterService(IAiCharacterService aiService, IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryService cloudinary)
         {
             _aiService = aiService;
-            _drawingRepo = drawingRepo;
+            _unitOfWork = unitOfWork;
             _cloudinary = cloudinary;
+            _mapper = mapper;
         }
 
-        public async Task<AnalyzeDrawingResponse> AnalyzeAsync(AnalyzeDrawingRequest request)
+        public async Task<AnalyzeDrawingResponse> AnalyzeAsync(
+    AnalyzeDrawingRequest request)
         {
-            var originalUrl = await _cloudinary.UploadImageAsync(request.File, "ChildUpload");
+            // 1. Validate dữ liệu đầu vào
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
 
-            var activeCharTypes = await _drawingRepo.GetActiveCharTypesAsync();
+            if (request.File == null || request.File.Length == 0)
+                throw new ArgumentException("Vui lòng cung cấp hình vẽ.");
 
-            var aiResult = await _aiService.AnalyzeImageAsync(originalUrl, activeCharTypes);
-            var drawing = new Drawing { OriginalImageUrl = originalUrl, Status = aiResult.IsRecognized ? "Analyzed" : "Failed" };
-            await _drawingRepo.AddDrawingAsync(drawing);
+            if (request.ChildProfileId == Guid.Empty)
+                throw new ArgumentException("ChildProfileId không hợp lệ.");
 
+            // 2. Upload ảnh lên Cloudinary
+            var originalUrl = await _cloudinary.UploadImageAsync(
+                request.File,
+                "ChildUpload"
+            );
+
+            // 3. Tạo Drawing
+            var drawing = new Drawing
+            {
+                ChildProfileId = request.ChildProfileId,
+                OriginalImageUrl = originalUrl,
+                DrawingType = request.DrawingType
+            };
+
+            // 4. Lưu Drawing trước khi gọi AI
+            await _unitOfWork.DrawingRepository.AddAsync(drawing);
+            await _unitOfWork.CompleteAsync();
+
+            // 5. Lấy danh sách CharType Active
+            var activeCharTypes =
+                await _unitOfWork.CharTypeRepository.GetActiveCharTypesAsync();
+
+            if (activeCharTypes == null || !activeCharTypes.Any())
+            {
+                throw new InvalidOperationException(
+                    "Hệ thống hiện không có CharType nào đang hoạt động."
+                );
+            }
+
+            // 6. Mapping Entity thành DTO dành cho AI
+            var allowedCharTypes =
+                _mapper.Map<List<AiAllowedCharTypeDto>>(activeCharTypes);
+
+            // 7. Gọi Gemini phân tích hình vẽ
+            var aiResult = await _aiService.AnalyzeImageAsync(
+                originalUrl,
+                allowedCharTypes
+            );
+
+            if (aiResult == null)
+            {
+                throw new InvalidOperationException(
+                    "AI không trả về kết quả phân tích."
+                );
+            }
+
+            // 8. Validate CharType IDs do AI đề xuất
+            var activeCharTypesById = activeCharTypes
+                .ToDictionary(c => c.Id);
+
+            var suggestedIds = aiResult.SuggestedCharTypeIds
+                ?? new List<Guid>();
+
+            // Chỉ giữ ID tồn tại và đang Active, loại bỏ ID trùng
+            // Giữ nguyên thứ tự ưu tiên mà Gemini đề xuất
+            var validSuggestedIds = suggestedIds
+                .Where(id => activeCharTypesById.ContainsKey(id))
+                .Distinct()
+                .Take(3)
+                .ToList();
+
+            // 9. Xác định có cần Fallback hay không
+            var needsFallback = validSuggestedIds.Count == 0;
+
+            // 10. Lấy tối đa 3 CharType theo danh sách Gemini đề xuất
+            var charTypesToReturn = validSuggestedIds
+                .Select(id => activeCharTypesById[id])
+                .ToList();
+
+            // 11. Mapping sang DTO trả về Frontend
+            var suggestedTypes = _mapper.Map<List<AiAllowedCharTypeDto>>(
+                charTypesToReturn
+            );
+
+            // 12. Trả kết quả
             return new AnalyzeDrawingResponse
             {
-                DrawingId = drawingId,
+                DrawingId = drawing.Id,
                 OriginalImageUrl = originalUrl,
                 IsRecognized = aiResult.IsRecognized,
                 StandardizedPrompt = aiResult.Prompt,
-                SuggestedCharTypes = aiResult.IsRecognized
-                    ? activeCharTypes.Where(c => aiResult.SuggestedCharTypeIds.Contains(c.Id)).ToList()
-                    : activeCharTypes.Take(5).ToList()
+                SuggestedCharTypes = suggestedTypes,
+                DetectedTags = aiResult.DetectedTags
             };
         }
 
         public async Task<GenerateCharacterResponse> GenerateAsync(GenerateCharacterRequest request)
         {
-
-            var drawing = await _drawingRepo.GetByIdAsync(request.DrawingId);
-            var charTypeName = await _drawingRepo.GetCharTypeNameAsync(request.CharTypeId);
-
-            string finalPrompt = request.StandardizedPrompt;
-
-            if (string.IsNullOrEmpty(finalPrompt))
-            {
-                var basePrompt = $"A cute 2D children's storybook illustration of a {charTypeName}";
-                var ideaPart = string.IsNullOrEmpty(request.ChildAdditionalIdea) ? "" : $", {request.ChildAdditionalIdea}";
-                var stylePart = ", preserving the child's hand-drawn color palette, isolated on a pure solid white background, vibrant colors, Pixar style, child-safe.";
-
-                finalPrompt = basePrompt + ideaPart + stylePart;
-            }
-
-            var newImageUrl = await _aiService.GenerateImageAsync(finalPrompt, drawing.ImageUrl);
-
-            return new GenerateCharacterResponse
-            {
-                AiCharacterGenerateId = Guid.NewGuid(),
-                GenerateImageUrl = newImageUrl,
-                AiPromptUsed = finalPrompt 
-            };
+            throw new NotImplementedException();
         }
     }
 }

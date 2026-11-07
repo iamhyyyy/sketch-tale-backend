@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
-using sketch_tale.Application.Services;
+using sketch_tale.Application.Interfaces.Services;
 
 namespace sketch_tale.API.Controllers
 {
@@ -8,9 +8,9 @@ namespace sketch_tale.API.Controllers
     [Route("api/drawings")]
     public class DrawingController : ControllerBase
     {
-        private readonly IDrawingCharacterWorkflowService _workflowService;
+        private readonly IDrawingCharacterService _workflowService;
 
-        public DrawingController(IDrawingCharacterWorkflowService workflowService)
+        public DrawingController(IDrawingCharacterService workflowService)
         {
             _workflowService = workflowService;
         }
@@ -18,7 +18,6 @@ namespace sketch_tale.API.Controllers
         [HttpPost("analyze")]
         public async Task<IActionResult> Analyze([FromForm] AnalyzeDrawingRequest request)
         {
-            // Có thể thêm check số dư Credit phụ huynh ở đây (>= 180)[cite: 1]
             var result = await _workflowService.AnalyzeAsync(request);
             return Ok(result);
         }

@@ -9,18 +9,9 @@ namespace sketch_tale.Application.Interfaces.Services
 {
     public interface IAiCharacterService
     {
-        // Dùng cho Giai đoạn 1: Phân tích ảnh và trả về kết quả nhận diện
-        Task<AiAnalyzeResult> AnalyzeImageAsync(string imageUrl);
+        Task<AiAnalyzeResultDto> AnalyzeImageAsync(string imageUrl, IReadOnlyCollection<AiAllowedCharTypeDto> allowedCharTypes);
 
-        // Dùng cho Giai đoạn 2: Trả về URL ảnh nhân vật được AI sinh ra
         Task<string> GenerateImageAsync(string finalPrompt, string originalImageUrl);
     }
 
-    // Record phụ trợ dùng nội bộ giữa Service AI và Workflow Service
-    public class AiAnalyzeResult
-    {
-        public bool IsRecognized { get; set; }
-        public List<Guid> SuggestedCharTypeIds { get; set; } = new();
-        public string Prompt { get; set; }
-    }
 }

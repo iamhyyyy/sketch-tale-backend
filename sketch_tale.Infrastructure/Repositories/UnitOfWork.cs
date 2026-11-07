@@ -35,6 +35,7 @@ public class UnitOfWork : IUnitOfWork
     private IPaymentTransactionRepository _paymentTransactionRepository = null!;
     private IChildQuizAnswerRepository _childQuizAnswerRepository = null!;
     private IReadingLogRepository _readingLogRepository = null!;
+    private IDrawingRepository _drawingRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -74,17 +75,15 @@ public class UnitOfWork : IUnitOfWork
     public IStoryPageTemplateRepository StoryPageTemplateRepository => _storyPageTemplateRepository ??= new StoryPageTemplateRepository(_context);
     public IParentProfileRepository ParentProfileRepository => _parentProfileRepository ??= new ParentProfileRepository(_context);
     public IChildProfileRepository ChildProfileRepository => _childProfileRepository ??= new ChildProfileRepository(_context);
-
     public IStoryRoleTemplateRepository StoryRoleTemplateRepository => _storyRoleTemplateRepository ??= new StoryRoleTemplateRepository(_context);
-
     public ICharacterSlotTemplateRepository CharacterSlotTemplateRepository => _characterSlotTemplateRepository ??= new CharacterSlotTemplateRepository(_context);
-
     public IVocabularyTemplateRepository VocabularyTemplateRepository => _vocabularyTemplateRepository ??= new VocabularyTemplateRepository(_context);
-
     public IStoryQuizTemplateRepository StoryQuizTemplateRepository => _storyQuizTemplateRepository ??= new StoryQuizTemplateRepository(_context);
     public IPaymentTransactionRepository PaymentTransactionRepository => _paymentTransactionRepository ??= new PaymentTransactionRepository(_context);
     public IChildQuizAnswerRepository ChildQuizAnswerRepository => _childQuizAnswerRepository ??= new ChildQuizAnswerRepository(_context);
     public IReadingLogRepository ReadingLogRepository => _readingLogRepository ??= new ReadingLogRepository(_context);
+
+    public IDrawingRepository DrawingRepository => _drawingRepository ??= new DrawingRepository(_context);
 
     public async Task<int> CompleteAsync()
     {
