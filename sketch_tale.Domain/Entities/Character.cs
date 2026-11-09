@@ -8,7 +8,6 @@ public class Character : BaseEntity
 {
     public Guid ChildProfileId { get; set; }
     public Guid AICharacterGenerateId { get; set; }
-
     public string Name { get; set; } = string.Empty;
     public string DefaultPronoun { get; set; } = string.Empty;
     public string FinalImageUrl { get; set; } = null!;

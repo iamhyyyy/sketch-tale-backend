@@ -30,4 +30,5 @@ public interface IUnitOfWork : IDisposable
     IPaymentTransactionRepository PaymentTransactionRepository { get; }
     IChildQuizAnswerRepository ChildQuizAnswerRepository { get; }
     IReadingLogRepository ReadingLogRepository { get; }
+    IDrawingRepository DrawingRepository { get; }
 }

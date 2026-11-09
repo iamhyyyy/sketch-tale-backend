@@ -1,11 +1,9 @@
-﻿
+﻿using sketch_tale.Domain.Entities;
 
-using sketch_tale.Application.Interfaces.Repositories;
-using sketch_tale.Domain.Entities;
-
-namespace sketch_tale.Domain.Interfaces;
+namespace sketch_tale.Application.Interfaces.Repositories;
 
 public interface ICharTypeRepository : IGenericRepository<CharType>
 {
-
+    Task<List<CharType>> GetActiveCharTypesAsync();
+    Task<string> GetCharTypeNameAsync(Guid charTypeId);
 }

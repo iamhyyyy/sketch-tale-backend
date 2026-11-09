@@ -13,9 +13,6 @@ namespace sketch_tale.Application.DTOs
         public Guid EducationThemeId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public TargetAgeGroup AgeGroup { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public Guid CreateBy { get; set; }
     }
     public class StoryTemplateDto : BaseFieldDto
     {
@@ -34,8 +31,6 @@ namespace sketch_tale.Application.DTOs
         public string? Description { get; set; }
         public TargetAgeGroup AgeGroup { get; set; }
         public CommonStatus Status { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdateBy { get; set; }
     }
     //STORY PAGE TEMPLATE
     public class StoryPageTemplateDto : BaseFieldDto
@@ -50,16 +45,12 @@ namespace sketch_tale.Application.DTOs
     public class CreateStoryPageTemplateDto
     {
         public string RawText { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
-        public Guid CreateBy { get; set; }
     }
     public class UpdateStoryPageTemplateDto
     {
         public string RawText { get; set; } = string.Empty;
 
         public CommonStatus Status { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdateBy { get; set; }
     }
     public class ReorderStoryPagesDto
     {
@@ -85,8 +76,6 @@ namespace sketch_tale.Application.DTOs
         public bool AllowCustomCharacter { get; set; } = true;
         public bool RequiresParentApproval { get; set; } = false; // Sensitive Role flag
         public string? DefaultAssetUrl { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public Guid CreateBy { get; set; }
     }
     public class UpdateStoryRoleTemplateDto
     {
@@ -97,8 +86,6 @@ namespace sketch_tale.Application.DTOs
         public bool RequiresParentApproval { get; set; }
         public string? DefaultAssetUrl { get; set; }
         public CommonStatus Status { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdateBy { get; set; }
     }
     //CHARACTER SLOT TEMPLATE
     public class CharacterSlotTemplateDto : BaseFieldDto
@@ -118,8 +105,6 @@ namespace sketch_tale.Application.DTOs
         public float PosY { get; set; }
         public float Scale { get; set; } = 1.00f;
         public bool FlipHorizontal { get; set; } = false;
-        public DateTime CreatedAt { get; set; }
-        public Guid CreateBy { get; set; }
     }
     public class UpdateCharacterSlotTemplateDto
     {
@@ -128,8 +113,6 @@ namespace sketch_tale.Application.DTOs
         public float Scale { get; set; } = 1.00f;
         public bool FlipHorizontal { get; set; } = false;
         public CommonStatus Status { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdateBy { get; set; }
     }
     //VOCABULARY TEMPLATE
     public class VocabularyTemplateDto : BaseFieldDto
@@ -144,16 +127,12 @@ namespace sketch_tale.Application.DTOs
         public string Word { get; set; } = string.Empty;
         public string Meaning { get; set; } = string.Empty;
         public string? AudioUrl { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public Guid CreateBy { get; set; }
     }
     public class UpdateVocabularyTemplateDto
     {
         public string Word { get; set; } = string.Empty;
         public string Meaning { get; set; } = string.Empty;
         public string? AudioUrl { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdateBy { get; set; }
     }
     //STORY QUIZ TEMPLATE
     public class StoryQuizTemplateDto : BaseFieldDto
@@ -173,8 +152,6 @@ namespace sketch_tale.Application.DTOs
 
         public List<string> Options { get; set; } = new(); // FE gửi list, BE convert sang JSON
         public int CorrectOptionIndex { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public Guid CreateBy { get; set; }
     }
     public class UpdateStoryQuizTemplateDto
     {
@@ -183,8 +160,6 @@ namespace sketch_tale.Application.DTOs
         public List<string> Options { get; set; } = new();
         public int CorrectOptionIndex { get; set; }
         public CommonStatus Status { get; set; }
-        public DateTime? UpdatedAt { get; set; }
-        public Guid? UpdateBy { get; set; }
     }
     //PUBLISH
     public class PublishStoryResultDto

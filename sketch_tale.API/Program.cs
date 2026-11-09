@@ -59,6 +59,19 @@ public class Program
         builder.Services.AddScoped<IChildQuizAnswerRepository, ChildQuizAnswerRepository>();
         builder.Services.AddScoped<IReadingLogRepository, ReadingLogRepository>();
 
+
+        // Đăng ký HttpClient cho GeminiAiCharacterService để gọi API Google
+        builder.Services.AddHttpClient<IAiCharacterService, GeminiAiCharacterService>(client =>
+        {
+            // Tăng timeout lên 3 phút cho các tác vụ xử lý AI nặng
+            client.Timeout = TimeSpan.FromMinutes(3);
+        }); ;
+
+        // Đăng ký các Service và Repository
+        builder.Services.AddScoped<IDrawingCharacterService, DrawingCharacterService>();
+        builder.Services.AddScoped<IDrawingRepository, DrawingRepository>();
+        builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
         // Đăng ký Service system
         builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -284,10 +297,10 @@ public class Program
 
         //environment variable for port, default to 8080 if not set
         var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-        app.Run($"http://0.0.0.0:{port}");
+        //app.Run($"http://0.0.0.0:{port}");
 
         //chạy test local thì dùng cái này cho nhanh, chạy trên server thì dùng cái trên
-        //app.Run();
+        app.Run();
 
     }
 }

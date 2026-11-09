@@ -13,7 +13,7 @@ public class ChildProfile : BaseEntityWithoutId
 
     public string NickName { get; set; } = string.Empty;
     public TargetAgeGroup TargetAgeGroup { get; set; }
-    public ReadingLevel ReadingLevel { get; set; }// nhớ là bỏ rồi
+    public ReadingLevel ReadingLevel { get; set; }
 
     public int DailyTimeLimit { get; set; } = 30;
     public int RemainingTimeLimit { get; set; } = 30;
