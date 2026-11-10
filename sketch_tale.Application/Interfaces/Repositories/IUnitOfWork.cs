@@ -31,4 +31,5 @@ public interface IUnitOfWork : IDisposable
     IChildQuizAnswerRepository ChildQuizAnswerRepository { get; }
     IReadingLogRepository ReadingLogRepository { get; }
     IDrawingRepository DrawingRepository { get; }
+    ICharacterRepository CharacterRepository { get; }
 }

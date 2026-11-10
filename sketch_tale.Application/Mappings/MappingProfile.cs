@@ -135,6 +135,7 @@ public class MappingProfile : Profile
 
         //ChildProfile
         CreateMap<ChildProfile, ChildProfileDto>()
+            .ForMember(dest => dest.ChildProfileId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()))
             .ForMember(dest => dest.ReadingLevel, opt => opt.MapFrom(src => src.ReadingLevel.ToString()))       
             .ReverseMap()
@@ -153,5 +154,13 @@ public class MappingProfile : Profile
 
 
         CreateMap<CharType, AiAllowedCharTypeDto>();
+
+        // Character Approval
+        CreateMap<Character, CharacterApprovalDto>()
+            .ForMember(dest => dest.CharacterId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.CharacterName, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.ChildNickName, opt => opt.MapFrom(src => src.ChildProfile != null ? src.ChildProfile.NickName : string.Empty))
+            .ForMember(dest => dest.OriginalDrawingUrl, opt => opt.MapFrom(src => src.AICharacterGenerate != null && src.AICharacterGenerate.Drawing != null ? src.AICharacterGenerate.Drawing.OriginalImageUrl : string.Empty))
+            .ForMember(dest => dest.AiPromptUsed, opt => opt.MapFrom(src => src.AICharacterGenerate != null ? src.AICharacterGenerate.AIPromptUsed : null));
     }
 }
