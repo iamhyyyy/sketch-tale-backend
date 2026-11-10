@@ -1,4 +1,4 @@
-﻿
+
 using sketch_tale.Domain.Common;
 using sketch_tale.Domain.Enums;
 
@@ -16,4 +16,5 @@ public class Character : BaseEntity
 
     // Navigation Properties
     public AICharacterGenerate AICharacterGenerate { get; set; } = null!;
+    public ChildProfile ChildProfile { get; set; } = null!;
 }

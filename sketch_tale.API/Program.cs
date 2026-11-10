@@ -70,6 +70,8 @@ public class Program
         // Đăng ký các Service và Repository
         builder.Services.AddScoped<IDrawingCharacterService, DrawingCharacterService>();
         builder.Services.AddScoped<IDrawingRepository, DrawingRepository>();
+        builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
+        builder.Services.AddScoped<ICharacterApprovalService, CharacterApprovalService>();
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
         // Đăng ký Service system

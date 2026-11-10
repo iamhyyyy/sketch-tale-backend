@@ -40,16 +40,18 @@ namespace sketch_tale.Application.DTOs
         public string RawText { get; set; } = string.Empty;
         public string BackgroundUrl { get; set; } = string.Empty;
         public string? AudioNarrationUrl { get; set; }
+        public string? CompositionJson { get; set; }
         public CommonStatus Status { get; set; }
     }
     public class CreateStoryPageTemplateDto
     {
         public string RawText { get; set; } = string.Empty;
+        public string? CompositionJson { get; set; }
     }
     public class UpdateStoryPageTemplateDto
     {
         public string RawText { get; set; } = string.Empty;
-
+        public string? CompositionJson { get; set; }
         public CommonStatus Status { get; set; }
     }
     public class ReorderStoryPagesDto
