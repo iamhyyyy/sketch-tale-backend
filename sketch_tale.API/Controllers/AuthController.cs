@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Services;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -201,7 +202,9 @@ namespace sketch_tale.API.Controllers
 
         // 9. Xác thực email (GET - Hỗ trợ người dùng bấm trực tiếp vào link trên trình duyệt)
         [HttpGet("confirm-email")]
-        public async Task<IActionResult> ConfirmEmailGet([FromQuery] string email, [FromQuery] string token)
+        public async Task<IActionResult> ConfirmEmailGet(
+            [FromQuery][Required(ErrorMessage = "Email không được để trống.")][EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")] string email,
+            [FromQuery][Required(ErrorMessage = "Token xác thực không được để trống.")] string token)
         {
             try
             {

@@ -107,7 +107,7 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
 
         await _unitOfWork.CompleteAsync();
 
-        // Tính toán tiến độ làm bài sau khi nộp câu này
+        // Tính toán tiến độ làm bài quiz sau khi nộp câu này
         int totalQuestions = 0;
         var generatedStory = await _unitOfWork.Repository<GeneratedStory>().GetByIdAsync(readingLog.GeneratedStoryId);
         if (generatedStory != null)
@@ -127,15 +127,6 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
             ? Math.Round(((double)totalAnswered / totalQuestions) * 100, 1)
             : 100.0;
         bool isQuizCompleted = totalQuestions > 0 && totalAnswered >= totalQuestions;
-
-        // Nếu bé đã hoàn thành hết tất cả câu hỏi của truyện, cập nhật trạng thái hoàn thành cho phiên đọc
-        if (isQuizCompleted && !readingLog.IsCompleted)
-        {
-            readingLog.IsCompleted = true;
-            readingLog.UpdatedAt = DateTime.UtcNow.AddHours(7);
-            _unitOfWork.ReadingLogRepository.Update(readingLog);
-            await _unitOfWork.CompleteAsync();
-        }
 
         int totalCorrect = allAnswers.Count(a => a.IsCorrect);
         int stars = CalculateStars(isQuizCompleted, totalCorrect, totalQuestions);
@@ -186,190 +177,45 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
         }
 
         var answers = await _unitOfWork.ChildQuizAnswerRepository.GetAnswersByReadingLogIdAsync(readingLogId);
-        var answerList = answers.ToList();
-
-        int totalQuestions = 0;
-        var generatedStory = await _unitOfWork.Repository<GeneratedStory>().GetByIdAsync(readingLog.GeneratedStoryId);
-        if (generatedStory != null)
-        {
-            var quizzes = await _unitOfWork.StoryQuizTemplateRepository.GetQuizzesByStoryIdAsync(generatedStory.StoryTemplateId);
-            totalQuestions = quizzes.Count();
-        }
-
-        if (totalQuestions == 0)
-        {
-            totalQuestions = answerList.Count;
-        }
-
-        int totalAnswered = answerList.Count;
-        int totalCorrect = answerList.Count(a => a.IsCorrect);
-
-        double completionPercentage = totalQuestions > 0
-            ? Math.Round(((double)totalAnswered / totalQuestions) * 100, 1)
-            : 0.0;
-        double accuracyPercentage = totalAnswered > 0
-            ? Math.Round(((double)totalCorrect / totalAnswered) * 100, 1)
-            : 0.0;
-        bool isQuizCompleted = totalQuestions > 0 && totalAnswered >= totalQuestions;
-
-        // Đánh giá sao theo quy tắc:
-        // - Làm hết full bài và đúng hết: 3 sao
-        // - Làm hết bài và đúng từ 50% - dưới 100% (khoảng 60% - 90%): 2 sao
-        // - Làm hết bài và đúng dưới 50%: 1 sao
-        // - Chưa làm hết quiz: 0 sao (không hiển thị sao)
-        int stars = CalculateStars(isQuizCompleted, totalCorrect, totalQuestions);
-
-        var answersDto = answerList.Select(a =>
-        {
-            var dto = _mapper.Map<ChildQuizAnswerDto>(a);
-            if (a.StoryQuizTemplate != null)
-            {
-                dto.QuestionText = a.StoryQuizTemplate.QuestionText;
-                dto.QuestionAudioUrl = a.StoryQuizTemplate.QuestionAudioUrl;
-                dto.QuestionPicUrl = a.StoryQuizTemplate.QuestionPicUrl;
-                dto.CorrectOptionIndex = a.StoryQuizTemplate.CorrectOptionIndex;
-
-                if (!string.IsNullOrWhiteSpace(a.StoryQuizTemplate.OptionsJson))
-                {
-                    try
-                    {
-                        dto.Options = JsonSerializer.Deserialize<List<string>>(a.StoryQuizTemplate.OptionsJson) ?? new List<string>();
-                    }
-                    catch
-                    {
-                        dto.Options = new List<string>();
-                    }
-                }
-            }
-            return dto;
-        }).ToList();
-
-        return new ReadingLogQuizSummaryDto
-        {
-            ReadingLogId = readingLogId,
-            ChildProfileId = readingLog.ChildProfileId,
-            TotalQuestions = totalQuestions,
-            TotalAnswered = totalAnswered,
-            TotalCorrectAnswers = totalCorrect,
-            CompletionPercentage = completionPercentage,
-            AccuracyPercentage = accuracyPercentage,
-            IsQuizCompleted = isQuizCompleted,
-            Stars = stars,
-            Answers = answersDto
-        };
+        return await BuildReadingLogSummaryAsync(
+            readingLogId,
+            readingLog.ChildProfileId,
+            readingLog.GeneratedStoryId,
+            answers.ToList());
     }
 
-    /// <summary>
-    /// Đánh giá sao theo logic:
-    /// - Chưa làm hết quiz: 0 sao (không hiển thị sao nào)
-    /// - Làm hết full bài và đúng hết: 3 sao
-    /// - Làm hết full bài và đúng 50% - dưới 100% (khoảng 60% - 90%): 2 sao
-    /// - Làm hết full bài và đúng dưới 50%: 1 sao
-    /// </summary>
-    private static int CalculateStars(bool isQuizCompleted, int totalCorrect, int totalQuestions)
-    {
-        if (!isQuizCompleted || totalQuestions <= 0)
-        {
-            return 0; // Chưa làm hết quiz -> không có sao nào hiển thị
-        }
-
-        if (totalCorrect == totalQuestions)
-        {
-            return 3; // Làm hết full bài và đúng hết -> 3 sao
-        }
-
-        double accuracyPercentage = Math.Round(((double)totalCorrect / totalQuestions) * 100, 1);
-        if (accuracyPercentage >= 50.0)
-        {
-            return 2; // Đúng từ 50% đến dưới 100% (60% - 90%) -> 2 sao
-        }
-
-        return 1; // Dưới 50% -> 1 sao
-    }
-
-    //public async Task<IEnumerable<ReadingLogQuizSummaryDto>> GetQuizAnswersByChildIdAsync(Guid childProfileId)
-    //{
-    //    // Kiem tra ho so be co ton tai khong
-    //    var childProfile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(childProfileId);
-    //    if (childProfile == null)
-    //    {
-    //        throw new KeyNotFoundException($"Ho so be voi Id {childProfileId} khong ton tai.");
-    //    }
-
-    //    // Kiem tra quyen: neu la tai khoan be dang dang nhap, chi duoc xem ket qua cua chinh minh
-    //    if (Guid.TryParse(_currentUserService.UserId, out var loggedInUserId))
-    //    {
-    //        var currentChild = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(loggedInUserId);
-    //        if (currentChild != null && currentChild.ChildProfileId != childProfileId)
-    //        {
-    //            throw new UnauthorizedAccessException("Ban khong co quyen xem ket qua bai kiem tra cua be khac!");
-    //        }
-    //    }
-
-    //    // Lay tat ca cau tra loi cua be, gom nhom theo ReadingLogId
-    //    var allAnswers = await _unitOfWork.ChildQuizAnswerRepository.GetAnswersByChildProfileIdAsync(childProfileId);
-    //    var groupedByReadingLog = allAnswers
-    //        .GroupBy(a => a.ReadingLogId)
-    //        .ToList();
-
-    //    var summaries = new List<ReadingLogQuizSummaryDto>();
-
-    //    foreach (var group in groupedByReadingLog)
-    //    {
-    //        var readingLogId = group.Key;
-    //        var answers = group.ToList();
-
-    //        var readingLog = answers.First().ReadingLog
-    //                         ?? await _unitOfWork.ReadingLogRepository.GetByIdAsync(readingLogId);
-    //        if (readingLog == null) continue;
-
-    //        var summary = await BuildReadingLogSummaryAsync(readingLogId, readingLog.ChildProfileId, readingLog.GeneratedStoryId, answers);
-    //        summaries.Add(summary);
-    //    }
-
-    //    return summaries;
-    //}
     public async Task<IEnumerable<ReadingLogQuizSummaryDto>> GetQuizAnswersByChildIdAsync(Guid childProfileId)
     {
-        // 1. Kiem tra ho so be co ton tai khong
+        // 1. Kiểm tra hồ sơ bé có tồn tại không
         var childProfile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(childProfileId);
         if (childProfile == null)
         {
-            throw new KeyNotFoundException($"Ho so be voi Id {childProfileId} khong ton tai.");
+            throw new KeyNotFoundException($"Hồ sơ bé với Id {childProfileId} không tồn tại.");
         }
 
-        // 2. Kiem tra quyen truy cap
+        // 2. Kiểm tra quyền truy cập
         if (Guid.TryParse(_currentUserService.UserId, out var loggedInUserId))
         {
-            // Kiem tra xem user dang dang nhap co phai la Be hay khong
             var currentChild = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(loggedInUserId);
 
             if (currentChild != null)
             {
-                // Neu la tai khoan be dang dang nhap: chi duoc xem ket qua cua chinh minh
                 if (currentChild.Id != childProfileId)
                 {
-                    throw new UnauthorizedAccessException("Ban khong co quyen xem ket qua bai kiem tra cua be khac!");
+                    throw new UnauthorizedAccessException("Bạn không có quyền xem kết quả bài kiểm tra của bé khác!");
                 }
             }
             else
             {
-                // Neu khong phai tai khoan be (co the la tai khoan Phu huynh)
-                // Kiem tra xem phu huynh nay co quan ly be nay khong. 
-                // (Luu y: Thay 'ParentId' bang ten thuoc tinh dung trong Entity ChildProfile cua ban, vi du: ParentId, UserId, v.v.)
                 bool isParentOfChild = childProfile.ParentProfileId == loggedInUserId;
-
-                // Neu he thong cua ban co role Admin, ban co the ket hop them: 
-                // || _currentUserService.IsInRole("Admin")
-
                 if (!isParentOfChild)
                 {
-                    throw new UnauthorizedAccessException("Ban khong co quyen xem ket qua bai kiem tra cua be nay!");
+                    throw new UnauthorizedAccessException("Bạn không có quyền xem kết quả bài kiểm tra của bé này!");
                 }
             }
         }
 
-        // 3. Lay tat ca cau tra loi cua be, gom nhom theo ReadingLogId
+        // 3. Lấy tất cả câu trả lời của bé, gom nhóm theo ReadingLogId
         var allAnswers = await _unitOfWork.ChildQuizAnswerRepository.GetAnswersByChildProfileIdAsync(childProfileId);
         var groupedByReadingLog = allAnswers
             .GroupBy(a => a.ReadingLogId)
@@ -394,7 +240,35 @@ public class ChildQuizAnswerService : IChildQuizAnswerService
     }
 
     /// <summary>
-    /// Helper dung chung de tinh toan ReadingLogQuizSummaryDto tu danh sach cau tra loi cua mot phien doc.
+    /// Đánh giá sao theo logic:
+    /// - Chưa làm hết quiz: 0 sao (không hiển thị sao nào)
+    /// - Làm hết full bài và đúng hết: 3 sao
+    /// - Làm hết full bài và đúng 50% - dưới 100% (khoảng 60% - 90%): 2 sao
+    /// - Làm hết full bài và đúng dưới 50%: 1 sao
+    /// </summary>
+    private static int CalculateStars(bool isQuizCompleted, int totalCorrect, int totalQuestions)
+    {
+        if (!isQuizCompleted || totalQuestions <= 0)
+        {
+            return 0;
+        }
+
+        if (totalCorrect == totalQuestions)
+        {
+            return 3;
+        }
+
+        double accuracyPercentage = Math.Round(((double)totalCorrect / totalQuestions) * 100, 1);
+        if (accuracyPercentage >= 50.0)
+        {
+            return 2;
+        }
+
+        return 1;
+    }
+
+    /// <summary>
+    /// Helper dùng chung để tính toán ReadingLogQuizSummaryDto từ danh sách câu trả lời của một phiên đọc.
     /// </summary>
     private async Task<ReadingLogQuizSummaryDto> BuildReadingLogSummaryAsync(
         Guid readingLogId,

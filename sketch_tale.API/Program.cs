@@ -99,6 +99,7 @@ public class Program
         builder.Services.AddScoped<IChildProfileService, ChildProfileService>();
         builder.Services.AddScoped<IPaymentTransactionService, PaymentTransactionService>();
         builder.Services.AddScoped<IChildQuizAnswerService, ChildQuizAnswerService>();
+        builder.Services.AddScoped<IReadingLogService, ReadingLogService>();
         // Cloudinary image upload service
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
