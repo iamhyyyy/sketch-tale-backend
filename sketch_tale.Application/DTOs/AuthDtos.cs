@@ -11,8 +11,15 @@ namespace sketch_tale.Application.DTOs
 
     public class RegisterParentDto
     {
+        [Required(ErrorMessage = "Username không được để trống.")]
         public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Định dạng email không hợp lệ (ví dụ: example@domain.com).")]
         public string Email { get; set; } = string.Empty; // Phụ huynh bắt buộc phải có Email
+
+        [Required(ErrorMessage = "Mật khẩu không được để trống.")]
         public string Password { get; set; } = string.Empty;
     }
 
@@ -49,17 +56,27 @@ namespace sketch_tale.Application.DTOs
         public string Role { get; set; } = string.Empty; // Trả về "Parent", "Child", "Admin", hoặc "ContentManager"
     }
 
-    // --- QUÊN MẬT KHẨU & ĐẶT LẠI MẬT KHẨU ---
+    // --- QUÊN MẬT KHẨU & ĐẶT LẬT MẬT KHẨU ---
 
     public class ForgotPasswordDto
     {
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Định dạng email không hợp lệ (ví dụ: example@domain.com).")]
         public string Email { get; set; } = string.Empty;
     }
 
     public class ResetPasswordDto
     {
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Định dạng email không hợp lệ (ví dụ: example@domain.com).")]
         public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Token không được để trống.")]
         public string Token { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Mật khẩu mới không được để trống.")]
         public string NewPassword { get; set; } = string.Empty;
     }
 
@@ -67,12 +84,20 @@ namespace sketch_tale.Application.DTOs
 
     public class ConfirmEmailDto
     {
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Định dạng email không hợp lệ (ví dụ: example@domain.com).")]
         public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Token xác thực không được để trống.")]
         public string Token { get; set; } = string.Empty;
     }
 
     public class ResendConfirmationEmailDto
     {
+        [Required(ErrorMessage = "Email không được để trống.")]
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Định dạng email không hợp lệ (ví dụ: example@domain.com).")]
         public string Email { get; set; } = string.Empty;
     }
 
@@ -141,6 +166,8 @@ namespace sketch_tale.Application.DTOs
         [Required(ErrorMessage = "Username không được để trống.")]
         public string Username { get; set; } = string.Empty;
 
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Định dạng email không hợp lệ (ví dụ: example@domain.com).")]
         public string? Email { get; set; }
 
         [Required(ErrorMessage = "Mật khẩu không được để trống.")]
@@ -163,6 +190,9 @@ namespace sketch_tale.Application.DTOs
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
+
+        [EmailAddress(ErrorMessage = "Định dạng email không hợp lệ.")]
+        [RegularExpression(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", ErrorMessage = "Định dạng email không hợp lệ (ví dụ: example@domain.com).")]
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public DateOnly? DOB { get; set; }

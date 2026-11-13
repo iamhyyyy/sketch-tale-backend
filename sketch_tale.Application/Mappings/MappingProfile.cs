@@ -152,6 +152,10 @@ public class MappingProfile : Profile
         CreateMap<ChildQuizAnswer, ChildQuizAnswerDto>().ReverseMap();
         CreateMap<ChildQuizAnswer, SubmitQuizAnswerResponseDto>().ReverseMap();
 
+        //ReadingLog
+        CreateMap<ReadingLog, ReadingLogDto>().ReverseMap();
+        CreateMap<ReadingLog, CompletedReadingLogDto>().ReverseMap();
+
 
         CreateMap<CharType, AiAllowedCharTypeDto>();
 
