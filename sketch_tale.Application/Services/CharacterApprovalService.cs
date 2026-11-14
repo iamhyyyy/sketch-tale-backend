@@ -31,6 +31,38 @@ namespace sketch_tale.Application.Services
             return _mapper.Map<List<CharacterApprovalDto>>(characters);
         }
 
+        public async Task<List<CharacterApprovalDto>> GetAllCharactersByChildIdAsync(Guid childProfileId)
+        {
+            if (childProfileId == Guid.Empty && Guid.TryParse(_currentUserService.UserId, out var currentUserId))
+            {
+                childProfileId = currentUserId;
+            }
+
+            if (childProfileId == Guid.Empty)
+                throw new ArgumentException("ChildId không hợp lệ.");
+
+            var childProfile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(childProfileId);
+            if (childProfile == null)
+                throw new KeyNotFoundException($"Không tìm thấy hồ sơ của bé với Id {childProfileId}.");
+
+            if (Guid.TryParse(_currentUserService.UserId, out var loggedInUserId))
+            {
+                var currentChild = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(loggedInUserId);
+                if (currentChild != null)
+                {
+                    if (currentChild.Id != childProfileId)
+                        throw new UnauthorizedAccessException("Bé không có quyền xem danh sách nhân vật của bé khác.");
+                }
+                else if (childProfile.ParentProfileId != loggedInUserId)
+                {
+                    throw new UnauthorizedAccessException("Bạn không có quyền xem danh sách nhân vật của bé này.");
+                }
+            }
+
+            var characters = await _unitOfWork.CharacterRepository.GetCharactersByChildIdAsync(childProfileId);
+            return _mapper.Map<List<CharacterApprovalDto>>(characters);
+        }
+
         public async Task<CharacterApprovalDto> GetCharacterDetailForParentAsync(Guid characterId, Guid parentProfileId)
         {
             var character = await _unitOfWork.CharacterRepository.GetCharacterWithDetailsAsync(characterId);
@@ -137,6 +169,37 @@ namespace sketch_tale.Application.Services
 
             await _unitOfWork.CompleteAsync();
             return true;
+        }
+
+        public async Task<CharacterApprovalDto> UpdateCharacterNameAsync(Guid characterId, UpdateCharacterNameDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Name))
+                throw new ArgumentException("Tên nhân vật không được để trống.");
+
+            var character = await _unitOfWork.CharacterRepository.GetCharacterWithDetailsAsync(characterId);
+            if (character == null)
+                throw new KeyNotFoundException("Không tìm thấy nhân vật.");
+
+            if (Guid.TryParse(_currentUserService.UserId, out var loggedInUserId))
+            {
+                var currentChild = await _unitOfWork.ChildProfileRepository.GetByUserIdAsync(loggedInUserId);
+                if (currentChild != null)
+                {
+                    if (character.ChildProfileId != currentChild.Id)
+                        throw new UnauthorizedAccessException("Bé không có quyền đổi tên nhân vật của bé khác.");
+                }
+                else if (character.ChildProfile != null && character.ChildProfile.ParentProfileId != loggedInUserId)
+                {
+                    throw new UnauthorizedAccessException("Bạn không có quyền đổi tên nhân vật này.");
+                }
+            }
+
+            character.Name = dto.Name.Trim();
+            character.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            _unitOfWork.CharacterRepository.Update(character);
+
+            await _unitOfWork.CompleteAsync();
+            return _mapper.Map<CharacterApprovalDto>(character);
         }
     }
 }

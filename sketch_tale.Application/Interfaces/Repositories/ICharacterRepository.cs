@@ -9,5 +9,6 @@ namespace sketch_tale.Application.Interfaces.Repositories
     {
         Task<List<Character>> GetPendingCharactersByParentIdAsync(Guid parentProfileId);
         Task<Character?> GetCharacterWithDetailsAsync(Guid characterId);
+        Task<List<Character>> GetCharactersByChildIdAsync(Guid childProfileId);
     }
 }

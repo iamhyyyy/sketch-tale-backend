@@ -14,7 +14,13 @@ namespace sketch_tale.Application.DTOs
         public string OriginalDrawingUrl { get; set; } = string.Empty; // Ảnh do bé tự vẽ hoặc upload
         public string? AiPromptUsed { get; set; }
         public CharacterStatus Status { get; set; }
+        public bool IsFavorite { get; set; }
         public DateTime CreatedAt { get; set; }
+    }
+
+    public class UpdateCharacterNameDto
+    {
+        public string Name { get; set; } = string.Empty;
     }
 }
 

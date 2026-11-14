@@ -43,5 +43,16 @@ namespace sketch_tale.Infrastructure.Repositories
                     .ThenInclude(ai => ai.Drawing)
                 .FirstOrDefaultAsync(c => c.Id == characterId);
         }
+
+        public async Task<List<Character>> GetCharactersByChildIdAsync(Guid childProfileId)
+        {
+            return await _context.Characters
+                .Include(c => c.ChildProfile)
+                .Include(c => c.AICharacterGenerate)
+                    .ThenInclude(ai => ai.Drawing)
+                .Where(c => c.ChildProfileId == childProfileId && c.Status != CharacterStatus.Hidden)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

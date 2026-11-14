@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Services;
 using System;
 using System.Security.Claims;
@@ -16,6 +17,35 @@ namespace sketch_tale.API.Controllers
         public CharacterController(ICharacterApprovalService characterApprovalService)
         {
             _characterApprovalService = characterApprovalService;
+        }
+
+        /// <summary>
+        /// Lấy toàn bộ danh sách nhân vật của một bé theo ChildId
+        /// </summary>
+        [HttpGet("child-profiles/{childId}")]
+        public async Task<IActionResult> GetAllCharacters(Guid childId)
+        {
+            try
+            {
+                var list = await _characterApprovalService.GetAllCharactersByChildIdAsync(childId);
+                return Ok(list);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         
@@ -162,6 +192,35 @@ namespace sketch_tale.API.Controllers
                 return Unauthorized(new { message = ex.Message });
             }
             catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Cập nhật tên nhân vật theo CharacterId
+        /// </summary>
+        [HttpPut("{characterId}/name")]
+        public async Task<IActionResult> UpdateNameCharacter(Guid characterId, [FromBody] UpdateCharacterNameDto dto)
+        {
+            try
+            {
+                var result = await _characterApprovalService.UpdateCharacterNameAsync(characterId, dto);
+                return Ok(new { message = "Cập nhật tên nhân vật thành công!", data = result });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
