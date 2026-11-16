@@ -12,6 +12,7 @@ namespace sketch_tale.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ICloudinaryService _cloudinary;
+        private readonly IBackgroundRemovalService _backgroundRemovalService;
         private readonly string _apiKey;
         private readonly string _visionModel;
         private readonly string _imageModel;
@@ -19,10 +20,12 @@ namespace sketch_tale.Infrastructure.Services
         public GeminiAiCharacterService(
             HttpClient httpClient,
             IConfiguration configuration,
-            ICloudinaryService cloudinary)
+            ICloudinaryService cloudinary,
+            IBackgroundRemovalService backgroundRemovalService)
         {
             _httpClient = httpClient;
             _cloudinary = cloudinary;
+            _backgroundRemovalService = backgroundRemovalService;
             _apiKey = configuration["GeminiSettings:ApiKey"] ?? throw new InvalidOperationException(
                 "Gemini API Key chưa được cấu hình."
             );
@@ -232,6 +235,9 @@ namespace sketch_tale.Infrastructure.Services
         {
             var originalImage = await GetBase64FromUrlAsync(originalImageUrl);
 
+            // Bổ sung chỉ thị loại bỏ viền giấy, mặt bàn, nét vẽ thừa từ tranh chụp của bé
+            var instructionPrompt = $"{finalPrompt} CRITICAL: Redraw ONLY the single main character from the sketch. Ignore paper edges, desk/table surface, and stray background scribbles. Generate ONLY the clean, isolated character on a solid pure flat white background.";
+
             var payload = new
             {
                 contents = new[]
@@ -240,7 +246,7 @@ namespace sketch_tale.Infrastructure.Services
                     {
                         parts = new object[]
                         {
-                            new { text = finalPrompt },
+                            new { text = instructionPrompt },
                             new
                             {
                                 inlineData = new
@@ -372,16 +378,35 @@ namespace sketch_tale.Infrastructure.Services
 
         private async Task<string> UploadBytesToCloudinaryAsync(byte[] imageBytes, string mimeType)
         {
-            var extension = mimeType.Contains("jpeg", StringComparison.OrdinalIgnoreCase) ? ".jpg"
+            byte[] processedBytes = imageBytes;
+            string finalMimeType = mimeType;
+            string extension = mimeType.Contains("jpeg", StringComparison.OrdinalIgnoreCase) ? ".jpg"
                 : mimeType.Contains("webp", StringComparison.OrdinalIgnoreCase) ? ".webp"
                 : ".png";
+
+            try
+            {
+                // Tách phông nền nhân vật qua ClearBackdrop để tạo ảnh PNG trong suốt
+                var noBgBytes = await _backgroundRemovalService.RemoveBackgroundAsync(imageBytes);
+                if (noBgBytes != null && noBgBytes.Length > 0)
+                {
+                    processedBytes = noBgBytes;
+                    finalMimeType = "image/png";
+                    extension = ".png";
+                }
+            }
+            catch
+            {
+                // Fallback an toàn: giữ nguyên ảnh gốc nếu dịch vụ tách nền gặp sự cố
+            }
+
             var fileName = $"character_{Guid.NewGuid():N}{extension}";
 
-            await using var memoryStream = new MemoryStream(imageBytes);
-            var formFile = new FormFile(memoryStream, 0, imageBytes.Length, "File", fileName)
+            await using var memoryStream = new MemoryStream(processedBytes);
+            var formFile = new FormFile(memoryStream, 0, processedBytes.Length, "File", fileName)
             {
                 Headers = new HeaderDictionary(),
-                ContentType = mimeType
+                ContentType = finalMimeType
             };
 
             return await _cloudinary.UploadImageAsync(formFile, "CharacterGenerated");
