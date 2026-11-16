@@ -120,19 +120,19 @@ namespace sketch_tale.Application.DTOs
     public class VocabularyTemplateDto : BaseFieldDto
     {
         public Guid StoryPageTemplateId { get; set; }
-        public string Word { get; set; } = string.Empty;
+        public string WordVi { get; set; } = string.Empty;
         public string Meaning { get; set; } = string.Empty;
         public string? AudioUrl { get; set; }
     }
     public class CreateVocabularyTemplateDto
     {
-        public string Word { get; set; } = string.Empty;
+        public string WordVi { get; set; } = string.Empty;
         public string Meaning { get; set; } = string.Empty;
         public string? AudioUrl { get; set; }
     }
     public class UpdateVocabularyTemplateDto
     {
-        public string Word { get; set; } = string.Empty;
+        public string WordVi { get; set; } = string.Empty;
         public string Meaning { get; set; } = string.Empty;
         public string? AudioUrl { get; set; }
     }
