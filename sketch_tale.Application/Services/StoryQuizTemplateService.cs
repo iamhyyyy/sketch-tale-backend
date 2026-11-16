@@ -15,12 +15,18 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ICloudinaryService _cloudinaryService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public StoryQuizTemplateService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryService cloudinaryService)
+    public StoryQuizTemplateService(
+        IUnitOfWork unitOfWork, 
+        IMapper mapper, 
+        ICloudinaryService cloudinaryService,
+        ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
+        _currentUserService = currentUserService;
     }
     //lấy status active
     public async Task<IEnumerable<StoryQuizTemplateDto>> GetQuizzesByStoryAsync(Guid storyId)
@@ -81,7 +87,13 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         if (file != null)
         {
             entity.QuestionPicUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/quizzes");
+            await SaveImageToContentManagerGalleryAsync(entity.QuestionPicUrl);
         }
+        else if (!string.IsNullOrWhiteSpace(dto.QuestionPicUrl))
+        {
+            entity.QuestionPicUrl = dto.QuestionPicUrl.Trim();
+        }
+
         if (audioFile != null)
         {
             entity.QuestionAudioUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/quizz-audios");
@@ -128,6 +140,11 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         if (file != null)
         {
             quiz.QuestionPicUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/quizzes");
+            await SaveImageToContentManagerGalleryAsync(quiz.QuestionPicUrl);
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.QuestionPicUrl))
+        {
+            quiz.QuestionPicUrl = dto.QuestionPicUrl.Trim();
         }
 
         quiz.Status = dto.Status;
@@ -136,6 +153,36 @@ public class StoryQuizTemplateService : IStoryQuizTemplateService
         _unitOfWork.StoryQuizTemplateRepository.Update(quiz);
         await _unitOfWork.CompleteAsync();
         return true;
+    }
+
+    private async Task SaveImageToContentManagerGalleryAsync(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || !Guid.TryParse(_currentUserService.UserId, out var cmId))
+            return;
+
+        var cmProfile = await _unitOfWork.Repository<ContentManagerProfile>().GetByIdAsync(cmId);
+        if (cmProfile != null)
+        {
+            cmProfile.UploadImageUrl ??= new List<string>();
+            if (!cmProfile.UploadImageUrl.Contains(imageUrl))
+            {
+                cmProfile.UploadImageUrl.Add(imageUrl);
+                cmProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+                cmProfile.UpdateBy = cmId;
+                _unitOfWork.Repository<ContentManagerProfile>().Update(cmProfile);
+            }
+        }
+        else
+        {
+            cmProfile = new ContentManagerProfile
+            {
+                Id = cmId,
+                UploadImageUrl = new List<string> { imageUrl },
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                CreateBy = cmId
+            };
+            await _unitOfWork.Repository<ContentManagerProfile>().AddAsync(cmProfile);
+        }
     }
 
     public async Task<bool> DeleteQuizAsync(Guid quizId)

@@ -32,4 +32,5 @@ public interface IUnitOfWork : IDisposable
     IReadingLogRepository ReadingLogRepository { get; }
     IDrawingRepository DrawingRepository { get; }
     ICharacterRepository CharacterRepository { get; }
+    IGeneratedStoryRepository GeneratedStoryRepository { get; }
 }

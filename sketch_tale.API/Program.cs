@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
@@ -72,6 +73,8 @@ public class Program
         builder.Services.AddScoped<IDrawingRepository, DrawingRepository>();
         builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
         builder.Services.AddScoped<ICharacterApprovalService, CharacterApprovalService>();
+        builder.Services.AddScoped<IGeneratedStoryRepository, GeneratedStoryRepository>();
+        builder.Services.AddScoped<IGeneratedStoryService, GeneratedStoryService>();
         builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
         // Đăng ký Service system
@@ -117,7 +120,11 @@ public class Program
         builder.Services.AddScoped<IJwtService, JwtService>();
 
         // Add services to the container.
-        builder.Services.AddControllers();
+        builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new NullableGuidConverter());
+            });
 
         //Add db
         builder.Services.AddDbContext<AppDbContext>(options =>

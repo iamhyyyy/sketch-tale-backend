@@ -100,7 +100,7 @@ namespace sketch_tale.Application.Services
                 );
             }
 
-            // 6. Mapping Entity thành DTO dành cho AI (chỉ lấy Id và NameEn)
+            // 6. Mapping Entity thành DTO dành cho AI
             var allowedCharTypes =
                 _mapper.Map<List<AiAllowedCharTypeDto>>(activeCharTypes);
 
@@ -183,10 +183,34 @@ namespace sketch_tale.Application.Services
             if (request.DrawingId == Guid.Empty)
                 throw new ArgumentException("DrawingId không hợp lệ.");
 
-            if (request.CharTypeId == Guid.Empty)
-                throw new ArgumentException("CharTypeId không hợp lệ.");
+            // Kiểm tra xem bé có chọn CharType hoặc nhập ý tưởng không
+            var hasCharType = request.CharTypeId.HasValue && request.CharTypeId.Value != Guid.Empty;
+            var hasAdditionalIdea = !string.IsNullOrWhiteSpace(request.ChildAdditionalIdea);
 
-            // 2. Lấy bản vẽ gốc (Drawing) và kiểm tra hồ sơ bé / phụ huynh
+            if (!hasCharType && !hasAdditionalIdea)
+            {
+                throw new ArgumentException("Vui lòng chọn loài nhân vật hoặc nhập ý tưởng mô tả của bé.");
+            }
+
+            if (hasAdditionalIdea)
+            {
+                var ideaNormalizedForMod = request.ChildAdditionalIdea!
+                    .Normalize(System.Text.NormalizationForm.FormC)
+                    .Trim();
+                var restrictedKeywords = await _unitOfWork.RestrictedKeywordRepository.GetAllAsync();
+
+                var violatedKeyword = restrictedKeywords?.FirstOrDefault(k =>
+                    !string.IsNullOrWhiteSpace(k.Keyword) &&
+                    ideaNormalizedForMod.Contains(k.Keyword.Normalize(System.Text.NormalizationForm.FormC).Trim(), StringComparison.OrdinalIgnoreCase)
+                );
+
+                if (violatedKeyword != null)
+                {
+                    throw new ArgumentException("Ý tưởng của bạn nhỏ có từ ngữ chưa phù hợp, bé hãy mô tả lại thật đáng yêu nhé!");
+                }
+            }
+
+            // 3. Lấy bản vẽ gốc (Drawing) và kiểm tra hồ sơ bé / phụ huynh
             var drawing = await _unitOfWork.DrawingRepository.GetByIdAsync(request.DrawingId);
             if (drawing == null)
                 throw new KeyNotFoundException("Không tìm thấy bức tranh vẽ gốc.");
@@ -213,31 +237,104 @@ namespace sketch_tale.Application.Services
                 );
             }
 
-            // 3. Lấy tên CharType và tổng hợp câu Prompt hoàn chỉnh (finalPrompt)
-            var charTypeName = await _unitOfWork.CharTypeRepository.GetCharTypeNameAsync(request.CharTypeId);
+            // 4. XỬ LÝ CHAR_TYPE: AUTO-MATCH HOẶC FALLBACK "SINH VẬT GIẢ TƯỞNG"
+            var activeCharTypes = await _unitOfWork.CharTypeRepository.GetActiveCharTypesAsync();
+            Guid finalCharTypeId = request.CharTypeId ?? Guid.Empty;
+            string charTypeName = string.Empty;
 
-            var basePrompt = !string.IsNullOrWhiteSpace(request.StandardizedPrompt)
-                ? request.StandardizedPrompt.Trim()
-                : $"A cute 2D children's storybook character illustration of a {charTypeName}";
+            if (hasAdditionalIdea)
+            {
+                var ideaNormalized = request.ChildAdditionalIdea!
+                    .Normalize(System.Text.NormalizationForm.FormC)
+                    .Trim()
+                    .ToLowerInvariant();
 
-            var additionalIdeaPart = !string.IsNullOrWhiteSpace(request.ChildAdditionalIdea)
-                ? $" Child's additional description: {request.ChildAdditionalIdea.Trim()}."
-                : string.Empty;
+                // Quét nhanh tìm CharType khớp với từ bé nhập (so sánh chuẩn Unicode Form C)
+                // Sắp xếp giảm dần theo độ dài tên để ưu tiên cụm từ dài nhất (vd: "xương rồng" trước "rồng")
+                var matched = activeCharTypes
+                    .Where(c =>
+                        (!string.IsNullOrWhiteSpace(c.NameVi) && ideaNormalized.Contains(c.NameVi.Normalize(System.Text.NormalizationForm.FormC).Trim().ToLowerInvariant())) ||
+                        (!string.IsNullOrWhiteSpace(c.NameEn) && ideaNormalized.Contains(c.NameEn.Normalize(System.Text.NormalizationForm.FormC).Trim().ToLowerInvariant()))
+                    )
+                    .OrderByDescending(c => c.NameVi?.Length ?? 0)
+                    .FirstOrDefault();
 
-            var finalPrompt =
-                $"{basePrompt}. Confirmed character type: '{charTypeName}'.{additionalIdeaPart} " +
-                "Style: cute 2D children's storybook illustration, preserving the child's hand-drawn color palette and pose from the reference drawing, isolated on a pure solid white background, vibrant colors, Pixar/Disney picture book style, child-safe.";
+                if (matched != null)
+                {
+                    finalCharTypeId = matched.Id;
+                    charTypeName = !string.IsNullOrWhiteSpace(matched.NameVi) ? matched.NameVi : matched.NameEn;
+                }
+                else if (finalCharTypeId == Guid.Empty)
+                {
+                    // Fallback về "Sinh vật giả tưởng" nếu không khớp loài nào trong danh mục
+                    var fallback = activeCharTypes.FirstOrDefault(c =>
+                        (!string.IsNullOrWhiteSpace(c.NameVi) && c.NameVi.ToLower().Contains("giả tưởng")) ||
+                        (!string.IsNullOrWhiteSpace(c.NameEn) && c.NameEn.ToLower().Contains("fantasy creature"))
+                    );
+
+                    fallback ??= activeCharTypes.FirstOrDefault(c => c.Category == CharTypeCategory.Fantasy);
+                    fallback ??= activeCharTypes.FirstOrDefault();
+
+                    if (fallback != null)
+                    {
+                        finalCharTypeId = fallback.Id;
+                    }
+
+                    // Tên hiển thị trong prompt luôn là "sinh vật giả tưởng", không được lấy tên loài khác (như rồng) gán vào prompt
+                    charTypeName = "sinh vật giả tưởng";
+                }
+            }
+
+            // Nếu bé chọn từ 3 gợi ý hoặc đã có CharTypeId hợp lệ
+            if (finalCharTypeId != Guid.Empty && string.IsNullOrWhiteSpace(charTypeName))
+            {
+                var selected = activeCharTypes.FirstOrDefault(c => c.Id == finalCharTypeId);
+                if (selected != null)
+                {
+                    charTypeName = !string.IsNullOrWhiteSpace(selected.NameVi) ? selected.NameVi : selected.NameEn;
+                }
+                else
+                {
+                    charTypeName = await _unitOfWork.CharTypeRepository.GetCharTypeNameAsync(finalCharTypeId);
+                }
+            }
+
+            if (finalCharTypeId == Guid.Empty)
+            {
+                throw new ArgumentException("Không xác định được loại nhân vật hợp lệ.");
+            }
+
+            // 5. TỔNG HỢP CÂU PROMPT SINH ẢNH HOÀN CHỈNH (finalPrompt)
+            var visualTraits = (request.DetectedTags != null && request.DetectedTags.Any())
+                ? string.Join(", ", request.DetectedTags)
+                : "vibrant colors";
+
+            string finalPrompt;
+            if (hasAdditionalIdea)
+            {
+                // Nhánh 2.2: Lấy ý tưởng bé nhập làm trung tâm, loại bỏ standardizedPrompt cũ của AI
+                finalPrompt = $"A cute 2D children's storybook character illustration of a {charTypeName} based on child's idea: '{request.ChildAdditionalIdea!.Trim()}'. Visual traits from the sketch: {visualTraits}, child-safe, non-background.";
+            }
+            else
+            {
+                // Nhánh 2.1: Bé chọn gợi ý AI
+                var basePrompt = !string.IsNullOrWhiteSpace(request.StandardizedPrompt)
+                    ? request.StandardizedPrompt.Trim()
+                    : $"A cute 2D children's storybook character illustration of a {charTypeName}";
+
+                finalPrompt = $"{basePrompt}. Confirmed character type: '{charTypeName}'. Visual traits from the sketch: {visualTraits}, child-safe, non-background.";
+            }
 
             var detectedTagsJson = request.DetectedTags != null && request.DetectedTags.Any()
                 ? JsonSerializer.Serialize(request.DetectedTags)
                 : null;
 
-            // 4. Khởi tạo bản ghi AICharacterGenerate
+            // 6. Khởi tạo bản ghi AICharacterGenerate
             var aiCharacterGenerate = new AICharacterGenerate
             {
                 ChildProfileId = drawing.ChildProfileId,
                 DrawingId = drawing.Id,
-                CharTypeId = request.CharTypeId,
+                CharTypeId = finalCharTypeId,
                 AIPromptUsed = finalPrompt,
                 AIDetectedTagsJson = detectedTagsJson,
                 AIGenStatus = AIGenStatus.Processing
@@ -246,7 +343,7 @@ namespace sketch_tale.Application.Services
             await _unitOfWork.Repository<AICharacterGenerate>().AddAsync(aiCharacterGenerate);
             await _unitOfWork.CompleteAsync();
 
-            // 5. Gọi Gemini sinh ảnh nhân vật & upload lên Cloudinary
+            // 7. Gọi Gemini/Flux sinh ảnh nhân vật & upload lên Cloudinary
             string generatedImageUrl;
             try
             {
@@ -258,19 +355,25 @@ namespace sketch_tale.Application.Services
                 aiCharacterGenerate.ErrorMessage = ex.Message;
                 _unitOfWork.Repository<AICharacterGenerate>().Update(aiCharacterGenerate);
                 await _unitOfWork.CompleteAsync();
-                throw;
+
+                // Rollback hoàn trả lại Credit và lượt tạo ngày (chưa bị trừ nên bảo toàn 100%)
+                throw new InvalidOperationException("Hệ thống đang bận một chút, đã hoàn lại lượt tạo cho bé, bé hãy thử lại sau ít phút nhé!", ex);
             }
 
-            // 6. Cập nhật AICharacterGenerate (Success) & Tạo Character ở trạng thái Preview
+            // 8. Cập nhật AICharacterGenerate (Success) & Tạo Character ở trạng thái Preview
             aiCharacterGenerate.GenerateImageUrl = generatedImageUrl;
             aiCharacterGenerate.AIGenStatus = AIGenStatus.Success;
             _unitOfWork.Repository<AICharacterGenerate>().Update(aiCharacterGenerate);
+
+            var characterName = hasAdditionalIdea
+                ? (request.ChildAdditionalIdea!.Trim().Length > 50 ? request.ChildAdditionalIdea!.Trim().Substring(0, 50) : request.ChildAdditionalIdea!.Trim())
+                : charTypeName;
 
             var character = new Character
             {
                 ChildProfileId = drawing.ChildProfileId,
                 AICharacterGenerateId = aiCharacterGenerate.Id,
-                Name = charTypeName,
+                Name = characterName,
                 DefaultPronoun = "Bạn nhỏ",
                 FinalImageUrl = generatedImageUrl,
                 Status = CharacterStatus.Preview,
@@ -278,7 +381,7 @@ namespace sketch_tale.Application.Services
             };
             await _unitOfWork.Repository<Character>().AddAsync(character);
 
-            // 7. Trừ Credit của Phụ huynh, trừ lượt tạo trong ngày của Bé (nếu tạo lần đầu) & Ghi Log
+            // 9. Trừ Credit của Phụ huynh, trừ lượt tạo trong ngày của Bé (nếu tạo lần đầu) & Ghi Log
             var creditBefore = parentProfile.RemainingMonthlyCredit;
             parentProfile.RemainingMonthlyCredit -= creditCost;
             _unitOfWork.ParentProfileRepository.Update(parentProfile);
@@ -298,8 +401,8 @@ namespace sketch_tale.Application.Services
                 CreditBefore = creditBefore,
                 CreditAfter = parentProfile.RemainingMonthlyCredit,
                 Description = request.IsRegenerate
-                    ? $"Tạo lại ảnh nhân vật '{charTypeName}' (DrawingId: {drawing.Id})"
-                    : $"Tạo ảnh nhân vật '{charTypeName}' lần đầu (DrawingId: {drawing.Id})"
+                    ? $"Tạo lại ảnh nhân vật '{characterName}' (DrawingId: {drawing.Id})"
+                    : $"Tạo ảnh nhân vật '{characterName}' lần đầu (DrawingId: {drawing.Id})"
             });
 
             await _unitOfWork.Repository<AIUsageLog>().AddAsync(new AIUsageLog
@@ -312,13 +415,13 @@ namespace sketch_tale.Application.Services
 
             await _unitOfWork.CompleteAsync();
 
-            // 8. Trả kết quả về Frontend
+            // 10. Trả kết quả về Frontend
             return new GenerateCharacterResponse
             {
                 AiCharacterGenerateId = aiCharacterGenerate.Id,
                 CharacterId = character.Id,
                 DrawingId = drawing.Id,
-                CharTypeId = request.CharTypeId,
+                CharTypeId = finalCharTypeId,
                 GenerateImageUrl = generatedImageUrl,
                 AiPromptUsed = finalPrompt,
                 AiGenStatus = aiCharacterGenerate.AIGenStatus.ToString(),

@@ -79,6 +79,14 @@ public class VocabularyTemplateController : ControllerBase
 
             return Ok(new { message = "Cập nhật từ vựng thành công." });
         }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { message = ex.Message });

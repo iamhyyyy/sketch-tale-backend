@@ -43,7 +43,7 @@ namespace sketch_tale.Infrastructure.Services
 
                 YOUR MAIN TASK:
                 1. Analyze the child's drawing to determine if it depicts an identifiable CHARACTER (e.g., Human, Animal, Monster, Mythical Creature, Robot, or Animated Object with living traits).
-                2. If a valid character is detected, generate a detailed visual description prompt for image generation models (Midjourney, Flux, Stable Diffusion) and extract descriptive visual tags.
+                2. If a valid character is detected, generate a detailed visual description for image generation models and extract descriptive visual tags.
                 3. Compare the drawing against the provided ALLOWED CHARACTER TYPES list from the database and suggest up to 3 most related CharType IDs.
 
                 ALLOWED CHARACTER TYPES:
@@ -52,9 +52,10 @@ namespace sketch_tale.Infrastructure.Services
                 LOGIC RULES:
 
                 CASE 1: THE DRAWING IS RECOGNIZABLE (isRecognized = true)
-                - Describe the drawing clearly, vividly, and objectively (subject, actions, colors, style, key features) to form a prompt for image generation models. Put this in "prompt".
-                - Select up to 3 most related CharType IDs from the provided ALLOWED CHARACTER TYPES list (ranked from most relevant to least relevant) and put them in "suggestedCharTypeIds".
-                - Extract short descriptive English tags (e.g., colors, facial expression, posture, key features) and put them in "detectedTags".
+                - Visual Description ("prompt"): Describe the hand-drawn character clearly, focusing on its visual appearance, colors, patterns, pose, clothing/accessories, and distinctive body features (e.g., "A cute stylized character with orange and white fur, pointy triangular ears, a bushy tail, four paws, and a joyful smiling expression").
+                  IMPORTANT FOR "prompt": Do NOT assert or declare a specific animal species/entity identity (e.g., avoid stating "A dog" or "A cat"). Instead, describe it neutrally as "A cute character/creature with [visual features]..." so it will NEVER contradict whichever CharType the child selects later.
+                - Character Type Selection ("suggestedCharTypeIds"): Select up to 3 most related CharType IDs from the provided ALLOWED CHARACTER TYPES list (ranked from most relevant to least relevant).
+                - Visual Tags ("detectedTags"): Extract short descriptive English tags focusing EXCLUSIVELY on visual attributes (colors, body parts, facial expression, posture, textures, accessories).
 
                 CASE 2: THE DRAWING IS UNCLEAR OR UNRECOGNIZABLE (isRecognized = false)
                 - Set "prompt" to null.
@@ -63,9 +64,13 @@ namespace sketch_tale.Infrastructure.Services
                 - Based on these visual features, suggest up to 3 closest matching CharType IDs from the provided ALLOWED CHARACTER TYPES list and put them in "suggestedCharTypeIds" (ranked from most relevant to least relevant).
 
                 CRITICAL CONSTRAINTS:
-                - Only return exact IDs that exist in ALLOWED CHARACTER TYPES (maximum 3 IDs).
-                - Never make up or hallucinate IDs.
-                - Follow the JSON output schema strictly.
+                1. STRICT CONSTRAINT FOR "detectedTags":
+                   - MUST ONLY contain visual attributes, colors, patterns, and physical body parts (e.g., "orange fur", "yellow body", "white belly", "long ears", "short tail", "sharp claws", "big round eyes", "four legs", "fluffy", "curly horns", "wearing cape", "smiling face").
+                   - NEVER include animal species, entity names, or character types (e.g., ABSOLUTELY DO NOT output "dog", "cat", "tiger", "crocodile", "alligator", "dolphin", "whale", "human", "boy", "girl", "robot", "dragon", "bird", "rabbit", "bear", etc.).
+                   - Any species or entity name in "detectedTags" will cause fatal prompt contradictions during image generation.
+                2. Only return exact IDs that exist in ALLOWED CHARACTER TYPES (maximum 3 IDs).
+                3. Never make up or hallucinate IDs.
+                4. Follow the JSON output schema strictly.
                 """;
 
             var payload = new
