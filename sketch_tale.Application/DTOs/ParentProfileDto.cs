@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace sketch_tale.Application.DTOs
 {
-    public class ParentProfileDto : BaseFieldWithoutIdDto
+    public class ParentProfileDto : BaseFieldDto
     {
-        public Guid ParentProfileId { get; set; }
+        //public Guid ParentProfileId { get; set; }
         public Guid SubscriptionPlanId { get; set; }
 
         public int ChildProfile { get; set; }

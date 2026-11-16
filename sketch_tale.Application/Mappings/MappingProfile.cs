@@ -135,7 +135,7 @@ public class MappingProfile : Profile
 
         //ChildProfile
         CreateMap<ChildProfile, ChildProfileDto>()
-            .ForMember(dest => dest.ChildProfileId, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.TargetAgeGroup, opt => opt.MapFrom(src => src.TargetAgeGroup.ToString()))
             .ForMember(dest => dest.ReadingLevel, opt => opt.MapFrom(src => src.ReadingLevel.ToString()))       
             .ReverseMap()
