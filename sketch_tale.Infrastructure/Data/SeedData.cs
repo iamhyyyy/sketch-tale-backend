@@ -29,15 +29,15 @@ public class SeedData
             await SeedUsersAsync(userManager);
             await SeedSubscriptionPlanAsync(context);
             await SeedCreditCostAsync(context);
-            await SeedDemoUsersAsync(userManager);
+            //await SeedDemoUsersAsync(userManager);
             await SeedCharTypesAsync(context);
             await SeedEducationThemesAsync(context);
             await SeedRestrictedKeywordsAsync(context);
             await SeedProhibitedThemesAsync(context);
-            //await SeedParentProfilesAsync(context, userManager);
+            await SeedParentProfilesAsync(context, userManager);
             //await SeedContentManagerProfilesAsync(context, userManager);
             //await SeedParentProfileSubsAsync(context);
-            //await SeedChildProfilesAsync(context, userManager);
+            await SeedChildProfilesAsync(context, userManager);
             //await SeedSubscriptionsAsync(context);
             //await SeedPaymentTransactionsAsync(context);
             //await SeedCreditTransactionsAsync(context);
@@ -222,11 +222,11 @@ public class SeedData
         await context.SaveChangesAsync();
     }
 
-    private static async Task SeedDemoUsersAsync(UserManager<User> userManager)
-    {
-        await CreateUserAsync(userManager, "parent2", "parent2@sketch.tale.com", "Parent@123", "Parent", "Two", "parent");
-        await CreateUserAsync(userManager, "child2", "child2@sketch.tale.com", "Child@123", "Little", "Dreamer", "child");
-    }
+    //private static async Task SeedDemoUsersAsync(UserManager<User> userManager)
+    //{
+    //    await CreateUserAsync(userManager, "parent2", "parent2@sketch.tale.com", "Parent@123", "Parent", "Two", "parent");
+    //    await CreateUserAsync(userManager, "child2", "child2@sketch.tale.com", "Child@123", "Little", "Dreamer", "child");
+    //}
 
     private static async Task SeedCharTypesAsync(AppDbContext context)
     {
@@ -487,33 +487,33 @@ public class SeedData
         await context.SaveChangesAsync();
     }
 
-    //private static async Task SeedParentProfilesAsync(AppDbContext context, UserManager<User> userManager)
-    //{
-    //    if (await context.ParentProfiles.AnyAsync()) return;
+    private static async Task SeedParentProfilesAsync(AppDbContext context, UserManager<User> userManager)
+    {
+        if (await context.ParentProfiles.AnyAsync()) return;
 
-    //    var parent = await userManager.FindByNameAsync("parent");
-    //    var parent2 = await userManager.FindByNameAsync("parent2");
-    //    if (parent is null || parent2 is null) return;
+        var parent = await userManager.FindByNameAsync("parent");
+        var parent2 = await userManager.FindByNameAsync("parent2");
+        if (parent is null || parent2 is null) return;
 
-    //    context.ParentProfiles.AddRange(
-    //        new ParentProfile
-    //        {
-    //            Id = parent.Id,
-    //            RemainingMonthlyCredit = 3720,
-    //            TrialPlusPlan = true,
-    //            CreateBy = SystemUserId
-    //        },
-    //        new ParentProfile
-    //        {
-    //            Id = parent2.Id,
-    //            RemainingMonthlyCredit = 470,
-    //            TrialPlusPlan = false,
-    //            CreateBy = SystemUserId
-    //        }
-    //    );
+        context.ParentProfiles.AddRange(
+            new ParentProfile
+            {
+                Id = parent.Id,
+                RemainingMonthlyCredit = 3720,
+                TrialPlusPlan = true,
+                CreateBy = SystemUserId
+            },
+            new ParentProfile
+            {
+                Id = parent2.Id,
+                RemainingMonthlyCredit = 470,
+                TrialPlusPlan = false,
+                CreateBy = SystemUserId
+            }
+        );
 
-    //    await context.SaveChangesAsync();
-    //}
+        await context.SaveChangesAsync();
+    }
 
     //private static async Task SeedContentManagerProfilesAsync(AppDbContext context, UserManager<User> userManager)
     //{
@@ -561,49 +561,49 @@ public class SeedData
     //    await context.SaveChangesAsync();
     //}
 
-    //private static async Task SeedChildProfilesAsync(AppDbContext context, UserManager<User> userManager)
-    //{
-    //    if (await context.ChildProfiles.AnyAsync()) return;
+    private static async Task SeedChildProfilesAsync(AppDbContext context, UserManager<User> userManager)
+    {
+        if (await context.ChildProfiles.AnyAsync()) return;
 
-    //    var child = await userManager.FindByNameAsync("child");
-    //    var child2 = await userManager.FindByNameAsync("child2");
-    //    var parents = await context.ParentProfiles.OrderBy(p => p.CreatedAt).ToListAsync();
-    //    var themes = await context.EducationThemes.OrderBy(t => t.NameVi).ToListAsync();
-    //    if (child is null || child2 is null || parents.Count < 2) return;
+        var child = await userManager.FindByNameAsync("child");
+        var child2 = await userManager.FindByNameAsync("child2");
+        var parents = await context.ParentProfiles.OrderBy(p => p.CreatedAt).ToListAsync();
+        var themes = await context.EducationThemes.OrderBy(t => t.NameVi).ToListAsync();
+        if (child is null || child2 is null || parents.Count < 2) return;
 
-    //    var allowedThemes = themes.Count >= 2
-    //        ? $"[{string.Join(",", themes.Take(2).Select(t => $"\"{t.Id}\""))}]"
-    //        : null;
+        var allowedThemes = themes.Count >= 2
+            ? $"[{string.Join(",", themes.Take(2).Select(t => $"\"{t.Id}\""))}]"
+            : null;
 
-    //    context.ChildProfiles.AddRange(
-    //        new ChildProfile
-    //        {
-    //            Id = child.Id,
-    //            ParentProfileId = parents[0].Id,
-    //            NickName = "Little Artist",
-    //            TargetAgeGroup = TargetAgeGroup.Ag6to7,
-    //            ReadingLevel = ReadingLevel.Beginner,
-    //            DailyTimeLimit = 30,
-    //            DailyCharacterLimit = 2,
-    //            RemainingCharacterLimit = 1,
-    //            CreateBy = SystemUserId
-    //        },
-    //        new ChildProfile
-    //        {
-    //            Id = child2.Id,
-    //            ParentProfileId = parents[1].Id,
-    //            NickName = "Little Dreamer",
-    //            TargetAgeGroup = TargetAgeGroup.Age8to10,
-    //            ReadingLevel = ReadingLevel.Intermediate,
-    //            DailyTimeLimit = 45,
-    //            DailyCharacterLimit = 1,
-    //            RemainingCharacterLimit = 0,
-    //            CreateBy = SystemUserId
-    //        }
-    //    );
+        context.ChildProfiles.AddRange(
+            new ChildProfile
+            {
+                Id = child.Id,
+                ParentProfileId = parents[0].Id,
+                NickName = "Little Artist",
+                TargetAgeGroup = TargetAgeGroup.Ag6to7,
+                ReadingLevel = ReadingLevel.Beginner,
+                DailyTimeLimit = 30,
+                DailyCharacterLimit = 2,
+                RemainingCharacterLimit = 1,
+                CreateBy = SystemUserId
+            },
+            new ChildProfile
+            {
+                Id = child2.Id,
+                ParentProfileId = parents[1].Id,
+                NickName = "Little Dreamer",
+                TargetAgeGroup = TargetAgeGroup.Age8to10,
+                ReadingLevel = ReadingLevel.Intermediate,
+                DailyTimeLimit = 45,
+                DailyCharacterLimit = 1,
+                RemainingCharacterLimit = 0,
+                CreateBy = SystemUserId
+            }
+        );
 
-    //    await context.SaveChangesAsync();
-    //}
+        await context.SaveChangesAsync();
+    }
 
     //private static async Task SeedSubscriptionsAsync(AppDbContext context)
     //{
