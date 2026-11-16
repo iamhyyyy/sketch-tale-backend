@@ -45,7 +45,7 @@ public class VocabularyTemplateService : IVocabularyTemplateService
             throw new KeyNotFoundException($"Trang truyện với Id {pageId} không tồn tại.");
         }
 
-        if (string.IsNullOrWhiteSpace(dto.Word))
+        if (string.IsNullOrWhiteSpace(dto.WordVi))
         {
             throw new ArgumentException("Từ vựng không được để trống.");
         }
@@ -55,7 +55,7 @@ public class VocabularyTemplateService : IVocabularyTemplateService
             throw new ArgumentException("Nghĩa của từ vựng không được để trống.");
         }
 
-        var trimmedWord = dto.Word.Trim();
+        var trimmedWord = dto.WordVi.Trim();
 
         // Kiểm tra từ vựng phải xuất hiện trong nội dung văn bản của trang (RawText)
         if (string.IsNullOrWhiteSpace(page.RawText))
@@ -70,7 +70,6 @@ public class VocabularyTemplateService : IVocabularyTemplateService
         {
             throw new ArgumentException($"Từ vựng '{trimmedWord}' phải xuất hiện trong nội dung văn bản của trang truyện.");
         }
-
         var existing = await _unitOfWork.VocabularyTemplateRepository.GetByPageAndWordAsync(pageId, trimmedWord);
         if (existing != null)
         {
@@ -94,9 +93,9 @@ public class VocabularyTemplateService : IVocabularyTemplateService
         var vocab = await _unitOfWork.VocabularyTemplateRepository.GetByIdAsync(vocabId);
         if (vocab == null) return false;
 
-        if (!string.IsNullOrWhiteSpace(dto.Word))
+        if (!string.IsNullOrWhiteSpace(dto.WordVi))
         {
-            var trimmedWord = dto.Word.Trim();
+            var trimmedWord = dto.WordVi.Trim();
             if (!string.Equals(vocab.WordVi, trimmedWord, StringComparison.OrdinalIgnoreCase))
             {
                 var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(vocab.StoryPageTemplateId);

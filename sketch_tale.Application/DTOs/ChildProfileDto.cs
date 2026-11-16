@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace sketch_tale.Application.DTOs
 {
-    public class ChildProfileDto : BaseFieldWithoutIdDto
+    public class ChildProfileDto : BaseFieldDto
     {
-        public Guid ChildProfileId { get; set; }
+        //public Guid ChildProfileId { get; set; }
         public Guid ParentProfileId { get; set; }
         public string NickName { get; set; } = string.Empty;
         public string TargetAgeGroup { get; set; } = string.Empty;
