@@ -14,12 +14,18 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ICloudinaryService _cloudinaryService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public StoryRoleTemplateService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryService cloudinaryService)
+    public StoryRoleTemplateService(
+        IUnitOfWork unitOfWork, 
+        IMapper mapper, 
+        ICloudinaryService cloudinaryService,
+        ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
+        _currentUserService = currentUserService;
     }
     //l��y active
     public async Task<IEnumerable<StoryRoleTemplateDto>> GetRolesByStoryAsync(Guid storyId)
@@ -56,6 +62,11 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
         if (file != null)
         {
             entity.DefaultAssetUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/roles");
+            await SaveImageToContentManagerGalleryAsync(entity.DefaultAssetUrl);
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.DefaultAssetUrl))
+        {
+            entity.DefaultAssetUrl = dto.DefaultAssetUrl.Trim();
         }
 
         await _unitOfWork.StoryRoleTemplateRepository.AddAsync(entity);
@@ -69,11 +80,22 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
         var role = await _unitOfWork.StoryRoleTemplateRepository.GetByIdAsync(roleId);
         if (role == null || role.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
+        var oldAssetUrl = role.DefaultAssetUrl;
+
         _mapper.Map(dto, role);
 
         if (file != null)
         {
             role.DefaultAssetUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/roles");
+            await SaveImageToContentManagerGalleryAsync(role.DefaultAssetUrl);
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.DefaultAssetUrl))
+        {
+            role.DefaultAssetUrl = dto.DefaultAssetUrl.Trim();
+        }
+        else
+        {
+            role.DefaultAssetUrl = oldAssetUrl;
         }
 
         role.UpdatedAt = DateTime.UtcNow.AddHours(7);
@@ -81,6 +103,36 @@ public class StoryRoleTemplateService : IStoryRoleTemplateService
         _unitOfWork.StoryRoleTemplateRepository.Update(role);
         await _unitOfWork.CompleteAsync();
         return true;
+    }
+
+    private async Task SaveImageToContentManagerGalleryAsync(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || !Guid.TryParse(_currentUserService.UserId, out var cmId))
+            return;
+
+        var cmProfile = await _unitOfWork.Repository<ContentManagerProfile>().GetByIdAsync(cmId);
+        if (cmProfile != null)
+        {
+            cmProfile.UploadImageUrl ??= new List<string>();
+            if (!cmProfile.UploadImageUrl.Contains(imageUrl))
+            {
+                cmProfile.UploadImageUrl.Add(imageUrl);
+                cmProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+                cmProfile.UpdateBy = cmId;
+                _unitOfWork.Repository<ContentManagerProfile>().Update(cmProfile);
+            }
+        }
+        else
+        {
+            cmProfile = new ContentManagerProfile
+            {
+                Id = cmId,
+                UploadImageUrl = new List<string> { imageUrl },
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                CreateBy = cmId
+            };
+            await _unitOfWork.Repository<ContentManagerProfile>().AddAsync(cmProfile);
+        }
     }
 
     public async Task<bool> DeleteRoleAsync(Guid roleId)

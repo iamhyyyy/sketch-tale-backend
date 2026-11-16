@@ -14,12 +14,18 @@ public class StoryPageTemplateService : IStoryPageTemplateService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ICloudinaryService _cloudinaryService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public StoryPageTemplateService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryService cloudinaryService)
+    public StoryPageTemplateService(
+        IUnitOfWork unitOfWork, 
+        IMapper mapper, 
+        ICloudinaryService cloudinaryService,
+        ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
+        _currentUserService = currentUserService;
     }
     //mới thêm GetAllPage( bao gồm tất cả status )
     public async Task<IEnumerable<StoryPageTemplateDto>> GetAllPagesByStoryAsync(Guid storyId)
@@ -59,6 +65,11 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         if (imageFile != null)
         {
             entity.BackgroundUrl = await _cloudinaryService.UploadImageAsync(imageFile, "SketchTale/background");
+            await SaveImageToContentManagerGalleryAsync(entity.BackgroundUrl);
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.BackgroundUrl))
+        {
+            entity.BackgroundUrl = dto.BackgroundUrl.Trim();
         }
 
         if (audioFile != null)
@@ -80,16 +91,32 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(pageId);
         if (page == null || page.Status == Domain.Enums.CommonStatus.Inactive) return false;
 
+        var oldBackgroundUrl = page.BackgroundUrl;
+        var oldAudioNarrationUrl = page.AudioNarrationUrl;
+
         _mapper.Map(dto, page);
 
         if (imageFile != null)
         {
             page.BackgroundUrl = await _cloudinaryService.UploadImageAsync(imageFile, "SketchTale/background");
+            await SaveImageToContentManagerGalleryAsync(page.BackgroundUrl);
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.BackgroundUrl))
+        {
+            page.BackgroundUrl = dto.BackgroundUrl.Trim();
+        }
+        else
+        {
+            page.BackgroundUrl = oldBackgroundUrl;
         }
 
         if (audioFile != null)
         {
             page.AudioNarrationUrl = await _cloudinaryService.UploadAudioAsync(audioFile, "SketchTale/audios");
+        }
+        else
+        {
+            page.AudioNarrationUrl = oldAudioNarrationUrl;
         }
 
         page.UpdatedAt = DateTime.UtcNow.AddHours(7);
@@ -97,6 +124,36 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         _unitOfWork.StoryPageTemplateRepository.Update(page);
         await _unitOfWork.CompleteAsync();
         return true;
+    }
+
+    private async Task SaveImageToContentManagerGalleryAsync(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || !Guid.TryParse(_currentUserService.UserId, out var cmId))
+            return;
+
+        var cmProfile = await _unitOfWork.Repository<ContentManagerProfile>().GetByIdAsync(cmId);
+        if (cmProfile != null)
+        {
+            cmProfile.UploadImageUrl ??= new List<string>();
+            if (!cmProfile.UploadImageUrl.Contains(imageUrl))
+            {
+                cmProfile.UploadImageUrl.Add(imageUrl);
+                cmProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+                cmProfile.UpdateBy = cmId;
+                _unitOfWork.Repository<ContentManagerProfile>().Update(cmProfile);
+            }
+        }
+        else
+        {
+            cmProfile = new ContentManagerProfile
+            {
+                Id = cmId,
+                UploadImageUrl = new List<string> { imageUrl },
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                CreateBy = cmId
+            };
+            await _unitOfWork.Repository<ContentManagerProfile>().AddAsync(cmProfile);
+        }
     }
 
     public async Task<bool> DeletePageAsync(Guid pageId)

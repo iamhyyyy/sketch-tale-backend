@@ -13,6 +13,7 @@ namespace sketch_tale.Application.DTOs
         public Guid EducationThemeId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? CoverImageUrl { get; set; }
     }
     public class StoryTemplateDto : BaseFieldDto
     {
@@ -29,6 +30,7 @@ namespace sketch_tale.Application.DTOs
         public Guid EducationThemeId { get; set; }
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string? CoverImageUrl { get; set; }
         public TargetAgeGroup AgeGroup { get; set; }
         public CommonStatus Status { get; set; }
     }
@@ -46,11 +48,13 @@ namespace sketch_tale.Application.DTOs
     public class CreateStoryPageTemplateDto
     {
         public string RawText { get; set; } = string.Empty;
+        public string? BackgroundUrl { get; set; }
         public string? CompositionJson { get; set; }
     }
     public class UpdateStoryPageTemplateDto
     {
         public string RawText { get; set; } = string.Empty;
+        public string? BackgroundUrl { get; set; }
         public string? CompositionJson { get; set; }
         public CommonStatus Status { get; set; }
     }
@@ -151,14 +155,14 @@ namespace sketch_tale.Application.DTOs
     public class CreateStoryQuizTemplateDto
     {
         public string QuestionText { get; set; } = string.Empty;
-
+        public string? QuestionPicUrl { get; set; }
         public List<string> Options { get; set; } = new(); // FE gửi list, BE convert sang JSON
         public int CorrectOptionIndex { get; set; }
     }
     public class UpdateStoryQuizTemplateDto
     {
         public string QuestionText { get; set; } = string.Empty;
-
+        public string? QuestionPicUrl { get; set; }
         public List<string> Options { get; set; } = new();
         public int CorrectOptionIndex { get; set; }
         public CommonStatus Status { get; set; }

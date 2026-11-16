@@ -166,5 +166,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ChildNickName, opt => opt.MapFrom(src => src.ChildProfile != null ? src.ChildProfile.NickName : string.Empty))
             .ForMember(dest => dest.OriginalDrawingUrl, opt => opt.MapFrom(src => src.AICharacterGenerate != null && src.AICharacterGenerate.Drawing != null ? src.AICharacterGenerate.Drawing.OriginalImageUrl : string.Empty))
             .ForMember(dest => dest.AiPromptUsed, opt => opt.MapFrom(src => src.AICharacterGenerate != null ? src.AICharacterGenerate.AIPromptUsed : null));
+
+        // GeneratedStory
+        CreateMap<GeneratedStory, GeneratedStoryDto>();
+        // UserStoryCharacterMappings tự map qua CreateMap<UserStoryCharacterMapping, UserStoryCharacterMappingDto> ở trên
+        CreateMap<GeneratedStory, GeneratedStoryDetailsDto>();
     }
 }

@@ -37,6 +37,7 @@ public class UnitOfWork : IUnitOfWork
     private IReadingLogRepository _readingLogRepository = null!;
     private IDrawingRepository _drawingRepository = null!;
     private ICharacterRepository _characterRepository = null!;
+    private IGeneratedStoryRepository _generatedStoryRepository = null!;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
@@ -86,6 +87,7 @@ public class UnitOfWork : IUnitOfWork
 
     public IDrawingRepository DrawingRepository => _drawingRepository ??= new DrawingRepository(_context);
     public ICharacterRepository CharacterRepository => _characterRepository ??= new CharacterRepository(_context);
+    public IGeneratedStoryRepository GeneratedStoryRepository => _generatedStoryRepository ??= new GeneratedStoryRepository(_context);
 
     public async Task<int> CompleteAsync()
     {

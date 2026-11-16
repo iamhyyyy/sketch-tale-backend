@@ -56,6 +56,20 @@ public class VocabularyTemplateService : IVocabularyTemplateService
         }
 
         var trimmedWord = dto.WordVi.Trim();
+
+        // Kiểm tra từ vựng phải xuất hiện trong nội dung văn bản của trang (RawText)
+        if (string.IsNullOrWhiteSpace(page.RawText))
+        {
+            throw new ArgumentException("Trang truyện chưa có nội dung văn bản (RawText), không thể tạo từ vựng.");
+        }
+
+        var normalizedRawText = page.RawText.Normalize(System.Text.NormalizationForm.FormC).Trim();
+        var normalizedWord = trimmedWord.Normalize(System.Text.NormalizationForm.FormC).Trim();
+
+        if (!normalizedRawText.Contains(normalizedWord, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException($"Từ vựng '{trimmedWord}' phải xuất hiện trong nội dung văn bản của trang truyện.");
+        }
         var existing = await _unitOfWork.VocabularyTemplateRepository.GetByPageAndWordAsync(pageId, trimmedWord);
         if (existing != null)
         {
@@ -63,11 +77,10 @@ public class VocabularyTemplateService : IVocabularyTemplateService
         }
 
         var entity = _mapper.Map<VocabularyTemplate>(dto);
-        entity.Id = Guid.NewGuid();
         entity.StoryPageTemplateId = pageId;
         entity.WordVi = trimmedWord;
         entity.Meaning = dto.Meaning.Trim();
-        entity.CreatedAt = DateTime.UtcNow;
+        entity.CreatedAt = DateTime.UtcNow.AddHours(7);
 
         await _unitOfWork.VocabularyTemplateRepository.AddAsync(entity);
         await _unitOfWork.CompleteAsync();
@@ -85,6 +98,25 @@ public class VocabularyTemplateService : IVocabularyTemplateService
             var trimmedWord = dto.WordVi.Trim();
             if (!string.Equals(vocab.WordVi, trimmedWord, StringComparison.OrdinalIgnoreCase))
             {
+                var page = await _unitOfWork.StoryPageTemplateRepository.GetByIdAsync(vocab.StoryPageTemplateId);
+                if (page == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy trang truyện chứa từ vựng này.");
+                }
+
+                if (string.IsNullOrWhiteSpace(page.RawText))
+                {
+                    throw new ArgumentException("Trang truyện chưa có nội dung văn bản (RawText), không thể cập nhật từ vựng.");
+                }
+
+                var normalizedRawText = page.RawText.Normalize(System.Text.NormalizationForm.FormC).Trim();
+                var normalizedWord = trimmedWord.Normalize(System.Text.NormalizationForm.FormC).Trim();
+
+                if (!normalizedRawText.Contains(normalizedWord, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new ArgumentException($"Từ vựng '{trimmedWord}' phải xuất hiện trong nội dung văn bản của trang truyện.");
+                }
+
                 var existing = await _unitOfWork.VocabularyTemplateRepository.GetByPageAndWordAsync(vocab.StoryPageTemplateId, trimmedWord);
                 if (existing != null && existing.Id != vocabId)
                 {

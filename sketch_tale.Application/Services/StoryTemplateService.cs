@@ -15,11 +15,18 @@ public class StoryTemplateService : IStoryTemplateService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ICloudinaryService _cloudinaryService;
-    public StoryTemplateService(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryService cloudinaryService)
+    private readonly ICurrentUserService _currentUserService;
+
+    public StoryTemplateService(
+        IUnitOfWork unitOfWork, 
+        IMapper mapper, 
+        ICloudinaryService cloudinaryService,
+        ICurrentUserService currentUserService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _cloudinaryService = cloudinaryService;
+        _currentUserService = currentUserService;
     }
     //Này lấy tất cả Templete( tất cả status )
     public async Task<IEnumerable<StoryTemplateDto>> GetAllAsync()
@@ -52,7 +59,15 @@ public class StoryTemplateService : IStoryTemplateService
         var entity = _mapper.Map<StoryTemplate>(dto);
         entity.Status = Domain.Enums.CommonStatus.Draft;
         if (file != null)
+        {
             entity.CoverImageUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/cover-image");
+            await SaveImageToContentManagerGalleryAsync(entity.CoverImageUrl);
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.CoverImageUrl))
+        {
+            entity.CoverImageUrl = dto.CoverImageUrl.Trim();
+        }
+
         await _unitOfWork.StoryTemplateRepository.AddAsync(entity);
         await _unitOfWork.CompleteAsync();
         return _mapper.Map<StoryTemplateDto>(entity);
@@ -62,14 +77,57 @@ public class StoryTemplateService : IStoryTemplateService
     {
         var item = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(id);
         if (item == null || item.Status == Domain.Enums.CommonStatus.Inactive) return false;
+
+        var oldCoverImageUrl = item.CoverImageUrl;
         _mapper.Map(dto, item);
+
         if (file != null)
+        {
             item.CoverImageUrl = await _cloudinaryService.UploadImageAsync(file, "SketchTale/cover-image");
-        
+            await SaveImageToContentManagerGalleryAsync(item.CoverImageUrl);
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.CoverImageUrl))
+        {
+            item.CoverImageUrl = dto.CoverImageUrl.Trim();
+        }
+        else
+        {
+            item.CoverImageUrl = oldCoverImageUrl;
+        }
 
         _unitOfWork.StoryTemplateRepository.Update(item);
         await _unitOfWork.CompleteAsync();
         return true;
+    }
+
+    private async Task SaveImageToContentManagerGalleryAsync(string? imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl) || !Guid.TryParse(_currentUserService.UserId, out var cmId))
+            return;
+
+        var cmProfile = await _unitOfWork.Repository<ContentManagerProfile>().GetByIdAsync(cmId);
+        if (cmProfile != null)
+        {
+            cmProfile.UploadImageUrl ??= new List<string>();
+            if (!cmProfile.UploadImageUrl.Contains(imageUrl))
+            {
+                cmProfile.UploadImageUrl.Add(imageUrl);
+                cmProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+                cmProfile.UpdateBy = cmId;
+                _unitOfWork.Repository<ContentManagerProfile>().Update(cmProfile);
+            }
+        }
+        else
+        {
+            cmProfile = new ContentManagerProfile
+            {
+                Id = cmId,
+                UploadImageUrl = new List<string> { imageUrl },
+                CreatedAt = DateTime.UtcNow.AddHours(7),
+                CreateBy = cmId
+            };
+            await _unitOfWork.Repository<ContentManagerProfile>().AddAsync(cmProfile);
+        }
     }
 
 

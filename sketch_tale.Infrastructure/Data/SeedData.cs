@@ -234,6 +234,7 @@ public class SeedData
 
         var charTypeItems = new (string NameVi, string NameEn, CharTypeCategory Category, bool CanFly, bool CanSwim)[]
         {
+            ("sinh vật giả tưởng", "fantasy creature", CharTypeCategory.Fantasy, true, true),
             ("máy bay", "airplane", CharTypeCategory.Vehicle, true, false),
             ("thiên thần", "angel", CharTypeCategory.Fantasy, true, false),
             ("kiến", "ant", CharTypeCategory.Animal, false, false),
