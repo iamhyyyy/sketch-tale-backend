@@ -15,15 +15,18 @@ namespace sketch_tale.WebApi.Controllers
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IBackgroundRemovalService _backgroundRemovalService;
 
         public UploadController(
             ICloudinaryService cloudinaryService,
             IUnitOfWork unitOfWork,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            IBackgroundRemovalService backgroundRemovalService)
         {
             _cloudinaryService = cloudinaryService;
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
+            _backgroundRemovalService = backgroundRemovalService;
         }
 
         [HttpPost("background-image")]
@@ -63,6 +66,70 @@ namespace sketch_tale.WebApi.Controllers
         public async Task<IActionResult> UploadAvatar(IFormFile file)
         {
             return await UploadImage(file, "SketchTale/avatars", saveToContentManager: false);
+        }
+
+        /// <summary>
+        /// Xóa phông nền của ảnh và tải ảnh PNG trong suốt lên Cloudinary
+        /// </summary>
+        [HttpPost("remove-background")]
+        public async Task<IActionResult> RemoveBackground(
+            IFormFile file, 
+            [FromQuery] string folder = "SketchTale/transparent", 
+            [FromQuery] bool saveToContentManager = false)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { success = false, message = "Vui lòng chọn file ảnh." });
+
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(ext))
+                return BadRequest(new { success = false, message = "Chỉ chấp nhận file JPG, PNG, WEBP." });
+
+            try
+            {
+                using var ms = new MemoryStream();
+                await file.CopyToAsync(ms);
+                var originalBytes = ms.ToArray();
+
+                var transparentBytes = await _backgroundRemovalService.RemoveBackgroundAsync(originalBytes);
+                if (ReferenceEquals(transparentBytes, originalBytes))
+                {
+                    return StatusCode(502, new { success = false, message = "Dịch vụ xóa phông ClearBackdrop không thể xử lý ảnh này (vui lòng kiểm tra console backend để xem mã lỗi chi tiết)." });
+                }
+
+                var fileName = $"nobg_{Guid.NewGuid():N}.png";
+                using var resultStream = new MemoryStream(transparentBytes);
+                var formFile = new FormFile(resultStream, 0, transparentBytes.Length, "File", fileName)
+                {
+                    Headers = new HeaderDictionary(),
+                    ContentType = "image/png"
+                };
+
+                var imageUrl = await _cloudinaryService.UploadImageAsync(formFile, folder);
+
+                if (saveToContentManager && Guid.TryParse(_currentUserService.UserId, out var cmId))
+                {
+                    var cmProfile = await _unitOfWork.Repository<ContentManagerProfile>().GetByIdAsync(cmId);
+                    if (cmProfile != null)
+                    {
+                        cmProfile.UploadImageUrl ??= new List<string>();
+                        if (!cmProfile.UploadImageUrl.Contains(imageUrl))
+                        {
+                            cmProfile.UploadImageUrl.Add(imageUrl);
+                            cmProfile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+                            cmProfile.UpdateBy = cmId;
+                            _unitOfWork.Repository<ContentManagerProfile>().Update(cmProfile);
+                            await _unitOfWork.CompleteAsync();
+                        }
+                    }
+                }
+
+                return Ok(new { success = true, imageUrl });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = $"Lỗi khi xóa phông: {ex.Message}" });
+            }
         }
 
         private async Task<IActionResult> UploadImage(IFormFile file, string folder, bool saveToContentManager = false)

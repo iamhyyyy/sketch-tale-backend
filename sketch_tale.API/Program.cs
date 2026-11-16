@@ -66,7 +66,13 @@ public class Program
         {
             // Tăng timeout lên 3 phút cho các tác vụ xử lý AI nặng
             client.Timeout = TimeSpan.FromMinutes(3);
-        }); ;
+        });
+
+        // Đăng ký HttpClient cho ClearBackdropService để xóa phông nền AI
+        builder.Services.AddHttpClient<IBackgroundRemovalService, ClearBackdropService>(client =>
+        {
+            client.Timeout = TimeSpan.FromMinutes(2);
+        });
 
         // Đăng ký các Service và Repository
         builder.Services.AddScoped<IDrawingCharacterService, DrawingCharacterService>();

@@ -309,20 +309,25 @@ namespace sketch_tale.Application.Services
                 ? string.Join(", ", request.DetectedTags)
                 : "vibrant colors";
 
+            // Ràng buộc nghiêm ngặt: Chỉ vẽ duy nhất 1 nhân vật chủ thể, toàn thân, ở giữa khung hình,
+            // trên nền trắng phẳng tuyệt đối (pure solid white background), không có cảnh vật phụ để ClearBackdrop tách nền hoàn hảo nhất.
+            const string isolationConstraint = 
+                "Single full-body character centered in frame, isolated on a pure solid flat white background, zero shadows, no floor, no ground. No scenery, no background elements, no landscape, no extra objects, no other characters, no humans. Clean die-cut character sticker asset style, child-safe, 2D picture book illustration.";
+
             string finalPrompt;
             if (hasAdditionalIdea)
             {
                 // Nhánh 2.2: Lấy ý tưởng bé nhập làm trung tâm, loại bỏ standardizedPrompt cũ của AI
-                finalPrompt = $"A cute 2D children's storybook character illustration of a {charTypeName} based on child's idea: '{request.ChildAdditionalIdea!.Trim()}'. Visual traits from the sketch: {visualTraits}, child-safe, non-background.";
+                finalPrompt = $"A cute 2D children's storybook character asset illustration of a single {charTypeName} based on child's idea: '{request.ChildAdditionalIdea!.Trim()}'. Visual traits: {visualTraits}. {isolationConstraint}";
             }
             else
             {
                 // Nhánh 2.1: Bé chọn gợi ý AI
                 var basePrompt = !string.IsNullOrWhiteSpace(request.StandardizedPrompt)
                     ? request.StandardizedPrompt.Trim()
-                    : $"A cute 2D children's storybook character illustration of a {charTypeName}";
+                    : $"A cute 2D children's storybook character asset illustration of a single {charTypeName}";
 
-                finalPrompt = $"{basePrompt}. Confirmed character type: '{charTypeName}'. Visual traits from the sketch: {visualTraits}, child-safe, non-background.";
+                finalPrompt = $"{basePrompt}. Confirmed character species: a single {charTypeName}. Visual traits: {visualTraits}. {isolationConstraint}";
             }
 
             var detectedTagsJson = request.DetectedTags != null && request.DetectedTags.Any()
