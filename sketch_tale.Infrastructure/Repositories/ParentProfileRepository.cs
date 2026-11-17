@@ -20,6 +20,9 @@ namespace sketch_tale.Infrastructure.Repositories
         {
             return await _dbSet
              .Include(c => c.ChildProfiles)
+                 .ThenInclude(cp => cp.AllowedThemes)
+             .Include(c => c.ChildProfiles)
+                 .ThenInclude(cp => cp.StoryTemplateRecommends)
              .Include(c => c.SubscriptionPlan)
              .ToListAsync();
         }
@@ -28,6 +31,9 @@ namespace sketch_tale.Infrastructure.Repositories
         {
             return await _dbSet
                 .Include(c => c.ChildProfiles)
+                    .ThenInclude(cp => cp.AllowedThemes)
+                .Include(c => c.ChildProfiles)
+                    .ThenInclude(cp => cp.StoryTemplateRecommends)
                 .Include(c => c.SubscriptionPlan)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
@@ -36,16 +42,20 @@ namespace sketch_tale.Infrastructure.Repositories
         {
             return await _dbSet
                 .Include(c => c.ChildProfiles)
+                    .ThenInclude(cp => cp.AllowedThemes)
+                .Include(c => c.ChildProfiles)
+                    .ThenInclude(cp => cp.StoryTemplateRecommends)
                 .Include(c => c.SubscriptionPlan)
                 .FirstOrDefaultAsync(p => p.Id == userId);
         }
 
-        public Task<IEnumerable<ChildProfile>> GetChildProfilesByParentIdAsync(Guid parentId)
+        public async Task<IEnumerable<ChildProfile>> GetChildProfilesByParentIdAsync(Guid parentId)
         {
-            return Task.FromResult(_dbSet
-                .Where(p => p.Id == parentId)
-                .SelectMany(p => p.ChildProfiles)
-                .AsEnumerable());
+            return await _context.ChildProfiles
+                .Include(c => c.AllowedThemes)
+                .Include(c => c.StoryTemplateRecommends)
+                .Where(c => c.ParentProfileId == parentId)
+                .ToListAsync();
         }
     }
 }

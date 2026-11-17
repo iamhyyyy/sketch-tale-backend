@@ -80,6 +80,80 @@ namespace sketch_tale.API.Controllers
             return Ok(new { DailyCharacterLimit = charLimit });
         }
 
+        // GET: api/child-profiles/{id}/allowed-themes
+        [HttpGet("{id}/allowed-themes")]
+        public async Task<IActionResult> GetAllowedThemes(Guid id)
+        {
+            var themes = await _childProfileService.GetAllowedThemesByIdAsync(id);
+            if (themes == null) return NotFound(new { message = "Không tìm thấy hồ sơ bé." });
+
+            return Ok(themes);
+        }
+
+        // GET: api/child-profiles/{id}/story-recommends
+        [HttpGet("{id}/story-recommends")]
+        public async Task<IActionResult> GetStoryTemplateRecommends(Guid id)
+        {
+            var stories = await _childProfileService.GetStoryTemplateRecommendsByIdAsync(id);
+            if (stories == null) return NotFound(new { message = "Không tìm thấy hồ sơ bé." });
+
+            return Ok(stories);
+        }
+
+        /// <summary>
+        /// Phụ huynh cập nhật danh sách chủ đề giáo dục cho phép (AllowedThemes) của bé
+        /// </summary>
+        [Authorize(Roles = "Parent,parent,Admin,admin")]
+        [HttpPut("{id}/allowed-themes")]
+        public async Task<IActionResult> UpdateAllowedThemes(Guid id, [FromBody] UpdateChildAllowedThemesDto dto)
+        {
+            try
+            {
+                var isUpdated = await _childProfileService.UpdateAllowedThemesAsync(id, dto.ThemeIds);
+                if (!isUpdated)
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ bé để cập nhật." });
+                }
+
+                return Ok(new { message = "Cập nhật danh sách chủ đề cho phép của bé thành công!" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Phụ huynh cập nhật danh sách truyện mẫu đề xuất (StoryTemplateRecommends) cho bé
+        /// </summary>
+        [Authorize(Roles = "Parent,parent,Admin,admin")]
+        [HttpPut("{id}/story-recommends")]
+        public async Task<IActionResult> UpdateStoryTemplateRecommends(Guid id, [FromBody] UpdateChildStoryRecommendsDto dto)
+        {
+            try
+            {
+                var isUpdated = await _childProfileService.UpdateStoryTemplateRecommendsAsync(id, dto.StoryTemplateIds);
+                if (!isUpdated)
+                {
+                    return NotFound(new { message = "Không tìm thấy hồ sơ bé để cập nhật." });
+                }
+
+                return Ok(new { message = "Cập nhật danh sách truyện đề xuất cho bé thành công!" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         /// <summary>
         /// Cập nhật thông tin hồ sơ bé (ChildProfile) - Dành cho Phụ huynh và Admin
         /// </summary>

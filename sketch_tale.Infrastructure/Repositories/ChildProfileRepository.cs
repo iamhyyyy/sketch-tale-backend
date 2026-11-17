@@ -17,9 +17,28 @@ namespace sketch_tale.Infrastructure.Repositories
         {
         }
 
+        public override async Task<IEnumerable<ChildProfile>> GetAllAsync()
+        {
+            return await _dbSet
+                .Include(c => c.AllowedThemes)
+                .Include(c => c.StoryTemplateRecommends)
+                .ToListAsync();
+        }
+
+        public override async Task<ChildProfile?> GetByIdAsync(Guid id)
+        {
+            return await _dbSet
+                .Include(c => c.AllowedThemes)
+                .Include(c => c.StoryTemplateRecommends)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
         public async Task<ChildProfile?> GetByUserIdAsync(Guid userId)
         {
-            return await _dbSet.FirstOrDefaultAsync(c => c.Id == userId);
+            return await _dbSet
+                .Include(c => c.AllowedThemes)
+                .Include(c => c.StoryTemplateRecommends)
+                .FirstOrDefaultAsync(c => c.Id == userId);
         }
     }
 }

@@ -23,6 +23,36 @@ namespace sketch_tale.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("ChildProfileEducationTheme", b =>
+                {
+                    b.Property<Guid>("AllowedThemesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ChildProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("AllowedThemesId", "ChildProfileId");
+
+                    b.HasIndex("ChildProfileId");
+
+                    b.ToTable("ChildProfileEducationTheme");
+                });
+
+            modelBuilder.Entity("ChildProfileStoryTemplate", b =>
+                {
+                    b.Property<Guid>("ChildProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StoryTemplateRecommendsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ChildProfileId", "StoryTemplateRecommendsId");
+
+                    b.HasIndex("StoryTemplateRecommendsId");
+
+                    b.ToTable("ChildProfileStoryTemplate");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -832,9 +862,6 @@ namespace sketch_tale.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ChildProfileId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("CreateBy")
                         .HasColumnType("uuid");
 
@@ -862,8 +889,6 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ChildProfileId");
 
                     b.ToTable("EducationThemes");
                 });
@@ -1323,9 +1348,6 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.Property<int>("AgeGroup")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("ChildProfileId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("CoverImageUrl")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1359,8 +1381,6 @@ namespace sketch_tale.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ChildProfileId");
 
                     b.HasIndex("EducationThemeId");
 
@@ -1648,6 +1668,36 @@ namespace sketch_tale.Infrastructure.Migrations
                     b.ToTable("VocabularyTemplates");
                 });
 
+            modelBuilder.Entity("ChildProfileEducationTheme", b =>
+                {
+                    b.HasOne("sketch_tale.Domain.Entities.EducationTheme", null)
+                        .WithMany()
+                        .HasForeignKey("AllowedThemesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ChildProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ChildProfileStoryTemplate", b =>
+                {
+                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ChildProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("sketch_tale.Domain.Entities.StoryTemplate", null)
+                        .WithMany()
+                        .HasForeignKey("StoryTemplateRecommendsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -1718,13 +1768,15 @@ namespace sketch_tale.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
+                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", "ChildProfile")
                         .WithMany("Characters")
                         .HasForeignKey("ChildProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("AICharacterGenerate");
+
+                    b.Navigation("ChildProfile");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.CharacterSlotTemplate", b =>
@@ -1840,13 +1892,6 @@ namespace sketch_tale.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("sketch_tale.Domain.Entities.EducationTheme", b =>
-                {
-                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
-                        .WithMany("AllowedThemes")
-                        .HasForeignKey("ChildProfileId");
-                });
-
             modelBuilder.Entity("sketch_tale.Domain.Entities.GeneratedStory", b =>
                 {
                     b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
@@ -1956,10 +2001,6 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.StoryTemplate", b =>
                 {
-                    b.HasOne("sketch_tale.Domain.Entities.ChildProfile", null)
-                        .WithMany("StoryTemplateRecommends")
-                        .HasForeignKey("ChildProfileId");
-
                     b.HasOne("sketch_tale.Domain.Entities.EducationTheme", "EducationTheme")
                         .WithMany()
                         .HasForeignKey("EducationThemeId")
@@ -2008,15 +2049,11 @@ namespace sketch_tale.Infrastructure.Migrations
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.ChildProfile", b =>
                 {
-                    b.Navigation("AllowedThemes");
-
                     b.Navigation("Characters");
 
                     b.Navigation("Drawings");
 
                     b.Navigation("GeneratedStories");
-
-                    b.Navigation("StoryTemplateRecommends");
                 });
 
             modelBuilder.Entity("sketch_tale.Domain.Entities.Drawing", b =>

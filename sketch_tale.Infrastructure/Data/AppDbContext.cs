@@ -1,4 +1,4 @@
-﻿using Audit.EntityFramework;
+using Audit.EntityFramework;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Services;
@@ -83,6 +83,14 @@ public class AppDbContext : AuditIdentityDbContext<User, IdentityRole<Guid>, Gui
             new IdentityRole<Guid> { Id = parent, Name = "parent", NormalizedName = "PARENT" },
             new IdentityRole<Guid> { Id = child, Name = "child", NormalizedName = "CHILD" }
         );
+
+        modelBuilder.Entity<ChildProfile>()
+            .HasMany(c => c.AllowedThemes)
+            .WithMany();
+
+        modelBuilder.Entity<ChildProfile>()
+            .HasMany(c => c.StoryTemplateRecommends)
+            .WithMany();
 
     }
 
