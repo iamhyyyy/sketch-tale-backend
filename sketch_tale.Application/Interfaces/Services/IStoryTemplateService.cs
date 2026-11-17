@@ -14,6 +14,7 @@ public interface IStoryTemplateService
     Task<bool> UpdateAsync(Guid id, UpdateStoryTemplateDto dto, IFormFile? file);
     Task<bool> DeleteAsync(Guid id);
 
-    //Publish
+    //Publish & Unpublish
     Task<PublishStoryResultDto> PublishStoryAsync(Guid storyId);
+    Task<PublishStoryResultDto> UnpublishStoryAsync(Guid storyId);
 }

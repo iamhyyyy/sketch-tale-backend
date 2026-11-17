@@ -174,6 +174,11 @@ namespace sketch_tale.Application.DTOs
         public string Title { get; set; } = string.Empty;
         public CommonStatus Status { get; set; }
         public string Message { get; set; } = string.Empty;
+        public int TotalPages { get; set; }
+        public int PublishedPagesCount { get; set; }
+        public int PublishedRolesCount { get; set; }
+        public int PublishedSlotsCount { get; set; }
+        public int PublishedQuizzesCount { get; set; }
     }
 
 }

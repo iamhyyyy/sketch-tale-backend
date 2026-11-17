@@ -55,7 +55,6 @@ public class StoryPageTemplateService : IStoryPageTemplateService
         }
 
         var entity = _mapper.Map<StoryPageTemplate>(dto);
-        entity.Id = Guid.NewGuid();
         entity.StoryTemplateId = storyId;
 
         // tăng và gán số trang tiếp theo

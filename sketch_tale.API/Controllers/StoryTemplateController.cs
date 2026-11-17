@@ -95,5 +95,28 @@ public class StoryTemplateController : ControllerBase
         {
             return NotFound(new { message = ex.Message });
         }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("{id}/unpublish")]
+    [Authorize(Roles = "ContentManager,content manager")]
+    public async Task<ActionResult<PublishStoryResultDto>> Unpublish(Guid id)
+    {
+        try
+        {
+            var result = await _storyTemplateService.UnpublishStoryAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 }
