@@ -14,6 +14,9 @@ namespace sketch_tale.Application.DTOs
         public int RemainingTimeLimit { get; set; }
         public int DailyCharacterLimit { get; set; }
         public int RemainingCharacterLimit { get; set; }
+
+        public ICollection<EducationThemeDto> AllowedThemes { get; set; } = new List<EducationThemeDto>();
+        public ICollection<StoryTemplateDto> StoryTemplateRecommends { get; set; } = new List<StoryTemplateDto>();
     }
 
     public class UpdateChildProfileDto
@@ -25,5 +28,15 @@ namespace sketch_tale.Application.DTOs
         public int? RemainingTimeLimit { get; set; }
         public int? DailyCharacterLimit { get; set; }
         public int? RemainingCharacterLimit { get; set; }
+    }
+
+    public class UpdateChildAllowedThemesDto
+    {
+        public List<Guid> ThemeIds { get; set; } = new List<Guid>();
+    }
+
+    public class UpdateChildStoryRecommendsDto
+    {
+        public List<Guid> StoryTemplateIds { get; set; } = new List<Guid>();
     }
 }

@@ -64,6 +64,72 @@ namespace sketch_tale.Application.Services
             return profile?.TargetAgeGroup.ToString();
         }
 
+        public async Task<IEnumerable<EducationThemeDto>?> GetAllowedThemesByIdAsync(Guid id)
+        {
+            var profile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(id);
+            if (profile == null) return null;
+            return _mapper.Map<IEnumerable<EducationThemeDto>>(profile.AllowedThemes);
+        }
+
+        public async Task<IEnumerable<StoryTemplateDto>?> GetStoryTemplateRecommendsByIdAsync(Guid id)
+        {
+            var profile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(id);
+            if (profile == null) return null;
+            return _mapper.Map<IEnumerable<StoryTemplateDto>>(profile.StoryTemplateRecommends);
+        }
+
+        public async Task<bool> UpdateAllowedThemesAsync(Guid id, List<Guid> allowedThemeIds)
+        {
+            var profile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(id);
+            if (profile == null) return false;
+
+            profile.AllowedThemes.Clear();
+            if (allowedThemeIds != null)
+            {
+                foreach (var themeId in allowedThemeIds.Distinct())
+                {
+                    if (themeId == Guid.Empty)
+                        throw new ArgumentException("Danh sách chứa ThemeId không hợp lệ (Guid rỗng).");
+
+                    var theme = await _unitOfWork.EducationThemeRepository.GetByIdAsync(themeId);
+                    if (theme == null)
+                        throw new KeyNotFoundException($"Không tìm thấy chủ đề giáo dục (EducationTheme) với Id: {themeId}");
+
+                    profile.AllowedThemes.Add(theme);
+                }
+            }
+
+            profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+
+        public async Task<bool> UpdateStoryTemplateRecommendsAsync(Guid id, List<Guid> storyTemplateRecommendIds)
+        {
+            var profile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(id);
+            if (profile == null) return false;
+
+            profile.StoryTemplateRecommends.Clear();
+            if (storyTemplateRecommendIds != null)
+            {
+                foreach (var storyId in storyTemplateRecommendIds.Distinct())
+                {
+                    if (storyId == Guid.Empty)
+                        throw new ArgumentException("Danh sách chứa StoryTemplateId không hợp lệ (Guid rỗng).");
+
+                    var story = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(storyId);
+                    if (story == null)
+                        throw new KeyNotFoundException($"Không tìm thấy truyện mẫu (StoryTemplate) với Id: {storyId}");
+
+                    profile.StoryTemplateRecommends.Add(story);
+                }
+            }
+
+            profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+
         public async Task<bool> UpdateChildProfileAsync(Guid id, UpdateChildProfileDto dto)
         {
             var profile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(id);
@@ -128,7 +194,6 @@ namespace sketch_tale.Application.Services
 
             profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
-            _unitOfWork.ChildProfileRepository.Update(profile);
             await _unitOfWork.CompleteAsync();
             return true;
         }

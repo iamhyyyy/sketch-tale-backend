@@ -1,4 +1,4 @@
-﻿using sketch_tale.Application.DTOs;
+using sketch_tale.Application.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,5 +18,9 @@ namespace sketch_tale.Application.Interfaces.Services
         Task<int?> GetDailyTimeLimitByIdAsync(Guid id);       // Kiểu int (hoặc TimeSpan tùy thuộc vào thiết kế DB của bạn)
         Task<int?> GetDailyCharacterLimitByIdAsync(Guid id);   // Kiểu int cho giới hạn ký tự/lượt tạo mỗi ngày
         Task<string?> GetTargetAgeGroupByIdAsync(Guid id);     // Kiểu string (vd: "3-5", "6-8") hoặc enum tùy hệ thống
+        Task<IEnumerable<EducationThemeDto>?> GetAllowedThemesByIdAsync(Guid id);
+        Task<IEnumerable<StoryTemplateDto>?> GetStoryTemplateRecommendsByIdAsync(Guid id);
+        Task<bool> UpdateAllowedThemesAsync(Guid id, List<Guid> allowedThemeIds);
+        Task<bool> UpdateStoryTemplateRecommendsAsync(Guid id, List<Guid> storyTemplateRecommendIds);
     }
 }

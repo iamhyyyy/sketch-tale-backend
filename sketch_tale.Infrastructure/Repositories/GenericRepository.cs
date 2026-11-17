@@ -1,4 +1,4 @@
-﻿
+
 using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Infrastructure.Data;
@@ -18,7 +18,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     public virtual async Task<T?> GetByIdAsync(Guid id) => await _dbSet.FindAsync(id);
 
-    public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
+    public virtual async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
 
     public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
 
