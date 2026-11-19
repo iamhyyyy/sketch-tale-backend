@@ -208,10 +208,14 @@ namespace sketch_tale.Application.Services
 
             foreach (var profile in profiles)
             {
-                if (profile.RemainingCharacterLimit != profile.DailyCharacterLimit) profile.RemainingCharacterLimit = profile.DailyCharacterLimit;
-                if (profile.RemainingTimeLimit != profile.DailyTimeLimit) profile.RemainingTimeLimit = profile.DailyTimeLimit;
+                if (profile.RemainingCharacterLimit != profile.DailyCharacterLimit || profile.RemainingTimeLimit != profile.DailyTimeLimit)
+                {
+                    profile.RemainingCharacterLimit = profile.DailyCharacterLimit;
+                    profile.RemainingTimeLimit = profile.DailyTimeLimit;
+                    updatedCount++;
+                }
                 _unitOfWork.ChildProfileRepository.Update(profile);
-                updatedCount++;
+                
             }
 
             if (updatedCount > 0)
