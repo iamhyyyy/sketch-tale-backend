@@ -214,7 +214,7 @@ namespace sketch_tale.Application.Services
                     profile.RemainingTimeLimit = profile.DailyTimeLimit;
                     updatedCount++;
                 }
-                _unitOfWork.ChildProfileRepository.Update(profile);
+                //_unitOfWork.ChildProfileRepository.Update(profile);
                 
             }
 
