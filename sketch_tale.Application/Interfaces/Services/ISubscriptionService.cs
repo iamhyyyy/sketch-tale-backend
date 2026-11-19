@@ -13,6 +13,6 @@ namespace sketch_tale.Application.Interfaces
         Task<bool> Update(Guid id, UpdateSubscriptionDto dto);
         Task<bool> UpdateSubscriptionForSuccessPayment(Guid id, SubscriptionStatus status);
         Task<bool> Delete(Guid id);
-
+        Task<int> CheckAndSetExpiredStatus();
     }
 }

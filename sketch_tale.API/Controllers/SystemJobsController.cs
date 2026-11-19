@@ -12,23 +12,24 @@ namespace sketch_tale.WebApi.Controllers;
 public class SystemJobsController : ControllerBase
 {
     private readonly IChildProfileService _childProfileService;
+    private readonly ISubscriptionService _subscriptionService;
     private readonly IConfiguration _configuration;
     private readonly ILogger<SystemJobsController> _logger;
 
     public SystemJobsController(
         IChildProfileService childProfileService,
+        ISubscriptionService subscriptionService,
         IConfiguration configuration,
         ILogger<SystemJobsController> logger)
     {
         _childProfileService = childProfileService;
+        _subscriptionService = subscriptionService;
         _configuration = configuration;
         _logger = logger;
     }
 
     [HttpPost("reset-daily-limits")]
-    public async Task<IActionResult> ResetDailyLimits(
-        [FromHeader(Name = "X-Cron-Secret")] string? cronSecret,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> ResetDailyLimits([FromHeader(Name = "X-Cron-Secret")] string? cronSecret)
     {
         var expectedSecret = _configuration["CronSettings:SecretKey"];
 
@@ -45,6 +46,29 @@ public class SystemJobsController : ControllerBase
         {
             message = "Reset daily limits successfully.",
             updatedProfiles = updatedCount,
+            executedAtUtc = DateTime.UtcNow
+        });
+    }
+
+    [HttpPost("check-expire-subscriptions")]
+    public async Task<IActionResult> CheckExpiredSubscription([FromHeader(Name = "X-Cron-Secret")] string? cronSecret)
+    {
+        var expectedSecret = _configuration["CronSettings:SecretKey"];
+
+        if (string.IsNullOrEmpty(expectedSecret) || cronSecret != expectedSecret)
+        {
+            _logger.LogWarning("Unauthorized attempt to trigger daily limit reset.");
+            return Unauthorized(new { message = "Invalid cron secret." });
+        }
+
+        var expiredCount = await _subscriptionService.CheckAndSetExpiredStatus();
+
+        return Ok(new
+        {
+            message = expiredCount == 0
+            ? "No expired subscriptions found."
+            : "Updated expired subscriptions successfully.",
+            expiredSubscriptions = expiredCount,
             executedAtUtc = DateTime.UtcNow
         });
     }

@@ -100,7 +100,6 @@ namespace sketch_tale.Application.Services
                 }
             }
 
-            //profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
             await _unitOfWork.CompleteAsync();
             return true;
         }
@@ -126,7 +125,6 @@ namespace sketch_tale.Application.Services
                 }
             }
 
-            //profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
             await _unitOfWork.CompleteAsync();
             return true;
         }
@@ -193,12 +191,12 @@ namespace sketch_tale.Application.Services
                 profile.RemainingCharacterLimit = dto.RemainingCharacterLimit.Value;
             }
 
-            //profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
             await _unitOfWork.CompleteAsync();
             return true;
         }
 
+        //cái này của system, no edit
         public async Task<int> ResetAllDailyLimitsAsync()
         {
             var profiles = await _unitOfWork.ChildProfileRepository.GetAllAsync();
@@ -214,7 +212,6 @@ namespace sketch_tale.Application.Services
                     profile.RemainingTimeLimit = profile.DailyTimeLimit;
                     updatedCount++;
                 }
-                //_unitOfWork.ChildProfileRepository.Update(profile);
                 
             }
 
