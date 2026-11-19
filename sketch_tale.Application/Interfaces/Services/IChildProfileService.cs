@@ -22,5 +22,6 @@ namespace sketch_tale.Application.Interfaces.Services
         Task<IEnumerable<StoryTemplateDto>?> GetStoryTemplateRecommendsByIdAsync(Guid id);
         Task<bool> UpdateAllowedThemesAsync(Guid id, List<Guid> allowedThemeIds);
         Task<bool> UpdateStoryTemplateRecommendsAsync(Guid id, List<Guid> storyTemplateRecommendIds);
+        Task<int> ResetAllDailyLimitsAsync();
     }
 }
