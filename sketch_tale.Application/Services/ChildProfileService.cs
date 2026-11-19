@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using sketch_tale.Application.DTOs;
 using sketch_tale.Application.Interfaces.Repositories;
 using sketch_tale.Application.Interfaces.Services;
@@ -99,7 +100,7 @@ namespace sketch_tale.Application.Services
                 }
             }
 
-            profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            //profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
             await _unitOfWork.CompleteAsync();
             return true;
         }
@@ -125,7 +126,7 @@ namespace sketch_tale.Application.Services
                 }
             }
 
-            profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            //profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
             await _unitOfWork.CompleteAsync();
             return true;
         }
@@ -192,10 +193,33 @@ namespace sketch_tale.Application.Services
                 profile.RemainingCharacterLimit = dto.RemainingCharacterLimit.Value;
             }
 
-            profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
+            //profile.UpdatedAt = DateTime.UtcNow.AddHours(7);
 
             await _unitOfWork.CompleteAsync();
             return true;
+        }
+
+        public async Task<int> ResetAllDailyLimitsAsync()
+        {
+            var profiles = await _unitOfWork.ChildProfileRepository.GetAllAsync();
+
+            if (profiles == null || !profiles.Any()) return 0;
+            int updatedCount = 0;
+
+            foreach (var profile in profiles)
+            {
+                if (profile.RemainingCharacterLimit != profile.DailyCharacterLimit) profile.RemainingCharacterLimit = profile.DailyCharacterLimit;
+                if (profile.RemainingTimeLimit != profile.DailyTimeLimit) profile.RemainingTimeLimit = profile.DailyTimeLimit;
+                _unitOfWork.ChildProfileRepository.Update(profile);
+                updatedCount++;
+            }
+
+            if (updatedCount > 0)
+            {
+                await _unitOfWork.CompleteAsync();
+            }
+
+            return updatedCount;
         }
     }
 }
