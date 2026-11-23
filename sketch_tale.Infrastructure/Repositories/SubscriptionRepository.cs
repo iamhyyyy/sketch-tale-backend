@@ -16,6 +16,7 @@ namespace sketch_tale.Infrastructure.Repositories
         public async Task<List<Subscription>> GetAllAsyncIncludePlan()
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .Include(s => s.Plan)
                 .ToListAsync();
         }
@@ -23,6 +24,7 @@ namespace sketch_tale.Infrastructure.Repositories
         public new async Task<Subscription?> GetByIdAsync(Guid id)
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .Include(s => s.Plan)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
@@ -30,6 +32,7 @@ namespace sketch_tale.Infrastructure.Repositories
         public async Task<List<Subscription>> GetActiveSubscription()
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .Include(s => s.Plan)
                 .Where(p => p.Status == SubscriptionStatus.Active)
                 .ToListAsync();
@@ -38,6 +41,7 @@ namespace sketch_tale.Infrastructure.Repositories
         public async Task<List<Subscription>> GetByParentProfileId(Guid id)
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .Include(s => s.Plan)
                 .Where(p => p.ParentProfileId == id)
                 .ToListAsync();
@@ -45,6 +49,7 @@ namespace sketch_tale.Infrastructure.Repositories
         public async Task<List<Subscription>> GetBySubscriptionPlanId(Guid id)
         {
             return await _context.Subscriptions
+                .AsNoTracking()
                 .Include(s => s.Plan)
                 .Where(p => p.SubscriptionPlanId == id)
                 .ToListAsync();

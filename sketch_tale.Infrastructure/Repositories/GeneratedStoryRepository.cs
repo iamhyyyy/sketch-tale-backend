@@ -19,6 +19,7 @@ namespace sketch_tale.Infrastructure.Repositories
         public async Task<GeneratedStory?> GetByIdWithDetailsAsync(Guid id)
         {
             return await _context.GeneratedStories
+                .AsNoTracking()
                 .Include(g => g.StoryTemplate)
                 .Include(g => g.UserStoryCharacterMappings)
                     .ThenInclude(m => m.StoryRoleTemplate)
@@ -28,6 +29,7 @@ namespace sketch_tale.Infrastructure.Repositories
         public async Task<List<GeneratedStory>> GetByChildProfileIdAsync(Guid childProfileId)
         {
             return await _context.GeneratedStories
+                .AsNoTracking()
                 .Include(g => g.StoryTemplate)
                 .Include(g => g.UserStoryCharacterMappings)
                     .ThenInclude(m => m.StoryRoleTemplate)
