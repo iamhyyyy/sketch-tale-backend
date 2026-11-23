@@ -142,24 +142,76 @@ namespace sketch_tale.Infrastructure.Services
                 if (transaction.Status == PaymentStatus.Success) return true;
 
                 var subription = await _unitOfWork.SubscriptionRepository.GetByIdAsync(transaction.SubscriptionId);
+                if (subription == null) return false;
+
+                var now = DateTime.UtcNow.AddHours(7);
 
                 if (data.Code == "00") 
                 {
                     transaction.Status = PaymentStatus.Success;
                     transaction.ResponseCode = data.Code;
                     transaction.TransactionNo = data.Reference ?? string.Empty;
-                    transaction.PayDate = DateTime.UtcNow.AddHours(7);
+                    transaction.PayDate = now;
                     transaction.RawIpnResponse = jsonBody;
 
                     subription.Status = SubscriptionStatus.Active;
-                    
+
+                    var plan = await _unitOfWork.SubscriptionPlanRepository.GetByIdAsync(subription.SubscriptionPlanId);
+                    if (plan != null)
+                    {
+                        // Cập nhật lại thời hạn gói bắt đầu từ lúc thanh toán thành công
+                        subription.StartDate = now;
+                        subription.EndDate = now.AddDays(plan.DurationDays);
+
+                        // Hủy các subscription Active cũ của phụ huynh (nếu có) để tránh trùng lặp
+                        var previousActiveSubs = (await _unitOfWork.SubscriptionRepository.GetByParentProfileId(subription.ParentProfileId))
+                            .Where(s => s.Id != subription.Id && s.Status == SubscriptionStatus.Active)
+                            .ToList();
+
+                        foreach (var oldSub in previousActiveSubs)
+                        {
+                            oldSub.Status = SubscriptionStatus.Cancelled;
+                            _unitOfWork.SubscriptionRepository.Update(oldSub);
+                        }
+
+                        // CẬP NHẬT PROFILE PHỤ HUYNH
+                        var parentProfile = await _unitOfWork.ParentProfileRepository.GetByIdWithDetailsAsync(subription.ParentProfileId)
+                            ?? await _unitOfWork.ParentProfileRepository.GetByUserIdAsync(subription.ParentProfileId);
+
+                        if (parentProfile != null)
+                        {
+                            int creditBefore = parentProfile.RemainingMonthlyCredit;
+                            parentProfile.SubscriptionPlanId = plan.Id;
+                            parentProfile.RemainingMonthlyCredit = plan.MonthlyCreditLimit;
+                            parentProfile.UpdatedAt = now;
+                            parentProfile.UpdateBy = parentProfile.Id;
+
+                            _unitOfWork.ParentProfileRepository.Update(parentProfile);
+
+                            // Ghi log giao dịch credit
+                            var creditLog = new CreditTransactionLog
+                            {
+                                Id = Guid.NewGuid(),
+                                ParentProfileId = parentProfile.Id,
+                                ActionType = ActionType.TopUp,
+                                FeatureKey = "SUBSCRIPTION_PAYMENT",
+                                Amount = plan.MonthlyCreditLimit - creditBefore,
+                                CreditBefore = creditBefore,
+                                CreditAfter = parentProfile.RemainingMonthlyCredit,
+                                Description = $"Thanh toán thành công gói {plan.Name}. Kích hoạt gói và cấp {plan.MonthlyCreditLimit} credits hàng tháng.",
+                                CreatedAt = now,
+                                CreateBy = parentProfile.Id
+                            };
+                            await _unitOfWork.CreditTransactionLogRepository.AddAsync(creditLog);
+                        }
+                    }
                 }
                 else
                 {
                     transaction.Status = PaymentStatus.Failed;
                     transaction.ResponseCode = data.Code;
                     transaction.RawIpnResponse = jsonBody;
-                    transaction.PayDate = DateTime.UtcNow.AddHours(7);
+                    transaction.PayDate = now;
 
                     subription.Status = SubscriptionStatus.Cancelled;
                 }
@@ -169,8 +221,9 @@ namespace sketch_tale.Infrastructure.Services
                 await _unitOfWork.CompleteAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[PayOS Webhook Error]: {ex.Message} \n {ex.StackTrace}");
                 return false;
             }
         }
