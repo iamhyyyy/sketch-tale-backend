@@ -15,7 +15,7 @@ public class StoryTemplateRepository : GenericRepository<StoryTemplate>, IStoryT
     public async Task<IEnumerable<StoryTemplate>> getByEducationThemeId(Guid EduThemeId)
     {
         return await _dbSet
-            .Where(p => p.Status != CommonStatus.Inactive && p.EducationThemeId == EduThemeId)
+            .Where(p => p.Status == CommonStatus.Active && p.EducationThemeId == EduThemeId)
             .OrderBy(p => p.CreatedAt)
             .ToListAsync();
     }
