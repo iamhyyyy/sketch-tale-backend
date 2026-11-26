@@ -15,7 +15,6 @@ public class StoryTemplateRepository : GenericRepository<StoryTemplate>, IStoryT
     public async Task<IEnumerable<StoryTemplate>> getByEducationThemeId(Guid EduThemeId)
     {
         return await _dbSet
-            .AsNoTracking()
             .Where(p => p.Status != CommonStatus.Inactive && p.EducationThemeId == EduThemeId)
             .OrderBy(p => p.CreatedAt)
             .ToListAsync();
@@ -24,8 +23,7 @@ public class StoryTemplateRepository : GenericRepository<StoryTemplate>, IStoryT
     public async Task<IEnumerable<StoryTemplate>> getStories()
     {
         return await _dbSet
-            .AsNoTracking()
-            .Where(p => p.Status != CommonStatus.Inactive)
+            .Where(p => p.Status == CommonStatus.Active)
             .OrderBy(p => p.CreatedAt)
             .ToListAsync();
     }
