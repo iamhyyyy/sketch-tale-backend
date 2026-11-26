@@ -34,7 +34,7 @@ public class StoryTemplateController : ControllerBase
     }
     //này lấy theo EducationThemeId
     [HttpGet("stories/education-theme/{id}")]
-    public async Task<ActionResult<IEnumerable<StoryTemplateDto>>> GetStoriesByEducationThemeId(Guid EduThemeId)
+    public async Task<ActionResult<IEnumerable<StoryTemplateDto>>> GetStoriesByEducationThemeId([FromRoute(Name = "id")] Guid EduThemeId)
     {
         var items = await _storyTemplateService.GetStoriesByEduThemeId(EduThemeId);
         return Ok(items);

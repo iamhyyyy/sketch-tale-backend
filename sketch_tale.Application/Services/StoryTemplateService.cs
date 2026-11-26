@@ -35,22 +35,77 @@ public class StoryTemplateService : IStoryTemplateService
         var activeItems = items.Where(s => s.Status != Domain.Enums.CommonStatus.Inactive);
         return _mapper.Map<IEnumerable<StoryTemplateDto>>(activeItems);
     }
-    //này lấy tất cả Templete active
+    //này lấy tất cả Templete active (Tự động lọc theo AllowedThemes nếu người dùng là Child)
     public async Task<IEnumerable<StoryTemplateDto>> GetStories()
     {
         var stories = await _unitOfWork.StoryTemplateRepository.getStories();
+
+        // Nếu người dùng đang đăng nhập là Child -> Lọc theo AllowedThemes và StoryTemplateRecommends
+        if (_currentUserService.IsInRole("Child") && Guid.TryParse(_currentUserService.UserId, out var childId))
+        {
+            var childProfile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(childId);
+            if (childProfile != null)
+            {
+                var allowedThemeIds = childProfile.AllowedThemes?.Select(t => t.Id).ToHashSet() ?? new HashSet<Guid>();
+                var recommendStoryIds = childProfile.StoryTemplateRecommends?.Select(s => s.Id).ToHashSet() ?? new HashSet<Guid>();
+
+                // Nếu phụ huynh có cài đặt AllowedThemes hoặc RecommendStories
+                if (allowedThemeIds.Count > 0 || recommendStoryIds.Count > 0)
+                {
+                    stories = stories.Where(s => 
+                        allowedThemeIds.Contains(s.EducationThemeId) || 
+                        recommendStoryIds.Contains(s.Id)
+                    );
+                }
+            }
+        }
+
         return _mapper.Map<IEnumerable<StoryTemplateDto>>(stories); 
     }
-    //getByEduthemeID
+
+    //getByEduthemeID (Nếu là Child và theme này bị phụ huynh chặn -> Trả về danh sách rỗng)
     public async Task<IEnumerable<StoryTemplateDto>> GetStoriesByEduThemeId(Guid EduThemeId)
     {
+        if (_currentUserService.IsInRole("Child") && Guid.TryParse(_currentUserService.UserId, out var childId))
+        {
+            var childProfile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(childId);
+            if (childProfile != null)
+            {
+                var allowedThemeIds = childProfile.AllowedThemes?.Select(t => t.Id).ToHashSet() ?? new HashSet<Guid>();
+                // Nếu phụ huynh có đặt AllowedThemes mà theme này không nằm trong danh sách cho phép
+                if (allowedThemeIds.Count > 0 && !allowedThemeIds.Contains(EduThemeId))
+                {
+                    return Enumerable.Empty<StoryTemplateDto>();
+                }
+            }
+        }
+
         var stories = await _unitOfWork.StoryTemplateRepository.getByEducationThemeId(EduThemeId);
         return _mapper.Map<IEnumerable<StoryTemplateDto>>(stories);
     }
+
     public async Task<StoryTemplateDto?> GetByIdAsync(Guid id)
     {
         var item = await _unitOfWork.StoryTemplateRepository.GetByIdAsync(id);
         if (item == null || item.Status == Domain.Enums.CommonStatus.Inactive) return null;
+
+        // Nếu là Child, kiểm tra xem truyện này có thuộc phạm vi cho phép đọc không
+        if (_currentUserService.IsInRole("Child") && Guid.TryParse(_currentUserService.UserId, out var childId))
+        {
+            var childProfile = await _unitOfWork.ChildProfileRepository.GetByIdAsync(childId);
+            if (childProfile != null)
+            {
+                var allowedThemeIds = childProfile.AllowedThemes?.Select(t => t.Id).ToHashSet() ?? new HashSet<Guid>();
+                var recommendStoryIds = childProfile.StoryTemplateRecommends?.Select(s => s.Id).ToHashSet() ?? new HashSet<Guid>();
+
+                if (allowedThemeIds.Count > 0 || recommendStoryIds.Count > 0)
+                {
+                    bool isAllowed = allowedThemeIds.Contains(item.EducationThemeId) || recommendStoryIds.Contains(item.Id);
+                    if (!isAllowed) return null; // Chặn không cho bé xem truyện ngoài danh mục cho phép
+                }
+            }
+        }
+
         return _mapper.Map<StoryTemplateDto>(item);
     }
 

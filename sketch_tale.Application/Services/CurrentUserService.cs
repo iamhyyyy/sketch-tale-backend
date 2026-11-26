@@ -19,4 +19,19 @@ public class CurrentUserService : ICurrentUserService
         _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("sub")
         ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("nameid");
+
+    public string? Role =>
+        _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role)
+        ?? _httpContextAccessor.HttpContext?.User?.FindFirstValue("role");
+
+    public bool IsInRole(string role)
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        if (user == null) return false;
+
+        if (user.IsInRole(role)) return true;
+
+        var userRole = Role;
+        return string.Equals(userRole, role, StringComparison.OrdinalIgnoreCase);
+    }
 }
